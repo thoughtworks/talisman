@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/badrij/talisman/git_repo"
+	"github.com/thoughtworks/talisman/git_repo"
 )
 
 const (

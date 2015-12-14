@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/badrij/talisman",
+	"ImportPath": "github.com/thoughtworks/talisman",
 	"GoVersion": "go1.5.1",
 	"Deps": [
 		{

@@ -6,8 +6,8 @@ package main
 import (
 	"testing"
 
-	"github.com/badrij/talisman/git_repo"
 	"github.com/stretchr/testify/assert"
+	"github.com/thoughtworks/talisman/git_repo"
 )
 
 func TestShouldFlagPotentialSSHPrivateKeys(t *testing.T) {

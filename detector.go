@@ -5,7 +5,7 @@ import (
 	"regexp"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/badrij/talisman/git_repo"
+	"github.com/thoughtworks/talisman/git_repo"
 )
 
 //Detector represents a single kind of test to be performed against a set of Additions

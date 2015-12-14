@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/badrij/talisman/git_repo"
+	"github.com/thoughtworks/talisman/git_repo"
 )
 
 //DetectionResults represents all interesting information collected during a detection run.

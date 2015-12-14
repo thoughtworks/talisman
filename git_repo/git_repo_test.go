@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	git "github.com/badrij/talisman/git_testing"
 	"github.com/stretchr/testify/assert"
+	git "github.com/thoughtworks/talisman/git_testing"
 )
 
 func TestEmptyRepoReturnsNoFileChanges(t *testing.T) {
