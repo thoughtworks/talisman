@@ -1,0 +1,36 @@
+{
+	"ImportPath": "github.com/badrij/talisman",
+	"GoVersion": "go1.5.1",
+	"Deps": [
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.8.7-53-g446d1c1",
+			"Rev": "446d1c146faa8ed3f4218f056fcd165f6bcfda81"
+		},
+		{
+			"ImportPath": "github.com/badrij/go-codereview/git85",
+			"Rev": "067e3f48a57281f376ae1f1a02684f7e6234781e"
+		},
+		{
+			"ImportPath": "github.com/badrij/go-codereview/patch",
+			"Rev": "067e3f48a57281f376ae1f1a02684f7e6234781e"
+		},
+		{
+			"ImportPath": "github.com/davecgh/go-spew/spew",
+			"Rev": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d"
+		},
+		{
+			"ImportPath": "github.com/drhodes/golorem",
+			"Rev": "6e38d8d5e45580c1715d4dc7e4808be379788a2e"
+		},
+		{
+			"ImportPath": "github.com/pmezard/go-difflib/difflib",
+			"Rev": "e8554b8641db39598be7f6342874b958f12ae1d4"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/assert",
+			"Comment": "v1.0-88-ge3a8ff8",
+			"Rev": "e3a8ff8ce36581f87a15341206f205b1da467059"
+		}
+	]
+}
