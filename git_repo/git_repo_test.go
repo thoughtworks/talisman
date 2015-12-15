@@ -1,6 +1,7 @@
 package git_repo
 
 import (
+	"os/exec"
 	"strings"
 	"testing"
 
@@ -74,6 +75,16 @@ func TestContentOfDeletedFilesIsNotAvailableInChanges(t *testing.T) {
 	git.AddAndcommit(repo.root, "a.txt", "Deleted this file. After all, it only had lorem-ipsum content.")
 	assert.Len(t, repo.AllChanges(), 1)
 	assert.Equal(t, 0, len(repo.AllAdditions()), "There should be no additions because there only an outgoing deletion")
+}
+
+func TestDiffContainingBinaryFileChangesDoesNotBlowUp(t *testing.T) {
+	cleanTestData()
+	_, repo := setupOriginAndClones("data/testLocation1", "data/cloneLocation")
+	err := exec.Command("cp", "./pixel.jpg", repo.root).Run()
+	check(err)
+	git.AddAndcommit(repo.root, "pixel.jpg", "Testing binary diff.")
+	assert.Len(t, repo.AllAdditions(), 1)
+	assert.Equal(t, "pixel.jpg", string(repo.AllAdditions()[0].Name))
 }
 
 func setupOriginAndClones(originLocation, cloneLocation string) (gitRepo, gitRepo) {
