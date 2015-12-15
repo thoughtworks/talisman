@@ -93,7 +93,7 @@ func (fd FileNameDetector) Test(additions []git_repo.Addition, ignores Ignores, 
 			continue
 		}
 		for _, pattern := range fd.flagPatterns {
-			if addition.Name.Matches(pattern) {
+			if pattern.MatchString(string(addition.Name)) {
 				log.WithFields(log.Fields{
 					"filePath": addition.Path,
 					"pattern":  pattern,

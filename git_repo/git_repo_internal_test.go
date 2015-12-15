@@ -32,7 +32,7 @@ func TestSettingUpBaselineFilesSetsUpACommitInRepo(t *testing.T) {
 	repo := RepoLocatedAt("data/testLocation1")
 	git.Init(repo.root)
 	git.SetupBaselineFiles(repo.root, "a.txt", "alice/bob/b.txt")
-	verifyPresenseOfGitRepoWithCommits("data/testLocation1", 1, t)
+	verifyPresenceOfGitRepoWithCommits("data/testLocation1", 1, t)
 }
 
 func TestEditingFilesInARepoWorks(t *testing.T) {
@@ -44,7 +44,7 @@ func TestEditingFilesInARepoWorks(t *testing.T) {
 	content := git.FileContents(repo.root, "a.txt")
 	assert.True(t, strings.HasSuffix(string(content), "monkey see.\nmonkey do."))
 	git.AddAndcommit(repo.root, "a.txt", "modified content")
-	verifyPresenseOfGitRepoWithCommits("data/testLocation1", 2, t)
+	verifyPresenceOfGitRepoWithCommits("data/testLocation1", 2, t)
 }
 
 func TestRemovingFilesInARepoWorks(t *testing.T) {
@@ -55,7 +55,7 @@ func TestRemovingFilesInARepoWorks(t *testing.T) {
 	git.RemoveFile(repo.root, "a.txt")
 	assert.False(t, exists("data/testLocation1/a.txt"), "Unexpected. Deleted file a.txt still exists inside the repo")
 	git.AddAndcommit(repo.root, "a.txt", "removed it")
-	verifyPresenseOfGitRepoWithCommits("data/testLocation1", 2, t)
+	verifyPresenceOfGitRepoWithCommits("data/testLocation1", 2, t)
 }
 
 func TestCloningARepoToAnotherWorks(t *testing.T) {
@@ -64,8 +64,8 @@ func TestCloningARepoToAnotherWorks(t *testing.T) {
 	git.Init(repo.root)
 	git.SetupBaselineFiles(repo.root, "a.txt", "alice/bob/b.txt")
 	git.GitClone(repo.root, "data/somewhereElse/testLocationClone")
-	verifyPresenseOfGitRepoWithCommits("data/testLocation1", 1, t)
-	verifyPresenseOfGitRepoWithCommits("data/somewhereElse/testLocationClone", 1, t)
+	verifyPresenceOfGitRepoWithCommits("data/testLocation1", 1, t)
+	verifyPresenceOfGitRepoWithCommits("data/somewhereElse/testLocationClone", 1, t)
 }
 
 func TestEarliestCommits(t *testing.T) {
@@ -91,11 +91,11 @@ func TestLatestCommits(t *testing.T) {
 	assert.NotEqual(t, git.EarliestCommit(repo.root), git.LatestCommit(repo.root)) //bad test.
 }
 
-func verifyPresenseOfGitRepoWithCommits(location string, expectedCommitCount int, t *testing.T) {
+func verifyPresenceOfGitRepoWithCommits(location string, expectedCommitCount int, t *testing.T) {
 	cmd := exec.Command("git", "log")
 	cmd.Dir = location
 	o, err := cmd.CombinedOutput()
-	check(err)
+	dieOnError(err)
 	matches := regExp("(?m)^commit\\s[a-z0-9]+$").FindAllString(string(o), -1)
 	assert.Len(t, matches, expectedCommitCount, "Repo root does not contain exactly %d commits.", expectedCommitCount)
 }
@@ -113,7 +113,7 @@ func exists(path string) bool {
 	if (err != nil) && (os.IsNotExist(err)) {
 		return false
 	} else if err != nil {
-		check(err)
+		dieOnError(err)
 		return true
 	} else {
 		return true
@@ -126,12 +126,12 @@ func cleanTestData() {
 		os.MkdirAll(dataDir, 0777)
 	}
 	d, err := os.Open(dataDir)
-	check(err)
+	dieOnError(err)
 	defer d.Close()
 	names, err := d.Readdirnames(-1)
-	check(err)
+	dieOnError(err)
 	for _, name := range names {
-		check(os.RemoveAll(filepath.Join(dataDir, name)))
+		dieOnError(os.RemoveAll(filepath.Join(dataDir, name)))
 	}
 }
 
@@ -145,4 +145,10 @@ func TestMain(m *testing.M) {
 	testExitStatus := m.Run()
 	os.RemoveAll(testDataDir())
 	os.Exit(testExitStatus)
+}
+
+func dieOnError(err error) {
+	if err != nil {
+		panic(err)
+	}
 }

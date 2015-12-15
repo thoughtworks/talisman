@@ -1,13 +1,11 @@
 package git_repo
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
@@ -37,7 +35,7 @@ func RepoLocatedAt(path string) gitRepo {
 }
 
 func (repo gitRepo) AllChanges() []*patch.File {
-	return repo.generateDiff("origin/master", "master").File
+	return repo.changedFiles("origin/master", "master")
 }
 
 func (repo gitRepo) AllAdditions() []Addition {
@@ -89,51 +87,24 @@ func (repo gitRepo) ReadRepoFileOrNothing(fileName string) ([]byte, error) {
 //If there is no path separator anywhere in the pattern, the pattern is matched against the base name of the file. Thus, the pattern will match files with that name anywhere in the repository.
 func (a Addition) Matches(pattern string) bool {
 	var result bool
-	var err error
 	if pattern[len(pattern)-1] == os.PathSeparator {
-		result, err = strings.HasPrefix(string(a.Path), pattern), nil
+		result = strings.HasPrefix(string(a.Path), pattern)
 	} else if strings.ContainsRune(pattern, os.PathSeparator) {
-		result, err = path.Match(pattern, string(a.Path))
+		result, _ = path.Match(pattern, string(a.Path))
 	} else {
-		result, err = path.Match(pattern, string(a.Name))
+		result, _ = path.Match(pattern, string(a.Name))
 	}
 	log.WithFields(log.Fields{
 		"pattern":  pattern,
 		"filePath": a.Path,
 		"match":    result,
-		"error":    err,
 	}).Debug("Checking addition for match.")
-	check(err)
 	return result
 }
 
-func (fn FileName) Matches(r *regexp.Regexp) bool {
-	return r.MatchString(string(fn))
-}
-
-func (fn FileName) String() string {
-	return string(fn)
-}
-
-func (fp FilePath) String() string {
-	return string(fp)
-}
-
-func (a Addition) String() string {
-	return fmt.Sprintf("%s\n\n%s\n", a.Path, string(a.Data))
-}
-
-func (repo gitRepo) generateDiff(oldCommit string, newCommit string) *patch.Set {
-	patchSet, err := patch.Parse(repo.fetchRawOutgoingDiff(oldCommit, newCommit))
-	check(err)
-	return patchSet
-}
-
 func (repo gitRepo) outgoingNonDeletedFiles(oldCommit, newCommit string) []*patch.File {
-	patchSet, err := patch.Parse(repo.fetchRawOutgoingDiff(oldCommit, newCommit))
-	check(err)
 	result := make([]*patch.File, 0)
-	for _, file := range patchSet.File {
+	for _, file := range repo.changedFiles(oldCommit, newCommit) {
 		if file.Verb != patch.Delete {
 			result = append(result, file)
 		}
@@ -141,29 +112,41 @@ func (repo gitRepo) outgoingNonDeletedFiles(oldCommit, newCommit string) []*patc
 	return result
 }
 
-func (repo gitRepo) fetchRawOutgoingDiff(oldCommit string, newCommit string) []byte {
-	gitRange := oldCommit + ".." + newCommit
-	o, err := repo.command("git", "diff", gitRange, "--binary").Output()
-	log.WithFields(log.Fields{
-		"output": string(o),
-		"error":  err,
-	}).Debug("Raw outgoing diff.")
-	check(err)
-	return o
+func (repo gitRepo) changedFiles(oldCommit, newCommit string) []*patch.File {
+	diff := repo.fetchRawOutgoingDiff(oldCommit, newCommit)
+	logEntry := log.WithFields(log.Fields{
+		"oldCommit": oldCommit,
+		"newCommit": newCommit,
+	})
+	patchSet, err := patch.Parse(diff)
+	if err != nil {
+		logEntry.WithError(err).Fatal("Unable to parse the the diff")
+	} else {
+		logEntry.Debug("Diff parsed successfully")
+	}
+	return patchSet.File
 }
 
-func (repo gitRepo) command(commandName string, args ...string) *exec.Cmd {
+func (repo gitRepo) fetchRawOutgoingDiff(oldCommit string, newCommit string) []byte {
+	gitRange := oldCommit + ".." + newCommit
+	return repo.executeRepoCommand("git", "diff", gitRange, "--binary")
+}
+
+func (repo gitRepo) executeRepoCommand(commandName string, args ...string) []byte {
 	log.WithFields(log.Fields{
 		"command": commandName,
 		"args":    args,
-	}).Debug("Building repo command.")
+	}).Debug("Building repo command")
 	result := exec.Command(commandName, args...)
 	result.Dir = repo.root
-	return result
-}
-
-func check(err error) {
-	if err != nil {
-		panic(err)
+	o, err := result.Output()
+	logEntry := log.WithFields(log.Fields{
+		"output": string(o),
+	})
+	if err == nil {
+		logEntry.Debug("Command excuted successfully")
+	} else {
+		logEntry.WithError(err).Fatal("Command execution failed")
 	}
+	return o
 }

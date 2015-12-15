@@ -80,8 +80,7 @@ func TestContentOfDeletedFilesIsNotAvailableInChanges(t *testing.T) {
 func TestDiffContainingBinaryFileChangesDoesNotBlowUp(t *testing.T) {
 	cleanTestData()
 	_, repo := setupOriginAndClones("data/testLocation1", "data/cloneLocation")
-	err := exec.Command("cp", "./pixel.jpg", repo.root).Run()
-	check(err)
+	exec.Command("cp", "./pixel.jpg", repo.root).Run()
 	git.AddAndcommit(repo.root, "pixel.jpg", "Testing binary diff.")
 	assert.Len(t, repo.AllAdditions(), 1)
 	assert.Equal(t, "pixel.jpg", string(repo.AllAdditions()[0].Name))
