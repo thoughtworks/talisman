@@ -25,24 +25,30 @@ type Addition struct {
 	Data []byte
 }
 
-type gitRepo struct {
+//GitRepo represents a Git repository located at the absolute path represented by root
+type GitRepo struct {
 	root string
 }
 
-func RepoLocatedAt(path string) gitRepo {
+//RepoLocatedAt returns a new gitRepo with it's root located at the location specified by the argument.
+//If the argument is not an absolute path, it will be turned into one.
+func RepoLocatedAt(path string) GitRepo {
 	absoluteRoot, _ := filepath.Abs(path)
-	return gitRepo{absoluteRoot}
+	return GitRepo{absoluteRoot}
 }
 
-func (repo gitRepo) AllChanges() []*patch.File {
+//AllChanges returns all the outgoing changes in a GitRepo
+func (repo GitRepo) AllChanges() []*patch.File {
 	return repo.changedFiles("origin/master", "master")
 }
 
-func (repo gitRepo) AllAdditions() []Addition {
+//AllAdditions returns all the outgoing additions and modifications in a GitRepo. This does not include files that were deleted.
+func (repo GitRepo) AllAdditions() []Addition {
 	return repo.Additions("origin/master", "master")
 }
 
-func (repo gitRepo) Additions(oldCommit string, newCommit string) []Addition {
+//Additions returns the outgoing additions and modifications in a GitRepo that are in the given commit range. This does not include files that were deleted.
+func (repo GitRepo) Additions(oldCommit string, newCommit string) []Addition {
 	files := repo.outgoingNonDeletedFiles(oldCommit, newCommit)
 	result := make([]Addition, len(files))
 	for i, file := range files {
@@ -57,6 +63,7 @@ func (repo gitRepo) Additions(oldCommit string, newCommit string) []Addition {
 	return result
 }
 
+//NewAddition returns a new Addition for a file with supplied name and contents
 func NewAddition(filePath string, content []byte) Addition {
 	return Addition{
 		Path: FilePath(filePath),
@@ -66,19 +73,18 @@ func NewAddition(filePath string, content []byte) Addition {
 }
 
 //ReadRepoFile returns the contents of the supplied relative filename by locating it in the git repo
-func (repo gitRepo) ReadRepoFile(fileName string) ([]byte, error) {
+func (repo GitRepo) ReadRepoFile(fileName string) ([]byte, error) {
 	return ioutil.ReadFile(path.Join(repo.root, fileName))
 }
 
 //ReadRepoFileOrNothing returns the contents of the supplied relative filename by locating it in the git repo.
 //If the given file cannot be located in theb repo, then an empty array of bytes is returned for the content.
-func (repo gitRepo) ReadRepoFileOrNothing(fileName string) ([]byte, error) {
+func (repo GitRepo) ReadRepoFileOrNothing(fileName string) ([]byte, error) {
 	filepath := path.Join(repo.root, fileName)
 	if _, err := os.Stat(filepath); err == nil {
 		return repo.ReadRepoFile(fileName)
-	} else {
-		return make([]byte, 0), nil
 	}
+	return make([]byte, 0), nil
 }
 
 //Matches states whether the addition matches the given pattern.
@@ -102,8 +108,8 @@ func (a Addition) Matches(pattern string) bool {
 	return result
 }
 
-func (repo gitRepo) outgoingNonDeletedFiles(oldCommit, newCommit string) []*patch.File {
-	result := make([]*patch.File, 0)
+func (repo GitRepo) outgoingNonDeletedFiles(oldCommit, newCommit string) []*patch.File {
+	var result []*patch.File
 	for _, file := range repo.changedFiles(oldCommit, newCommit) {
 		if file.Verb != patch.Delete {
 			result = append(result, file)
@@ -112,7 +118,7 @@ func (repo gitRepo) outgoingNonDeletedFiles(oldCommit, newCommit string) []*patc
 	return result
 }
 
-func (repo gitRepo) changedFiles(oldCommit, newCommit string) []*patch.File {
+func (repo GitRepo) changedFiles(oldCommit, newCommit string) []*patch.File {
 	diff := repo.fetchRawOutgoingDiff(oldCommit, newCommit)
 	logEntry := log.WithFields(log.Fields{
 		"oldCommit": oldCommit,
@@ -127,12 +133,12 @@ func (repo gitRepo) changedFiles(oldCommit, newCommit string) []*patch.File {
 	return patchSet.File
 }
 
-func (repo gitRepo) fetchRawOutgoingDiff(oldCommit string, newCommit string) []byte {
+func (repo GitRepo) fetchRawOutgoingDiff(oldCommit string, newCommit string) []byte {
 	gitRange := oldCommit + ".." + newCommit
 	return repo.executeRepoCommand("git", "diff", gitRange, "--binary")
 }
 
-func (repo gitRepo) executeRepoCommand(commandName string, args ...string) []byte {
+func (repo GitRepo) executeRepoCommand(commandName string, args ...string) []byte {
 	log.WithFields(log.Fields{
 		"command": commandName,
 		"args":    args,
