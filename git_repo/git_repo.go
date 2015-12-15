@@ -143,7 +143,7 @@ func (repo gitRepo) outgoingNonDeletedFiles(oldCommit, newCommit string) []*patc
 
 func (repo gitRepo) fetchRawOutgoingDiff(oldCommit string, newCommit string) []byte {
 	gitRange := oldCommit + ".." + newCommit
-	o, err := repo.command("git", "log", gitRange, "--patch").Output()
+	o, err := repo.command("git", "diff", gitRange, "--patch").Output()
 	log.WithFields(log.Fields{
 		"output": string(o),
 		"error":  err,

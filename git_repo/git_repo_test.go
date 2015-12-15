@@ -54,6 +54,19 @@ func TestOutgoingContentOfModifiedFilesIsAvailableInChanges(t *testing.T) {
 	assert.True(t, strings.HasSuffix(string(repo.AllAdditions()[0].Data), "New content.\nSpanning multiple lines, even."))
 }
 
+func TestMultipleOutgoingChangesToTheSameFileAreAvailableInAdditions(t *testing.T) {
+	cleanTestData()
+	_, repo := setupOriginAndClones("data/testLocation1", "data/cloneLocation")
+	git.AppendFileContent(repo.root, "a.txt", "New content.\n")
+	git.AddAndcommit(repo.root, "a.txt", "added some new content")
+
+	git.AppendFileContent(repo.root, "a.txt", "More new content.\n")
+	git.AddAndcommit(repo.root, "a.txt", "added some more new content")
+
+	assert.Len(t, repo.AllChanges(), 1)
+	assert.True(t, strings.HasSuffix(string(repo.AllAdditions()[0].Data), "New content.\nMore new content.\n"))
+}
+
 func TestContentOfDeletedFilesIsNotAvailableInChanges(t *testing.T) {
 	cleanTestData()
 	_, repo := setupOriginAndClones("data/testLocation1", "data/cloneLocation")
