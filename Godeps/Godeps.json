@@ -8,14 +8,6 @@
 			"Rev": "446d1c146faa8ed3f4218f056fcd165f6bcfda81"
 		},
 		{
-			"ImportPath": "github.com/badrij/go-codereview/git85",
-			"Rev": "067e3f48a57281f376ae1f1a02684f7e6234781e"
-		},
-		{
-			"ImportPath": "github.com/badrij/go-codereview/patch",
-			"Rev": "067e3f48a57281f376ae1f1a02684f7e6234781e"
-		},
-		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
 			"Rev": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d"
 		},

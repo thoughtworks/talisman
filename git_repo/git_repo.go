@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/badrij/go-codereview/patch"
 )
 
 //FilePath represents the absolute path of an added file
@@ -30,16 +29,11 @@ type GitRepo struct {
 	root string
 }
 
-//RepoLocatedAt returns a new gitRepo with it's root located at the location specified by the argument.
+//RepoLocatedAt returns a new GitRepo with it's root located at the location specified by the argument.
 //If the argument is not an absolute path, it will be turned into one.
 func RepoLocatedAt(path string) GitRepo {
 	absoluteRoot, _ := filepath.Abs(path)
 	return GitRepo{absoluteRoot}
-}
-
-//AllChanges returns all the outgoing changes in a GitRepo
-func (repo GitRepo) AllChanges() []*patch.File {
-	return repo.changedFiles("origin/master", "master")
 }
 
 //AllAdditions returns all the outgoing additions and modifications in a GitRepo. This does not include files that were deleted.
@@ -52,8 +46,8 @@ func (repo GitRepo) Additions(oldCommit string, newCommit string) []Addition {
 	files := repo.outgoingNonDeletedFiles(oldCommit, newCommit)
 	result := make([]Addition, len(files))
 	for i, file := range files {
-		data, _ := repo.ReadRepoFile(file.Dst)
-		result[i] = NewAddition(file.Dst, data)
+		data, _ := repo.ReadRepoFile(file)
+		result[i] = NewAddition(file, data)
 	}
 	log.WithFields(log.Fields{
 		"oldCommit": oldCommit,
@@ -108,34 +102,20 @@ func (a Addition) Matches(pattern string) bool {
 	return result
 }
 
-func (repo GitRepo) outgoingNonDeletedFiles(oldCommit, newCommit string) []*patch.File {
-	var result []*patch.File
-	for _, file := range repo.changedFiles(oldCommit, newCommit) {
-		if file.Verb != patch.Delete {
-			result = append(result, file)
+func (repo GitRepo) outgoingNonDeletedFiles(oldCommit, newCommit string) []string {
+	allChanges := strings.Split(repo.fetchRawOutgoingDiff(oldCommit, newCommit), "\n")
+	var result []string
+	for _, c := range allChanges {
+		if len(c) != 0 {
+			result = append(result, c)
 		}
 	}
 	return result
 }
 
-func (repo GitRepo) changedFiles(oldCommit, newCommit string) []*patch.File {
-	diff := repo.fetchRawOutgoingDiff(oldCommit, newCommit)
-	logEntry := log.WithFields(log.Fields{
-		"oldCommit": oldCommit,
-		"newCommit": newCommit,
-	})
-	patchSet, err := patch.Parse(diff)
-	if err != nil {
-		logEntry.WithError(err).Fatal("Unable to parse the the diff")
-	} else {
-		logEntry.Debug("Diff parsed successfully")
-	}
-	return patchSet.File
-}
-
-func (repo GitRepo) fetchRawOutgoingDiff(oldCommit string, newCommit string) []byte {
+func (repo GitRepo) fetchRawOutgoingDiff(oldCommit string, newCommit string) string {
 	gitRange := oldCommit + ".." + newCommit
-	return repo.executeRepoCommand("git", "diff", gitRange, "--binary")
+	return string(repo.executeRepoCommand("git", "diff", gitRange, "--name-only", "--diff-filter=ACM"))
 }
 
 func (repo GitRepo) executeRepoCommand(commandName string, args ...string) []byte {

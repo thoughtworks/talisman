@@ -12,7 +12,7 @@ import (
 func TestEmptyRepoReturnsNoFileChanges(t *testing.T) {
 	cleanTestData()
 	_, repo := setupOriginAndClones("data/testLocation1", "data/cloneLocation")
-	assert.Len(t, repo.AllChanges(), 0, "Empty git repo should not have any changes")
+	assert.Len(t, repo.AllAdditions(), 0, "Empty git repo should not have any changes")
 }
 
 func TestAdditionsReturnsEditsAndAdds(t *testing.T) {
@@ -33,7 +33,7 @@ func TestNewlyAddedFilesAreCountedAsChanges(t *testing.T) {
 	git.CreateFileWithContents(repo.root, "h", "Hello")
 	git.CreateFileWithContents(repo.root, "foo/bar/w", ", World!")
 	git.AddAndcommit(repo.root, "*", "added hello world")
-	assert.Len(t, repo.AllChanges(), 2)
+	assert.Len(t, repo.AllAdditions(), 2)
 }
 
 func TestOutgoingContentOfNewlyAddedFilesIsAvailableInChanges(t *testing.T) {
@@ -42,7 +42,7 @@ func TestOutgoingContentOfNewlyAddedFilesIsAvailableInChanges(t *testing.T) {
 	git.CreateFileWithContents(repo.root, "foo/bar/w", "new contents")
 	git.AddAndcommit(repo.root, "*", "added new files")
 
-	assert.Len(t, repo.AllChanges(), 1)
+	assert.Len(t, repo.AllAdditions(), 1)
 	assert.True(t, strings.HasSuffix(string(repo.AllAdditions()[0].Data), "new contents"))
 }
 
@@ -51,7 +51,7 @@ func TestOutgoingContentOfModifiedFilesIsAvailableInChanges(t *testing.T) {
 	_, repo := setupOriginAndClones("data/testLocation1", "data/cloneLocation")
 	git.AppendFileContent(repo.root, "a.txt", "New content.\n", "Spanning multiple lines, even.")
 	git.AddAndcommit(repo.root, "a.txt", "added to lorem-ipsum content with my own stuff!")
-	assert.Len(t, repo.AllChanges(), 1)
+	assert.Len(t, repo.AllAdditions(), 1)
 	assert.True(t, strings.HasSuffix(string(repo.AllAdditions()[0].Data), "New content.\nSpanning multiple lines, even."))
 }
 
@@ -64,7 +64,7 @@ func TestMultipleOutgoingChangesToTheSameFileAreAvailableInAdditions(t *testing.
 	git.AppendFileContent(repo.root, "a.txt", "More new content.\n")
 	git.AddAndcommit(repo.root, "a.txt", "added some more new content")
 
-	assert.Len(t, repo.AllChanges(), 1)
+	assert.Len(t, repo.AllAdditions(), 1)
 	assert.True(t, strings.HasSuffix(string(repo.AllAdditions()[0].Data), "New content.\nMore new content.\n"))
 }
 
@@ -73,7 +73,6 @@ func TestContentOfDeletedFilesIsNotAvailableInChanges(t *testing.T) {
 	_, repo := setupOriginAndClones("data/testLocation1", "data/cloneLocation")
 	git.RemoveFile(repo.root, "a.txt")
 	git.AddAndcommit(repo.root, "a.txt", "Deleted this file. After all, it only had lorem-ipsum content.")
-	assert.Len(t, repo.AllChanges(), 1)
 	assert.Equal(t, 0, len(repo.AllAdditions()), "There should be no additions because there only an outgoing deletion")
 }
 
@@ -86,7 +85,7 @@ func TestDiffContainingBinaryFileChangesDoesNotBlowUp(t *testing.T) {
 	assert.Equal(t, "pixel.jpg", string(repo.AllAdditions()[0].Name))
 }
 
-func setupOriginAndClones(originLocation, cloneLocation string) (gitRepo, gitRepo) {
+func setupOriginAndClones(originLocation, cloneLocation string) (GitRepo, GitRepo) {
 	origin := RepoLocatedAt(originLocation)
 	git.Init(origin.root)
 	git.SetupBaselineFiles(origin.root, "a.txt", "alice/bob/b.txt")
