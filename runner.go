@@ -5,29 +5,30 @@ import (
 	"os"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/thoughtworks/talisman/detector"
 	"github.com/thoughtworks/talisman/git_repo"
 )
 
 const (
-	//EMPTY_SHA represents the state of a brand new ref
-	EMPTY_SHA string = "0000000000000000000000000000000000000000"
+	//EmptySha represents the state of a brand new ref
+	EmptySha string = "0000000000000000000000000000000000000000"
 
-	//COMPLETED_SUCCESSFULLY is an exit status that says that the current runners run completed without errors
-	COMPLETED_SUCCESSFULLY int = 0
+	//CompletedSuccessfully is an exit status that says that the current runners run completed without errors
+	CompletedSuccessfully int = 0
 
-	//COMPLETED_WITH_ERRORS is an exit status that says that the current runners run completed with failures
-	COMPLETED_WITH_ERRORS int = 1
+	//CompletedWithErrors is an exit status that says that the current runners run completed with failures
+	CompletedWithErrors int = 1
 )
 
 //Runner represents a single run of the validations for a given commit range
 type Runner struct {
 	localRef, localCommit, remoteRef, remoteCommit string
-	results                                        *DetectionResults
+	results                                        *detector.DetectionResults
 }
 
 //NewRunner returns a new Runner.
 func NewRunner(localRef, localCommit, remoteRef, remoteCommit string) *Runner {
-	return &Runner{localRef, localCommit, remoteRef, remoteCommit, NewDetectionResults()}
+	return &Runner{localRef, localCommit, remoteRef, remoteCommit, detector.NewDetectionResults()}
 }
 
 //RunWithoutErrors will validate the commit range for errors and return either COMPLETED_SUCCESSFULLY or COMPLETED_WITH_ERRORS
@@ -42,7 +43,7 @@ func (r *Runner) RunWithoutErrors() int {
 			"remoteRef":    r.remoteRef,
 			"remoteCommit": r.remoteCommit,
 		}).Info("Running on a deleted ref. Nothing to verify as outgoing changes are all deletions.")
-		return COMPLETED_SUCCESSFULLY
+		return CompletedSuccessfully
 	}
 	if r.runningOnNewRef() {
 		return r.checkAllCommitsInNewRef()
@@ -57,7 +58,7 @@ func (r *Runner) checkAllCommitsInNewRef() int {
 		"remoteRef":    r.remoteRef,
 		"remoteCommit": r.remoteCommit,
 	}).Info("Running on a new ref. All changes in the ref will be verified.")
-	return COMPLETED_SUCCESSFULLY
+	return CompletedSuccessfully
 }
 
 func (r *Runner) checkAllCommitsInRange() int {
@@ -73,8 +74,8 @@ func (r *Runner) checkAllCommitsInRange() int {
 }
 
 func (r *Runner) doRun() {
-	ignores := ReadIgnoresFromFile(readRepoFile())
-	DefaultDetectorChain().Test(r.getRepoAdditions(), ignores, r.results)
+	ignores := detector.ReadIgnoresFromFile(readRepoFile())
+	detector.DefaultChain().Test(r.getRepoAdditions(), ignores, r.results)
 }
 
 func (r *Runner) printReport() {
@@ -85,9 +86,9 @@ func (r *Runner) printReport() {
 
 func (r *Runner) exitStatus() int {
 	if r.results.HasFailures() {
-		return COMPLETED_WITH_ERRORS
+		return CompletedWithErrors
 	}
-	return COMPLETED_SUCCESSFULLY
+	return CompletedSuccessfully
 }
 
 func (r *Runner) getRepoAdditions() []git_repo.Addition {
@@ -97,11 +98,11 @@ func (r *Runner) getRepoAdditions() []git_repo.Addition {
 }
 
 func (r *Runner) runningOnDeletedRef() bool {
-	return r.localCommit == EMPTY_SHA
+	return r.localCommit == EmptySha
 }
 
 func (r *Runner) runningOnNewRef() bool {
-	return r.remoteCommit == EMPTY_SHA
+	return r.remoteCommit == EmptySha
 }
 
 func readRepoFile() func(string) ([]byte, error) {

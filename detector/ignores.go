@@ -1,4 +1,4 @@
-package main
+package detector
 
 import (
 	"regexp"
@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	//COMMENT_PATTERN represents the prefix that needs to be attached to a line in the .talismanignore file to mark it as a comment
-	COMMENT_PATTERN string = "#"
+	//CommentPattern represents the prefix of a comment line in the ignore file
+	CommentPattern string = "#"
 
-	//DEFAULT_IGNORE_FILE_NAME represents the name of the default file in which the ignore patterns are configured
-	DEFAULT_IGNORE_FILE_NAME string = ".talismanignore"
+	//DefaultIgnoreFileName represents the name of the default file in which the ignore patterns are configured
+	DefaultIgnoreFileName string = ".talismanignore"
 )
 
 //Ignores represents a set of patterns that have been configured to be ignored by the Detectors.
@@ -25,7 +25,7 @@ type Ignores struct {
 //The file itself is supplied as a File Read operation, which is specified, by default, as reading a file in the root of the repository.
 //The file name that is read is DEFAULT_IGNORE_FILE_NAME (".talismanignore")
 func ReadIgnoresFromFile(repoFileRead func(string) ([]byte, error)) Ignores {
-	contents, err := repoFileRead(DEFAULT_IGNORE_FILE_NAME)
+	contents, err := repoFileRead(DefaultIgnoreFileName)
 	if err != nil {
 		panic(err)
 	}
@@ -72,7 +72,7 @@ func (i Ignores) effectiveRules() []string {
 }
 
 func isEmptyOrComment(pattern string) bool {
-	return isEmptyString(pattern) || strings.HasPrefix(pattern, COMMENT_PATTERN)
+	return isEmptyString(pattern) || strings.HasPrefix(pattern, CommentPattern)
 }
 
 func isEmptyString(str string) bool {

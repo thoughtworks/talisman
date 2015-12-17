@@ -1,4 +1,4 @@
-package main
+package detector
 
 //This is completely derived from the really useful work done by Jen Andre here:
 //https://github.com/jandre/safe-commit-hook

@@ -39,7 +39,7 @@ func readRefAndSha(file io.Reader) (string, string, string, string) {
 	text, _ := bufio.NewReader(file).ReadString('\n')
 	refsAndShas := strings.Split(strings.Trim(string(text), "\n"), " ")
 	if len(refsAndShas) < 4 {
-		return EMPTY_SHA, EMPTY_SHA, "", ""
+		return EmptySha, EmptySha, "", ""
 	}
 	return refsAndShas[0], refsAndShas[1], refsAndShas[2], refsAndShas[3]
 }

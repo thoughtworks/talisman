@@ -1,4 +1,4 @@
-package main
+package detector
 
 import (
 	"testing"
@@ -8,14 +8,14 @@ import (
 )
 
 func TestEmptyValidationChainPassesAllValidations(t *testing.T) {
-	v := NewDetectorChain()
+	v := NewChain()
 	results := NewDetectionResults()
 	v.Test(nil, NewIgnores(), results)
 	assert.False(t, results.HasFailures(), "Empty validation chain is expected to always pass")
 }
 
 func TestValidationChainWithFailingValidationAlwaysFails(t *testing.T) {
-	v := NewDetectorChain()
+	v := NewChain()
 	v.AddDetector(PassingDetection{})
 	v.AddDetector(FailingDetection{})
 	results := NewDetectionResults()

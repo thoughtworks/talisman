@@ -1,4 +1,4 @@
-package main
+package detector
 
 import (
 	"fmt"
@@ -7,13 +7,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/thoughtworks/talisman/git_repo"
 )
-
-//Detector represents a single kind of test to be performed against a set of Additions
-//Detectors are expected to honor the ignores that are passed in and log them in the results
-//Detectors are expected to signal any errors to the results
-type Detector interface {
-	Test(additions []git_repo.Addition, ignores Ignores, result *DetectionResults)
-}
 
 //FileNameDetector represents tests performed against the fileName of the Additions.
 //The Paths of the supplied Additions are tested against the configured patterns and if any of them match, it is logged as a failure during the run
@@ -101,39 +94,5 @@ func (fd FileNameDetector) Test(additions []git_repo.Addition, ignores Ignores, 
 				result.Fail(addition.Path, fmt.Sprintf("The file name %q failed checks against the pattern %s", addition.Path, pattern))
 			}
 		}
-	}
-}
-
-//DetectorChain represents a chain of Detectors.
-//It is itself a detector.
-type DetectorChain struct {
-	detectors []Detector
-}
-
-//NewDetectorChain returns an empty DetectorChain
-//It is itself a detector, but it tests nothing.
-func NewDetectorChain() *DetectorChain {
-	result := DetectorChain{make([]Detector, 0)}
-	return &result
-}
-
-//DefaultDetectorChain returns a DetectorChain with pre-configured detectors
-func DefaultDetectorChain() *DetectorChain {
-	result := NewDetectorChain()
-	result.AddDetector(DefaultFileNameDetector())
-	return result
-}
-
-//AddDetector adds the detector that is passed in to the chain
-func (dc *DetectorChain) AddDetector(d Detector) *DetectorChain {
-	dc.detectors = append(dc.detectors, d)
-	return dc
-}
-
-//Test validates the additions against each detector in the chain.
-//The results are passed in from detector to detector and thus collect all errors from all detectors
-func (dc *DetectorChain) Test(additions []git_repo.Addition, ignores Ignores, result *DetectionResults) {
-	for _, v := range dc.detectors {
-		v.Test(additions, ignores, result)
 	}
 }
