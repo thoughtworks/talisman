@@ -23,10 +23,10 @@ $grey-color-light: lighten($grey-color, 40%);
 $grey-color-dark:  darken($grey-color, 25%);
 
 // Width of the content area
-$content-width:    800px;
+$content-width:    840px;
 
 $on-palm:          600px;
-$on-laptop:        800px;
+$on-laptop:        840px;
 
 
 
@@ -76,21 +76,21 @@ body {
   border-radius: 3px;
 }
 
+.install {
+  margin: 4em auto;
+  font-family: monospace;
+  color: $grey-color-dark;
+  font-size: 1.1em;
+  padding: 2.5%;
+  text-align: center;
+  border-radius: 3px;
+}
+
 .description {
   color: darken($grey-color-light, 15%);
   font-weight: 300;
   padding: 5%;
   line-height: 1.8;
-}
-
-.install {
-  width: 92%;
-  margin: 4em auto;
-  font-family: monospace;
-  color: $grey-color-dark;
-  font-size: 1.25em;
-  padding: 2.5%;
-  border-radius: 3px;
 }
 
 .footer-heading {

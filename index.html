@@ -4,7 +4,7 @@ layout: default
 
 <div class="home">
   <div class="install">
-    &gt;&nbsp;curl https://talisman.github.io/install.sh&nbsp;|&nbsp;/bin/sh
+    &gt;&nbsp;curl {{ "/install.sh" | prepend: site.baseurl | prepend: site.url }}&nbsp;|&nbsp;/bin/sh
   </div>
 </div>
 
