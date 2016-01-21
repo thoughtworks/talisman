@@ -22,7 +22,7 @@ func TestAdditionsReturnsEditsAndAdds(t *testing.T) {
 	git.CreateFileWithContents(repo.root, "new.txt", "created contents")
 	git.AddAndcommit(repo.root, "*", "added to lorem-ipsum content with my own stuff!")
 
-	additions := repo.Additions("HEAD~1", "HEAD")
+	additions := repo.AdditionsWithinRange("HEAD~1", "HEAD")
 	assert.Len(t, additions, 2)
 	assert.True(t, strings.HasSuffix(string(additions[0].Data), "New content.\nSpanning multiple lines, even."))
 }
@@ -83,6 +83,43 @@ func TestDiffContainingBinaryFileChangesDoesNotBlowUp(t *testing.T) {
 	git.AddAndcommit(repo.root, "pixel.jpg", "Testing binary diff.")
 	assert.Len(t, repo.AllAdditions(), 1)
 	assert.Equal(t, "pixel.jpg", string(repo.AllAdditions()[0].Name))
+}
+
+func TestStagedAdditionsIncludeStagedFiles(t *testing.T) {
+	cleanTestData()
+	_, repo := setupOriginAndClones("data/testlocation1", "data/cloneLocation")
+	git.OverwriteFileContent(repo.root, "a.txt", "New content.\n")
+	git.Add(repo.root, "a.txt")
+
+	git.AppendFileContent(repo.root, "a.txt", "More new content\n")
+	git.AppendFileContent(repo.root, "alice/bob/b.txt", "New content to b\n")
+
+	stagedAdditions := repo.StagedAdditions()
+	assert.Len(t, stagedAdditions, 1)
+	assert.Equal(t, "a.txt", string(stagedAdditions[0].Name))
+	assert.Equal(t, "New content.\n", string(stagedAdditions[0].Data))
+}
+
+func TestStagedAdditionsIncludeStagedNewFiles(t *testing.T) {
+	cleanTestData()
+	_, repo := setupOriginAndClones("data/testlocation1", "data/cloneLocation")
+	git.CreateFileWithContents(repo.root, "new.txt", "New content.\n")
+	git.Add(repo.root, "new.txt")
+
+	stagedAdditions := repo.StagedAdditions()
+	assert.Len(t, stagedAdditions, 1)
+	assert.Equal(t, "new.txt", string(stagedAdditions[0].Name))
+	assert.Equal(t, "New content.\n", string(stagedAdditions[0].Data))
+}
+
+func TestStagedAdditionsShouldNotIncludeDeletedFiles(t *testing.T) {
+	cleanTestData()
+	_, repo := setupOriginAndClones("data/testlocation1", "data/cloneLocation")
+	git.RemoveFile(repo.root, "a.txt")
+	git.Add(repo.root, ".")
+
+	stagedAdditions := repo.StagedAdditions()
+	assert.Len(t, stagedAdditions, 0)
 }
 
 func setupOriginAndClones(originLocation, cloneLocation string) (GitRepo, GitRepo) {

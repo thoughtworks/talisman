@@ -47,6 +47,17 @@ func CreateFileWithContents(gitRoot string, name string, contents ...string) str
 	return name
 }
 
+func OverwriteFileContent(gitRoot string, name string, contents ...string) {
+	fileName := path.Join(gitRoot, name)
+	f, err := os.Create(fileName)
+	die(err)
+	defer f.Close()
+	for _, line := range contents {
+		f.WriteString(line)
+	}
+	f.Sync()
+}
+
 func AppendFileContent(gitRoot string, name string, contents ...string) {
 	fileName := path.Join(gitRoot, name)
 	f, err := os.OpenFile(fileName, os.O_RDWR|os.O_APPEND, 0660)
@@ -72,6 +83,10 @@ func FileContents(gitRoot string, name string) []byte {
 func AddAndcommit(gitRoot string, fileName string, message string) {
 	ExecCommand(gitRoot, "git", "add", fileName)
 	ExecCommand(gitRoot, "git", "commit", fileName, "-m", message)
+}
+
+func Add(gitRoot string, fileName string) {
+	ExecCommand(gitRoot, "git", "add", fileName)
 }
 
 func ExecCommand(gitRoot string, commandName string, args ...string) string {

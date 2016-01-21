@@ -36,13 +36,27 @@ func RepoLocatedAt(path string) GitRepo {
 	return GitRepo{absoluteRoot}
 }
 
+func (repo GitRepo) StagedAdditions() []Addition {
+	files := repo.stagedFiles()
+	result := make([]Addition, len(files))
+	for i, file := range files {
+		data := repo.stagedVersionOfFile(file)
+		result[i] = NewAddition(file, data)
+	}
+
+	log.WithFields(log.Fields{
+		"additions": result,
+	}).Info("Generating staged additions.")
+	return result
+}
+
 //AllAdditions returns all the outgoing additions and modifications in a GitRepo. This does not include files that were deleted.
 func (repo GitRepo) AllAdditions() []Addition {
-	return repo.Additions("origin/master", "master")
+	return repo.AdditionsWithinRange("origin/master", "master")
 }
 
 //Additions returns the outgoing additions and modifications in a GitRepo that are in the given commit range. This does not include files that were deleted.
-func (repo GitRepo) Additions(oldCommit string, newCommit string) []Addition {
+func (repo GitRepo) AdditionsWithinRange(oldCommit string, newCommit string) []Addition {
 	files := repo.outgoingNonDeletedFiles(oldCommit, newCommit)
 	result := make([]Addition, len(files))
 	for i, file := range files {
@@ -102,6 +116,22 @@ func (a Addition) Matches(pattern string) bool {
 	return result
 }
 
+func (repo GitRepo) stagedFiles() []string {
+	stagedFiles := strings.Split(repo.fetchStagedChanges(), "\n")
+	var result []string
+	for _, c := range stagedFiles {
+		if len(c) != 0 {
+			file := strings.Split(c, "\t")[1]
+			result = append(result, file)
+		}
+	}
+	return result
+}
+
+func (repo GitRepo) stagedVersionOfFile(file string) []byte {
+	return repo.executeRepoCommand("git", "show", ":"+file)
+}
+
 func (repo GitRepo) outgoingNonDeletedFiles(oldCommit, newCommit string) []string {
 	allChanges := strings.Split(repo.fetchRawOutgoingDiff(oldCommit, newCommit), "\n")
 	var result []string
@@ -111,6 +141,10 @@ func (repo GitRepo) outgoingNonDeletedFiles(oldCommit, newCommit string) []strin
 		}
 	}
 	return result
+}
+
+func (repo *GitRepo) fetchStagedChanges() string {
+	return string(repo.executeRepoCommand("git", "diff", "--cached", "--name-status", "--diff-filter=ACM"))
 }
 
 func (repo GitRepo) fetchRawOutgoingDiff(oldCommit string, newCommit string) string {

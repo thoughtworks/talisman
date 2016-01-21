@@ -8,10 +8,17 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/thoughtworks/talisman/git_repo"
 )
 
 var (
-	fdebug bool
+	fdebug  bool
+	githook string
+)
+
+const (
+	PrePush   = "pre-push"
+	PreCommit = "pre-commit"
 )
 
 func init() {
@@ -22,6 +29,7 @@ func init() {
 func main() {
 	flag.BoolVar(&fdebug, "debug", false, "enable debug mode (warning: very verbose)")
 	flag.BoolVar(&fdebug, "d", false, "short form of debug (warning: very verbose)")
+	flag.StringVar(&githook, "githook", PrePush, "either pre-push or pre-commit")
 	os.Exit(run(os.Stdin))
 }
 
@@ -32,7 +40,23 @@ func run(stdin io.Reader) (returnCode int) {
 	} else {
 		log.SetLevel(log.ErrorLevel)
 	}
-	return NewRunner(readRefAndSha(stdin)).RunWithoutErrors()
+
+	if githook == "" {
+		githook = PrePush
+	}
+
+	log.Info("Running %s hook", githook)
+
+	var additions []git_repo.Addition
+	if githook == PreCommit {
+		preCommitHook := NewPreCommitHook()
+		additions = preCommitHook.GetRepoAdditions()
+	} else {
+		prePushHook := NewPrePushHook(readRefAndSha(stdin))
+		additions = prePushHook.GetRepoAdditions()
+	}
+
+	return NewRunner(additions).RunWithoutErrors()
 }
 
 func readRefAndSha(file io.Reader) (string, string, string, string) {
