@@ -15,14 +15,14 @@ import (
 func TestNotHavingAnyOutgoingChangesShouldNotFail(t *testing.T) {
 	withNewTmpGitRepo(func(gitPath string) {
 		git.SetupBaselineFiles(gitPath, "simple-file")
-		assert.Equal(t, 0, runTalisman(gitPath, "", ""), "Expected run() to return 0 if no input is available on stdin. This happens when there are no outgoing changes")
+		assert.Equal(t, 0, runTalisman(gitPath), "Expected run() to return 0 if no input is available on stdin. This happens when there are no outgoing changes")
 	})
 }
 
 func TestAddingSimpleFileShouldExitZero(t *testing.T) {
 	withNewTmpGitRepo(func(gitPath string) {
 		git.SetupBaselineFiles(gitPath, "simple-file")
-		exitStatus := runTalisman(gitPath, git.EarliestCommit(gitPath), git.LatestCommit(gitPath))
+		exitStatus := runTalisman(gitPath)
 		assert.Equal(t, 0, exitStatus, "Expected run() to return 0 and pass as no suspicious files are in the repo")
 	})
 }
@@ -33,7 +33,7 @@ func TestAddingSecretKeyShouldExitOne(t *testing.T) {
 		git.CreateFileWithContents(gitPath, "private.pem", "secret")
 		git.AddAndcommit(gitPath, "*", "add private key")
 
-		exitStatus := runTalisman(gitPath, git.EarliestCommit(gitPath), git.LatestCommit(gitPath))
+		exitStatus := runTalisman(gitPath)
 		assert.Equal(t, 1, exitStatus, "Expected run() to return 1 and fail as pem file was present in the repo")
 	})
 }
@@ -45,7 +45,7 @@ func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnored(t *testing.T) {
 		git.CreateFileWithContents(gitPath, ".talismanignore", "*.pem")
 		git.AddAndcommit(gitPath, "*", "add private key")
 
-		exitStatus := runTalisman(gitPath, git.EarliestCommit(gitPath), git.LatestCommit(gitPath))
+		exitStatus := runTalisman(gitPath)
 		assert.Equal(t, 0, exitStatus, "Expected run() to return 0 and pass as pem file was ignored")
 	})
 }
@@ -66,7 +66,7 @@ func TestStagingSecretKeyShouldExitOneWhenPreCommitFlagIsSet(t *testing.T) {
 	})
 }
 
-func runTalisman(gitPath, oldCommit, newCommit string) int {
+func runTalisman(gitPath string) int {
 	options := Options{
 		debug:   false,
 		githook: "pre-push",
