@@ -92,7 +92,7 @@ func TestLatestCommits(t *testing.T) {
 }
 
 func verifyPresenceOfGitRepoWithCommits(location string, expectedCommitCount int, t *testing.T) {
-	cmd := exec.Command("git", "log")
+	cmd := exec.Command("git", "log", "--pretty=short")
 	cmd.Dir = location
 	o, err := cmd.CombinedOutput()
 	dieOnError(err)
