@@ -1,6 +1,6 @@
 # Talisman
 
-Talisman is a tool is to validate code changes that are to be pushed out of a local Git repository on a developer's workstation. By hooking into the pre-push hook provided by Git, it validates the outgoing changeset for things that look suspicious - such as potential SSH keys, authorization tokens, private keys etc.
+Talisman is a tool to validate code changes that are to be pushed out of a local Git repository on a developer's workstation. By hooking into the pre-push hook provided by Git, it validates the outgoing changeset for things that look suspicious - such as potential SSH keys, authorization tokens, private keys etc.
 
 The aim is for this tool to do this through a variety of means including file names & file content. We hope to have it be an effective check to prevent potentially harmful security mistakes from happening due to secrets which get accidentally checked in to a repository.
 
