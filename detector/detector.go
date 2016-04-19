@@ -26,7 +26,6 @@ func NewChain() *Chain {
 func DefaultChain() *Chain {
 	result := NewChain()
 	result.AddDetector(DefaultFileNameDetector())
-	result.AddDetector(DefaultFileSizeDetector())
 	return result
 }
 
