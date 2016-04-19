@@ -25,30 +25,41 @@ func init() {
 	log.SetOutput(os.Stderr)
 }
 
+type Options struct {
+	debug   bool
+	githook string
+}
+
 //Logger is the default log device, set to emit at the Error level by default
 func main() {
 	flag.BoolVar(&fdebug, "debug", false, "enable debug mode (warning: very verbose)")
 	flag.BoolVar(&fdebug, "d", false, "short form of debug (warning: very verbose)")
 	flag.StringVar(&githook, "githook", PrePush, "either pre-push or pre-commit")
-	os.Exit(run(os.Stdin))
+	flag.Parse()
+
+	options := Options{
+		debug:   fdebug,
+		githook: githook,
+	}
+
+	os.Exit(run(os.Stdin, options))
 }
 
-func run(stdin io.Reader) (returnCode int) {
-	flag.Parse()
-	if fdebug {
+func run(stdin io.Reader, options Options) (returnCode int) {
+	if options.debug {
 		log.SetLevel(log.DebugLevel)
 	} else {
 		log.SetLevel(log.ErrorLevel)
 	}
 
-	if githook == "" {
-		githook = PrePush
+	if options.githook == "" {
+		options.githook = PrePush
 	}
 
-	log.Info("Running %s hook", githook)
+	log.Info("Running %s hook", options.githook)
 
 	var additions []git_repo.Addition
-	if githook == PreCommit {
+	if options.githook == PreCommit {
 		preCommitHook := NewPreCommitHook()
 		additions = preCommitHook.GetRepoAdditions()
 	} else {

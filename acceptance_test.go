@@ -13,7 +13,10 @@ import (
 )
 
 func TestNotHavingAnyOutgoingChangesShouldNotFail(t *testing.T) {
-	assert.Equal(t, 0, run(strings.NewReader("")), "Expected run() to return 0 if no input is available on stdin. This happens when there are no outgoing changes")
+	withNewTmpGitRepo(func(gitPath string) {
+		git.SetupBaselineFiles(gitPath, "simple-file")
+		assert.Equal(t, 0, runTalisman(gitPath, "", ""), "Expected run() to return 0 if no input is available on stdin. This happens when there are no outgoing changes")
+	})
 }
 
 func TestAddingSimpleFileShouldExitZero(t *testing.T) {
@@ -47,9 +50,33 @@ func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnored(t *testing.T) {
 	})
 }
 
+func TestStagingSecretKeyShouldExitOneWhenPreCommitFlagIsSet(t *testing.T) {
+	withNewTmpGitRepo(func(gitPath string) {
+		git.SetupBaselineFiles(gitPath, "simple-file")
+		git.CreateFileWithContents(gitPath, "private.pem", "secret")
+		git.Add(gitPath, "*")
+
+		options := Options{
+			debug:   false,
+			githook: "pre-commit",
+		}
+
+		exitStatus := runTalismanWithOptions(gitPath, options)
+		assert.Equal(t, 1, exitStatus, "Expected run() to return 1 and fail as pem file was present in the repo")
+	})
+}
+
 func runTalisman(gitPath, oldCommit, newCommit string) int {
+	options := Options{
+		debug:   false,
+		githook: "pre-push",
+	}
+	return runTalismanWithOptions(gitPath, options)
+}
+
+func runTalismanWithOptions(gitPath string, options Options) int {
 	os.Chdir(gitPath)
-	return run(mockStdIn(git.EarliestCommit(gitPath), git.LatestCommit(gitPath)))
+	return run(mockStdIn(git.EarliestCommit(gitPath), git.LatestCommit(gitPath)), options)
 }
 
 func withNewTmpGitRepo(gitOp func(gitPath string)) {
