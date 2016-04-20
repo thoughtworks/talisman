@@ -115,3 +115,7 @@ body {
   font-weight: 300;
   text-align: center;
 }
+
+span.command::before {
+    content: "$ ";
+}
