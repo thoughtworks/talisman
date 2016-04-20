@@ -3,11 +3,25 @@ layout: default
 ---
 <div class="home">
   <div class="install">
-    <span class="command" tabindex="0">curl&nbsp;{{"/install.sh" | prepend: site.baseurl | prepend: site.url}}&nbsp;|&nbsp;bash</span>
-    <div class="warning">As a tool that tries to prevent security mishaps, we would be remiss if we encouraged you to just download an arbitrary script from the net and run it on your machine. Please take a look at <a href="/install.sh">the contents of the install script</a> before executing it on your machine.</div>
+    <span class="command" tabindex="0">
+      curl&nbsp;{{"/install.sh" | prepend: site.baseurl | prepend: site.url}}&nbsp;|&nbsp;bash
+    </span>
+
+    <div class="warning">As a tool that tries to prevent security mishaps, we
+      would be remiss if we encouraged you to just download an arbitrary script
+      from the net and run it on your machine. Please take a look at
+      <a href="{{"/install.sh" | prepend: site.baseurl | prepend: site.url}}">
+      the contents of the install script</a> before executing it on your machine.
+    </div>
   </div>
 </div>
 
 <div class="description">
-  Talisman is a tool is to validate code changes that are to be pushed out of a local Git repository on a developer's workstation. By hooking into the pre-push hook provided by Git, it validates the outgoing changeset for things that look suspicious - such as potential SSH keys, authorization tokens, private keys etc. The aim is for Talisman to scan both file names &amp; file content so that even potential problems embedded in source code and documentation can be caught.
+  Talisman is a tool is to validate code changes that are to be pushed out of a
+  local Git repository on a developer's workstation. By hooking into the
+  pre-push hook provided by Git, it validates the outgoing changeset for things
+  that look suspicious - such as potential SSH keys, authorization tokens,
+  private keys etc. The aim is for Talisman to scan both file names &amp; file
+  content so that even potential problems embedded in source code and
+  documentation can be caught.
 </div>
