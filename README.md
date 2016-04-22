@@ -25,7 +25,7 @@ curl https://thoughtworks.github.io/talisman/install.sh | bash
 
 #### Developing locally
 
-To contribute to Talisman, you need a working golang development environment. Chech [this link](https://golang.org/doc/install) to help you get started with that.
+To contribute to Talisman, you need a working golang development environment. Check [this link](https://golang.org/doc/install) to help you get started with that.
 
 Once that is done, you will need to have the godep dependency manager installed. To install godep, you will need to fetch it from Github.
 
