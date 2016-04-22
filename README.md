@@ -8,11 +8,20 @@ The implementation as it stands is very bare bones and only has the skeleton str
 
 #### Running Talisman
 
-Download and place the talisman binary in a convenient location in your repository. Once that is done, link the binary to the pre-push hook, while taking care to ensure the correct relative path. Assuming that you have placed the binary in the root of your repository, your command to start using talisman would look something like this.
+##### Quick
 
-````
-> ln -s ../../talisman .git/hooks/pre-push
-````
+From your Git repository, simply run:
+
+```
+curl https://thoughtworks.github.io/talisman/install.sh | bash
+```
+
+##### Manual
+
+* Download the [latest Talisman binary](https://github.com/thoughtworks/talisman/releases)
+* `mv talisman-binary your-git-repo/.git/hooks/pre-push`
+* `chmod +x .git/hooks/pre-push`
+
 
 #### Developing locally
 
