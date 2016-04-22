@@ -19,8 +19,8 @@ curl https://thoughtworks.github.io/talisman/install.sh | bash
 ##### Manual
 
 * Download the [latest Talisman binary](https://github.com/thoughtworks/talisman/releases)
-* `mv talisman-binary your-git-repo/.git/hooks/pre-push`
-* `chmod +x .git/hooks/pre-push`
+* `mv the-talisman-binary your-git-repo/.git/hooks/pre-push`
+* `chmod +x your-git-repo/.git/hooks/pre-push`
 
 
 #### Developing locally
