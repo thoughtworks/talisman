@@ -33,7 +33,7 @@ run() {
 
   curl --location --silent $BINARY_URL > $TMP_DIR/talisman
 
-  DOWNLOAD_SHA=$(sha256sum -b $TMP_DIR/talisman | cut -d' ' -f1)
+  DOWNLOAD_SHA=$(shasum -b -a256 $TMP_DIR/talisman | cut -d' ' -f1)
 
   if [ ! "$DOWNLOAD_SHA" = "$EXPECTED_BINARY_SHA" ]; then
     echo_error "Uh oh... SHA256 checksum did not verify. Binary download must have been corrupted in some way."
