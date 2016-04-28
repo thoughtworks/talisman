@@ -21,7 +21,7 @@ run() {
 
   download_and_verify() {
     echo
-    echo 'Downloading binary...'
+    echo 'Downloading and verifying binary...'
     
     TMP_DIR=$(mktemp -d)
     trap 'rm -r $TMP_DIR' EXIT
@@ -75,7 +75,7 @@ run() {
     echo "repository that you 'init' or 'clone'."
     echo
     echo "This script will inform you of every file it is going to add"
-    echo "to your system, and give you a chance to back out"
+    echo "to your system, and give you a chance to back out."
 
     echo
     read -u1 -p "Install Talisman to your system git hook templates? (Y/n) " INSTALL
@@ -90,12 +90,12 @@ run() {
 
     echo
     echo "Searching for your git template directories..."
-    GIT_HOOK_TEMPLATE_DIRS=$(find / -path '*/git-core/templates/hooks' 2>/dev/null) || true
-
+    GIT_HOOK_TEMPLATE_DIRS=$(find /usr/share /usr/local /opt /Library /Applications -path '*/git-core/templates/hooks' 2>/dev/null) || true
+    
     echo
     echo "Installing Talisman as a 'pre-push' binary in the following locations:"
     echo
-    echo $GIT_HOOK_TEMPLATE_DIRS
+    while read -r D; do echo $D; done <<< "$GIT_HOOK_TEMPLATE_DIRS"
     echo
     read -u1 -p "Continue? (Y/n) " CONTINUE
     
@@ -110,10 +110,10 @@ run() {
 
     echo
     echo "Installing Talisman to the above locations (may ask for sudo access)"
-    for DIR in "$GIT_HOOK_TEMPLATE_DIRS"; do
+    while read -r DIR; do
       sudo cp $DOWNLOADED_BINARY "$DIR/pre-push"
       sudo chmod +x "$DIR/pre-push"
-    done
+    done <<< "$GIT_HOOK_TEMPLATE_DIRS"
     
     echo
     echo -ne "\e[32m"
