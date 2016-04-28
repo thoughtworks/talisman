@@ -62,7 +62,12 @@ run() {
   }
 
   install_to_git_templates() {
-    echo "Not running from a git repo..."
+
+    if [ ! -t 1 ]; then
+      echo_error "Headless install to system templates is not supported"
+      echo_error "If you would like this feature, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
+      exit 6
+    fi
 
     echo
     echo "Talisman can be installed to your system git hook"
@@ -73,7 +78,7 @@ run() {
     echo "to your system, and give you a chance to back out"
 
     echo
-    read -p "Install Talisman to your system git hook templates? (Y/n) " INSTALL
+    read -u1 -p "Install Talisman to your system git hook templates? (Y/n) " INSTALL
 
     if [ "$INSTALL" != "Y" ] && [ "$INSTALL" != "y" ] && [ "$INSTALL" != "" ]; then
       echo
@@ -92,7 +97,7 @@ run() {
     echo
     echo $GIT_HOOK_TEMPLATE_DIRS
     echo
-    read -p "Continue? (Y/n) " CONTINUE
+    read -u1 -p "Continue? (Y/n) " CONTINUE
     
     if [ "$CONTINUE" != "Y" ] && [ "$CONTINUE" != "y" ] && [ "$CONTINUE" != "" ]; then
       echo
