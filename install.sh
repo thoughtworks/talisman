@@ -2,7 +2,6 @@
 
 # TODO
 # pull exit numbers into variables
-# check prereq binaries
 # use bash if conds everywhere
 
 # we call run() at the end of the script to prevent inconsistent state in case
@@ -14,16 +13,16 @@ run() {
 
   VERSION="v0.1.1"
   GITHUB_URL="https://github.com/thoughtworks/talisman"
-  BINARY_URL="$GITHUB_URL/releases/download/$VERSION/talisman"
+  BINARY_BASE_URL="$GITHUB_URL/releases/download/$VERSION/talisman"
   EXPECTED_BINARY_SHA="fdfa31d22e5acaef3ca2f57b1036f4c2f3b9601b00524c753a5919a6c8fa3cd3"
   REPO_PRE_PUSH_HOOK=".git/hooks/pre-push"
   DOWNLOADED_BINARY=""
   DEFAULT_GLOBAL_TEMPLATE_DIR="$HOME/.git-templates"
   
   echo_error() {
-    echo -ne $(tput setaf 1)
+    echo -ne $(tput setaf 1) >&2
     echo "$1" >&2
-    echo -ne $(tput setaf 9)
+    echo -ne $(tput sgr0) >&2
   }
 
   function binary_arch_suffix() {
@@ -33,7 +32,7 @@ run() {
     elif [ "$(uname -s)" = "Darwin"]; then
       ARCHITECTURE="darwin"
     else
-      echo_error "Talisman currently only supports Linux and Darwin systems"
+      echo_error "Talisman currently only supports Linux and Darwin systems."
       echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
       exit 7
     fi
@@ -43,7 +42,7 @@ run() {
     elif [[ "$(uname -m)" =~ '^i.?86$' ]]; then
       ARCHITECTURE="${ARCHITECTURE}_386"
     else
-      echo_error "Talisman currently only supports x86 and x86_64 architectures"
+      echo_error "Talisman currently only supports x86 and x86_64 architectures."
       echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
       exit 8
     fi
@@ -53,6 +52,15 @@ run() {
 
 
   download_and_verify() {
+    if [[ ! -x "$(which curl 2>/dev/null)" ]]; then
+      echo_error "This script requires 'curl' to download the Talisman binary."
+      exit 9
+    fi
+    if [[ ! -x "$(which shasum 2>/dev/null)" ]]; then
+      echo_error "This script requires 'shasum' to verify the Talisman binary."
+      exit 9
+    fi
+    
     echo 'Downloading and verifying binary...'
     echo
     
@@ -60,7 +68,7 @@ run() {
     trap 'rm -r $TMP_DIR' EXIT
     chmod 0700 $TMP_DIR
 
-    curl --location --silent "${BINARY_URL}_$(binary_arch_suffix)" > $TMP_DIR/talisman
+    curl --location --silent "${BINARY_BASE_URL}_$(binary_arch_suffix)" > $TMP_DIR/talisman
 
     DOWNLOAD_SHA=$(shasum -b -a256 $TMP_DIR/talisman | cut -d' ' -f1)
 
@@ -87,9 +95,9 @@ run() {
     cp $DOWNLOADED_BINARY $REPO_PRE_PUSH_HOOK
     chmod +x $REPO_PRE_PUSH_HOOK
 
-    echo -ne "\e[32m"
-    echo "Talisman successfully installed to '$REPO_PRE_PUSH_HOOK'"
-    echo -ne "\e[0m"
+    echo -ne $(tput setaf 2)
+    echo "Talisman successfully installed to '$REPO_PRE_PUSH_HOOK'."
+    echo -ne $(tput setgr0)
   }
 
   install_to_git_templates() {
@@ -151,8 +159,8 @@ run() {
     chmod +x "$TEMPLATE_DIR/hooks/pre-push"
     
     echo -ne $(tput setaf 2)
-    echo "Talisman successfully installed"
-    echo -ne $(tput setaf 9)
+    echo "Talisman successfully installed."
+    echo -ne $(tput setgr0)
   }
 
   if [ ! -d "./.git" ]; then
