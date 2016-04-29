@@ -2,7 +2,6 @@
 
 # TODO
 # pull exit numbers into variables
-# use bash if conds everywhere
 
 # we call run() at the end of the script to prevent inconsistent state in case
 # curl|bash fails in the middle of the download
@@ -27,9 +26,9 @@ run() {
 
   function binary_arch_suffix() {
     declare ARCHITECTURE
-    if [ "$(uname -s)" = "Linux" ]; then
+    if [[ "$(uname -s)" == "Linux" ]]; then
       ARCHITECTURE="linux"
-    elif [ "$(uname -s)" = "Darwin"]; then
+    elif [[ "$(uname -s)" == "Darwin" ]]; then
       ARCHITECTURE="darwin"
     else
       echo_error "Talisman currently only supports Linux and Darwin systems."
@@ -72,7 +71,7 @@ run() {
 
     DOWNLOAD_SHA=$(shasum -b -a256 $TMP_DIR/talisman | cut -d' ' -f1)
 
-    if [ ! "$DOWNLOAD_SHA" = "$EXPECTED_BINARY_SHA" ]; then
+    if [[ ! "$DOWNLOAD_SHA" == "$EXPECTED_BINARY_SHA" ]]; then
       echo_error "Uh oh... SHA256 checksum did not verify. Binary download must have been corrupted in some way."
       echo_error "Expected SHA: $EXPECTED_BINARY_SHA"
       echo_error "Download SHA: $DOWNLOAD_SHA"
@@ -83,7 +82,7 @@ run() {
   }
 
   install_to_repo() {
-    if [ -x "$REPO_PRE_PUSH_HOOK" ]; then
+    if [[ -x "$REPO_PRE_PUSH_HOOK" ]]; then
       echo_error "Oops, it looks like you already have a pre-push hook installed at '$REPO_PRE_PUSH_HOOK'."
       echo_error "Talisman is not compatible with other hooks right now, sorry."
       echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
@@ -101,7 +100,7 @@ run() {
   }
 
   install_to_git_templates() {
-    if [ ! -t 1 ]; then
+    if [[ ! -t 1 ]]; then
       echo_error "Headless install to system templates is not supported."
       echo_error "If you would like this feature, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
       exit 6
@@ -119,7 +118,7 @@ run() {
     echo "any new repo that you 'init' or 'clone'."
     echo
 
-    if [ "$TEMPLATE_DIR" = "" ]; then
+    if [[ "$TEMPLATE_DIR" == "" ]]; then
       echo "No git template directory is configured. Let's add one."
       echo "(this will override any system git templates and modify your git config file)"
       echo
@@ -132,13 +131,16 @@ run() {
       echo
       read -u1 -p "Add Talisman to '$TEMPLATE_DIR/hooks?' (Y/n) " USE_EXISTING
       echo
-      
-      if [ "$USE_EXISTING" != "Y" ] && [ "$USE_EXISTING" != "y" ] && [ "$USE_EXISTING" != "" ]; then
-	echo_error "Not installing Talisman."
-	echo_error "If you were trying to install into a single git repo, re-run this command from that repo."
-	echo_error "You can always download/compile manually from our Github page: $GITHUB_URL"
-	exit 4
-      fi
+
+      case "$USE_EXISTING" in
+	Y|y|"") ;; # okay, continue
+	*)
+	  echo_error "Not installing Talisman."
+	  echo_error "If you were trying to install into a single git repo, re-run this command from that repo."
+	  echo_error "You can always download/compile manually from our Github page: $GITHUB_URL"
+	  exit 4
+	  ;;
+      esac
     fi
 
     # Support '~' in path
