@@ -72,7 +72,17 @@ run() {
 
     TEMPLATE_DIR=$(git config --global init.templatedir) || true
 
+    echo "Not running from inside a git repository... installing as a"
+    echo "git template."
+    echo
+    echo "If you meant to install to a specific repo, 'cd' into that"
+    echo "repo and run this script again."
+    echo
+    echo "Installing as a template will automatically add Talisman to"
+    echo "any new repo that you 'init' or 'clone'."
+
     if [ "$TEMPLATE_DIR" = "" ]; then
+      echo
       echo "No git template directory is configured. Let's add one."
       echo "(this will override any system git templates and modify your git config file)"
       echo
@@ -80,6 +90,7 @@ run() {
       TEMPLATE_DIR=${TEMPLATE_DIR:-$DEFAULT_GLOBAL_TEMPLATE_DIR}
       git config --global init.templatedir $TEMPLATE_DIR
     else
+      echo
       echo "You already have a git template directory configured."
       read -u1 -p "Add Talisman to '$TEMPLATE_DIR/hooks?' (Y/n) " USE_EXISTING
       
