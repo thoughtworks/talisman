@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# TODO
-# pull exit numbers into variables
+# TODO:
+# verify shasum for other architectures
 
 # we call run() at the end of the script to prevent inconsistent state in case
-# curl|bash fails in the middle of the download
+# user runs with curl|bash and curl fails in the middle of the download
 # (https://www.seancassidy.me/dont-pipe-to-your-shell.html)
 run() {
   set -euo pipefail
@@ -17,6 +17,13 @@ run() {
   REPO_PRE_PUSH_HOOK=".git/hooks/pre-push"
   DOWNLOADED_BINARY=""
   DEFAULT_GLOBAL_TEMPLATE_DIR="$HOME/.git-templates"
+
+  E_HOOK_ALREADY_PRESENT=1
+  E_CHECKSUM_MISMATCH=2
+  E_USER_CANCEL=3
+  E_HEADLESS=4
+  E_UNSUPPORTED_ARCH=5
+  E_DEPENDENCY_NOT_FOUND=6
   
   echo_error() {
     echo -ne $(tput setaf 1) >&2
@@ -33,7 +40,7 @@ run() {
     else
       echo_error "Talisman currently only supports Linux and Darwin systems."
       echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
-      exit 7
+      exit $E_UNSUPPORTED_ARCH
     fi
 
     if [[ "$(uname -m)" = "x86_64" ]]; then
@@ -43,7 +50,7 @@ run() {
     else
       echo_error "Talisman currently only supports x86 and x86_64 architectures."
       echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
-      exit 8
+      exit $E_UNSUPPORTED_ARCH
     fi
     
     echo $ARCHITECTURE
@@ -53,11 +60,11 @@ run() {
   download_and_verify() {
     if [[ ! -x "$(which curl 2>/dev/null)" ]]; then
       echo_error "This script requires 'curl' to download the Talisman binary."
-      exit 9
+      exit $E_DEPENDENCY_NOT_FOUND
     fi
     if [[ ! -x "$(which shasum 2>/dev/null)" ]]; then
       echo_error "This script requires 'shasum' to verify the Talisman binary."
-      exit 9
+      exit $E_DEPENDENCY_NOT_FOUND
     fi
     
     echo 'Downloading and verifying binary...'
@@ -67,7 +74,8 @@ run() {
     trap 'rm -r $TMP_DIR' EXIT
     chmod 0700 $TMP_DIR
 
-    curl --location --silent "${BINARY_BASE_URL}_$(binary_arch_suffix)" > $TMP_DIR/talisman
+    SUFFIX=$(binary_arch_suffix)
+    curl --location --silent "${BINARY_BASE_URL}_${SUFFIX}" > $TMP_DIR/talisman
 
     DOWNLOAD_SHA=$(shasum -b -a256 $TMP_DIR/talisman | cut -d' ' -f1)
 
@@ -75,7 +83,7 @@ run() {
       echo_error "Uh oh... SHA256 checksum did not verify. Binary download must have been corrupted in some way."
       echo_error "Expected SHA: $EXPECTED_BINARY_SHA"
       echo_error "Download SHA: $DOWNLOAD_SHA"
-      exit 3
+      exit $E_CHECKSUM_MISMATCH
     fi
 
     DOWNLOADED_BINARY="$TMP_DIR/talisman"
@@ -86,7 +94,7 @@ run() {
       echo_error "Oops, it looks like you already have a pre-push hook installed at '$REPO_PRE_PUSH_HOOK'."
       echo_error "Talisman is not compatible with other hooks right now, sorry."
       echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
-      exit 2
+      exit $E_HOOK_ALREADY_PRESENT
     fi
 
     download_and_verify
@@ -103,7 +111,7 @@ run() {
     if [[ ! -t 1 ]]; then
       echo_error "Headless install to system templates is not supported."
       echo_error "If you would like this feature, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
-      exit 6
+      exit $E_HEADLESS
     fi
 
     TEMPLATE_DIR=$(git config --global init.templatedir) || true
@@ -138,7 +146,7 @@ run() {
 	  echo_error "Not installing Talisman."
 	  echo_error "If you were trying to install into a single git repo, re-run this command from that repo."
 	  echo_error "You can always download/compile manually from our Github page: $GITHUB_URL"
-	  exit 4
+	  exit $E_USER_CANCEL
 	  ;;
       esac
     fi
@@ -150,7 +158,7 @@ run() {
       echo_error "Oops, it looks like you already have a pre-push hook installed at '$TEMPLATE_DIR/hooks/pre-push'."
       echo_error "Talisman is not compatible with other hooks right now, sorry."
       echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
-      exit 5
+      exit $E_HOOK_ALREADY_PRESENT
     fi
     
     mkdir -p "$TEMPLATE_DIR/hooks"
