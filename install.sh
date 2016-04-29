@@ -7,8 +7,9 @@ run() {
   set -euo pipefail
   IFS=$'\n'
 
+  VERSION="v0.1.0"
   GITHUB_URL="https://github.com/thoughtworks/talisman"
-  BINARY_URL="$GITHUB_URL/releases/download/v0.1.0/talisman"
+  BINARY_URL="$GITHUB_URL/releases/download/$VERSION/talisman"
   EXPECTED_BINARY_SHA="fdfa31d22e5acaef3ca2f57b1036f4c2f3b9601b00524c753a5919a6c8fa3cd3"
   REPO_PRE_PUSH_HOOK=".git/hooks/pre-push"
   DOWNLOADED_BINARY=""
