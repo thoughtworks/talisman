@@ -36,7 +36,7 @@ If you run this script from inside a git repo, it will add Talisman to
 that repo. Otherwise, it will prompt you to install as a git hook
 template.
 
-```
+```bash
 curl https://thoughtworks.github.io/talisman/install.sh > ~/install-talisman.sh
 chmod +x ~/install-talisman.sh
 ```
