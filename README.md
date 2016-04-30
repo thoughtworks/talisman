@@ -32,22 +32,22 @@ You could download the
 manually and copy it into your project/template `hooks` directory --
 or you can use our `install.sh` script.
 
-If you run this script from inside a git repo, it will add Talisman to
-that repo. Otherwise, it will prompt you to install as a git hook
-template.
-
 ```bash
 curl https://thoughtworks.github.io/talisman/install.sh > ~/install-talisman.sh
 chmod +x ~/install-talisman.sh
 ```
 
-```
+If you run this script from inside a git repo, it will add Talisman to
+that repo. Otherwise, it will prompt you to install as a git hook
+template.
+
+```bash
 # Install to a single project
 cd my-git-project
 ~/install-talisman.sh
 ```
 
-```
+```bash
 # Install as a git hook template
 cd ~
 ~/install-talisman.sh
@@ -62,15 +62,15 @@ you get started with that.
 Once that is done, you will need to have the godep dependency manager
 installed. To install godep, you will need to fetch it from Github.
 
-```` > go get github.com/tools/godep ````
+```` go get github.com/tools/godep ````
 
 Once you have godep installed, clone the talisman repository. In your
 working copy, fetch the dependencies by having godep fetch them for
 you.
 
-```` > godep restore ````
+```` godep restore ````
 
-To run tests ```` > godep go test ./...  ```` #### Contributing to
+To run tests ```` godep go test ./...  ```` #### Contributing to
 Talisman
 
 TODO: Add notes about forking and golang import mechanisms to warn
