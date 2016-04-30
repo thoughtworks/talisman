@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# TODO:
-# verify shasum for other architectures
-
 # we call run() at the end of the script to prevent inconsistent state in case
 # user runs with curl|bash and curl fails in the middle of the download
 # (https://www.seancassidy.me/dont-pipe-to-your-shell.html)
@@ -13,11 +10,15 @@ run() {
   VERSION="v0.1.1"
   GITHUB_URL="https://github.com/thoughtworks/talisman"
   BINARY_BASE_URL="$GITHUB_URL/releases/download/$VERSION/talisman"
-  EXPECTED_BINARY_SHA="fdfa31d22e5acaef3ca2f57b1036f4c2f3b9601b00524c753a5919a6c8fa3cd3"
   REPO_PRE_PUSH_HOOK=".git/hooks/pre-push"
-  DOWNLOADED_BINARY=""
   DEFAULT_GLOBAL_TEMPLATE_DIR="$HOME/.git-templates"
-
+  
+  EXPECTED_BINARY_SHA_LINUX_AMD64="fdfa31d22e5acaef3ca2f57b1036f4c2f3b9601b00524c753a5919a6c8fa3cd3"
+  EXPECTED_BINARY_SHA_LINUX_X86="274a7e77a68c75a33e0cf27185ce885bee95c2ca13ad553a953b58e85cd2a75d"
+  EXPECTED_BINARY_SHA_DARWIN_AMD64="6ce0b9e392059e01dac8e89763c964579fed4f1a33456d122b780af52affc578"
+  
+  declare DOWNLOADED_BINARY
+  
   E_HOOK_ALREADY_PRESENT=1
   E_CHECKSUM_MISMATCH=2
   E_USER_CANCEL=3
@@ -31,7 +32,7 @@ run() {
     echo -ne $(tput sgr0) >&2
   }
 
-  function binary_arch_suffix() {
+  binary_arch_suffix() {
     declare ARCHITECTURE
     if [[ "$(uname -s)" == "Linux" ]]; then
       ARCHITECTURE="linux"
@@ -74,10 +75,25 @@ run() {
     trap 'rm -r $TMP_DIR' EXIT
     chmod 0700 $TMP_DIR
 
-    SUFFIX=$(binary_arch_suffix)
-    curl --location --silent "${BINARY_BASE_URL}_${SUFFIX}" > $TMP_DIR/talisman
+    ARCH_SUFFIX=$(binary_arch_suffix)
+    
+    curl --location --silent "${BINARY_BASE_URL}_${ARCH_SUFFIX}" > $TMP_DIR/talisman
 
     DOWNLOAD_SHA=$(shasum -b -a256 $TMP_DIR/talisman | cut -d' ' -f1)
+
+    declare EXPECTED_BINARY_SHA
+    case "$ARCH_SUFFIX" in
+      linux_386)
+        EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_LINUX_X86"
+        lskdjf
+        ;;
+      linux_amd64)
+        EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_LINUX_AMD64"
+        ;;
+      darwin_amd64)
+        EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_DARWIN_AMD64"
+        ;;
+    esac
 
     if [[ ! "$DOWNLOAD_SHA" == "$EXPECTED_BINARY_SHA" ]]; then
       echo_error "Uh oh... SHA256 checksum did not verify. Binary download must have been corrupted in some way."
@@ -104,7 +120,7 @@ run() {
 
     echo -ne $(tput setaf 2)
     echo "Talisman successfully installed to '$REPO_PRE_PUSH_HOOK'."
-    echo -ne $(tput setgr0)
+    echo -ne $(tput sgr0)
   }
 
   install_to_git_templates() {
@@ -170,7 +186,7 @@ run() {
     
     echo -ne $(tput setaf 2)
     echo "Talisman successfully installed."
-    echo -ne $(tput setgr0)
+    echo -ne $(tput sgr0)
   }
 
   if [ ! -d "./.git" ]; then
