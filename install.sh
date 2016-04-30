@@ -115,6 +115,7 @@ run() {
 
     download_and_verify
 
+    mkdir -p $(dirname $REPO_PRE_PUSH_HOOK)
     cp $DOWNLOADED_BINARY $REPO_PRE_PUSH_HOOK
     chmod +x $REPO_PRE_PUSH_HOOK
 
