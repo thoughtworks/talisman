@@ -85,7 +85,6 @@ run() {
     case "$ARCH_SUFFIX" in
       linux_386)
         EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_LINUX_X86"
-        lskdjf
         ;;
       linux_amd64)
         EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_LINUX_AMD64"
