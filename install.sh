@@ -71,7 +71,7 @@ run() {
     echo 'Downloading and verifying binary...'
     echo
     
-    TMP_DIR=$(mktemp -d)
+    TMP_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'talisman')
     trap 'rm -r $TMP_DIR' EXIT
     chmod 0700 $TMP_DIR
 
