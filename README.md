@@ -70,8 +70,9 @@ you.
 
 ```` godep restore ````
 
-To run tests ```` godep go test ./...  ```` #### Contributing to
-Talisman
+To run tests ```` godep go test ./...  ````
+
+#### Contributing to Talisman
 
 TODO: Add notes about forking and golang import mechanisms to warn
 users.
