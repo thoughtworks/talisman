@@ -68,54 +68,21 @@ body {
   width: 100%;
 }
 
-.home {
-  margin-top: 1em;
-  display: block;
-  border: 1px solid darken($grey-color-dark, 5%);
-  background-color: $grey-color-light;
-  border-radius: 3px;
-}
-
-.install {
-  margin: 4em auto;
-  padding: 2.5%;
-  border-radius: 3px;
-  color: $grey-color-dark;
-  font-family: monospace;
-  font-size: 1.1em;
-  text-align: center;
-  text-decoration: none;
-  cursor:default;
-  position: relative;
-
-  .warning {
-    opacity: 0;
-    font-family: sans-serif;
-    font-size: 0.6em;
-    margin-top: 1em;
-    line-height: 2;
-    position: absolute;
-    transition: opacity 0.1s linear;
-  }
-
-  .command:focus + .warning {
-    opacity: 1;
-  }
-}
-
 .description {
-  color: darken($grey-color-light, 15%);
-  font-weight: 300;
-  padding: 5%;
+  border: 1px solid darken($grey-color-dark, 5%);
+  border-radius: 3px;
+  background-color: $grey-color-light;
+  font-weight: bold;
+  padding: 20px 20px 0 20px;
   line-height: 1.8;
+}
+
+.asciicast {
+  border-radius: 3px;
 }
 
 .footer-heading {
   color: darken($grey-color-light, 15%);
   font-weight: 300;
   text-align: center;
-}
-
-span.command::before {
-    content: "$ ";
 }
