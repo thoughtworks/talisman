@@ -53,6 +53,18 @@ cd ~
 ~/install-talisman.sh
 ```
 
+From now on Talisman will run checks for obvious secrets automatically before each push:
+
+```bash
+$ git push
+The following errors were detected in danger.pem
+         The file name "danger.pem" failed checks against the pattern ^.+\.pem$
+
+error: failed to push some refs to 'git@github.com:jacksingleton/talisman-demo.git'
+```
+
+If you're *really* sure you want to push anyway, you can always do a `git push --no-verify`
+
 #### Developing locally
 
 To contribute to Talisman, you need a working golang development
