@@ -1,10 +1,10 @@
 #!/bin/bash
+set -euo pipefail
 
 # we call run() at the end of the script to prevent inconsistent state in case
 # user runs with curl|bash and curl fails in the middle of the download
 # (https://www.seancassidy.me/dont-pipe-to-your-shell.html)
 run() {
-  set -euo pipefail
   IFS=$'\n'
 
   VERSION="v0.1.1"
