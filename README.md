@@ -63,12 +63,28 @@ The following errors were detected in danger.pem
 error: failed to push some refs to 'git@github.com:jacksingleton/talisman-demo.git'
 ```
 
+#### Ignoring Files
+
 If you're *really* sure you want to push that file, you can add it to
 a `.talismanignore` file in the project root:
 
 ```bash
-echo 'danger.pem' >> .talismanignore
+echo './danger.pem' >> .talismanignore
 ```
+
+Note that we can ignore files in a few different ways:
+
+* If the pattern ends in a path separator, then all files inside a
+  directory with that name are matched. However, files with that name
+  itself will not be matched.
+  
+* If a pattern contains the path separator in any other location, the
+  match works according to the pattern logic of the default golang
+  glob mechanism.
+  
+* If there is no path separator anywhere in the pattern, the pattern
+  is matched against the base name of the file. Thus, the pattern will
+  match files with that name anywhere in the repository.
 
 #### Developing locally
 
