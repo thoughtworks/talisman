@@ -63,7 +63,12 @@ The following errors were detected in danger.pem
 error: failed to push some refs to 'git@github.com:jacksingleton/talisman-demo.git'
 ```
 
-If you're *really* sure you want to push anyway, you can always do a `git push --no-verify`
+If you're *really* sure you want to push that file, you can add it to
+a `.talismanignore` file in the project root:
+
+```bash
+echo 'danger.pem' >> .talismanignore
+```
 
 #### Developing locally
 
