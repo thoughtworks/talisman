@@ -48,10 +48,17 @@ func checkBase64EncodingForFile(content []byte) bool {
 	s := string(content)
 	for _, d := range delimiters {
 		subStrings := strings.Split(s, d)
-		for _, sub := range subStrings {
-			if checkBase64Encoding(sub) {
-				return true
-			}
+		if checkEachSubString(subStrings) {
+			return true
+		}
+	}
+	return false
+}
+
+func checkEachSubString(subStrings []string) bool {
+	for _, sub := range subStrings {
+		if checkBase64Encoding(sub) {
+			return true
 		}
 	}
 	return false
