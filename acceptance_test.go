@@ -38,6 +38,18 @@ func TestAddingSecretKeyShouldExitOne(t *testing.T) {
 	})
 }
 
+func TestAddingSecretKeyAsFileContentShouldExitOne(t *testing.T) {
+	const awsAccessKeyIDExample string = "accessKey=AKIAIOSFODNN7EXAMPLE"
+	withNewTmpGitRepo(func(gitPath string) {
+		git.SetupBaselineFiles(gitPath, "simple-file")
+		git.CreateFileWithContents(gitPath, "contains_keys.properties", awsAccessKeyIDExample)
+		git.AddAndcommit(gitPath, "*", "add private key as content")
+
+		exitStatus := runTalisman(gitPath)
+		assert.Equal(t, 1, exitStatus, "Expected run() to return 1 and fail as pem file was present in the repo")
+	})
+}
+
 func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnored(t *testing.T) {
 	withNewTmpGitRepo(func(gitPath string) {
 		git.SetupBaselineFiles(gitPath, "simple-file")

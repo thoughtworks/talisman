@@ -3,3 +3,4 @@
 _workspace
 *.swp
 talisman
+.idea/**
