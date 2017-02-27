@@ -1,23 +1,33 @@
 package detector
 
 import (
-	"encoding/base64"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/thoughtworks/talisman/git_repo"
 	"strings"
+	"math"
 )
 
-var delimiters = []string{".", "-", "="}
+const BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
 
 type FileContentDetector struct {
+	base64Map map[string]bool
 }
 
 func NewFileContentDetector() Detector {
-	return FileContentDetector{}
+	fc := FileContentDetector{}
+	fc.initBase64Map()
+	return &fc
 }
 
-func (contentDetector FileContentDetector) Test(additions []git_repo.Addition, ignores Ignores, result *DetectionResults) {
+func (fc *FileContentDetector) initBase64Map() {
+	fc.base64Map = map[string]bool{}
+	for i := 0; i < len(BASE64_CHARS); i++ {
+		fc.base64Map[string(BASE64_CHARS[i])] = true
+	}
+}
+
+func (fc *FileContentDetector) Test(additions []git_repo.Addition, ignores Ignores, result *DetectionResults) {
 	for _, addition := range additions {
 		if ignores.Deny(addition) {
 			log.WithFields(log.Fields{
@@ -26,7 +36,7 @@ func (contentDetector FileContentDetector) Test(additions []git_repo.Addition, i
 			result.Ignore(addition.Path, fmt.Sprintf("%s was ignored by .talismanignore", addition.Path))
 			continue
 		}
-		base64 := checkBase64EncodingForFile(addition.Data)
+		base64 := fc.checkBase64EncodingForFile(addition.Data)
 		if base64 == true {
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
@@ -36,28 +46,78 @@ func (contentDetector FileContentDetector) Test(additions []git_repo.Addition, i
 	}
 }
 
-func checkBase64Encoding(s string) bool {
-	if len(s) <= 4 {
-		return false
+func (fc *FileContentDetector) getShannonEntropy(str string, superSet string) float64 {
+	if str == "" {
+		return 0
 	}
-	_, err := base64.StdEncoding.DecodeString(s)
-	return err == nil
+	entropy := 0.0
+	for _, c := range superSet {
+		p := float64(strings.Count(str, string(c))) / float64(len(str))
+		if p > 0 {
+			entropy -= p * math.Log2(p)
+		}
+	}
+	return entropy
 }
 
-func checkBase64EncodingForFile(content []byte) bool {
-	s := string(content)
-	for _, d := range delimiters {
-		subStrings := strings.Split(s, d)
-		if checkEachSubString(subStrings) {
+func (fc *FileContentDetector) checkBase64Encoding(word string) bool {
+	entropyCandidates := fc.getEntropyCandidatesWithinWord(word, 20, fc.base64Map)
+	for _, candidate := range entropyCandidates {
+		entropy := fc.getShannonEntropy(candidate, BASE64_CHARS)
+		if entropy > 4.5 {
 			return true
 		}
 	}
 	return false
 }
 
-func checkEachSubString(subStrings []string) bool {
-	for _, sub := range subStrings {
-		if checkBase64Encoding(sub) {
+func (fc *FileContentDetector) getEntropyCandidatesWithinWord(word string, threshold int, superSet map[string]bool) []string {
+	candidates := []string{}
+	count := 0
+	subSet := ""
+	for _, c := range word {
+		char := string(c)
+		if _, ok := superSet[char]; ok {
+			subSet += char
+			count++
+		} else {
+			if count > threshold {
+				candidates = append(candidates, subSet)
+			}
+			subSet = ""
+			count = 0
+		}
+	}
+	if count > threshold {
+		candidates = append(candidates, subSet)
+	}
+	return candidates
+
+}
+
+func (fc *FileContentDetector) checkBase64EncodingForFile(data []byte) bool {
+	content := string(data)
+	isBase64 := fc.checkEachLine(content)
+	if isBase64 {
+		return true
+	}
+	return false
+}
+
+func (fc *FileContentDetector) checkEachLine(content string) bool {
+	lines := strings.Split(content, "\n")
+	for _, line := range lines {
+		if fc.checkEachWord(line) {
+			return true
+		}
+	}
+	return false
+}
+
+func (fc *FileContentDetector) checkEachWord(line string) bool {
+	words := strings.Fields(line)
+	for _, word := range words {
+		if fc.checkBase64Encoding(word) {
 			return true
 		}
 	}

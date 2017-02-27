@@ -17,7 +17,7 @@ func TestShouldNotFlagSafeText(t *testing.T) {
 }
 
 func TestShouldFlagPotentialAWSAccessKeys(t *testing.T) {
-	const awsAccessKeyIDExample string = "AKIAIOSFODNN7EXAMPLE"
+	const awsAccessKeyIDExample string = "AKIAIOSFODNN7EXAMPLE\n"
 	results := NewDetectionResults()
 	content := []byte(awsAccessKeyIDExample)
 	filename := "filename"
@@ -28,7 +28,7 @@ func TestShouldFlagPotentialAWSAccessKeys(t *testing.T) {
 }
 
 func TestShouldFlagPotentialAWSAccessKeysInPropertyDefinition(t *testing.T) {
-	const awsAccessKeyIDExample string = "accessKey=AKIAIOSFODNN7EXAMPLE"
+	const awsAccessKeyIDExample string = "accessKey=AKIAIOSFODNN7EXAMPLE;"
 	results := NewDetectionResults()
 	content := []byte(awsAccessKeyIDExample)
 	filename := "filename"
@@ -73,4 +73,26 @@ func TestShouldFlagPotentialJWT(t *testing.T) {
 
 	NewFileContentDetector().Test(additions, NewIgnores(), results)
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
+}
+
+func TestShouldFlagPotentialSecretsWithinJavaCode(t *testing.T) {
+	const awsAccessKeyIDExample string = "public class HelloWorld {\r\n\r\n    public static void main(String[] args) {\r\n        // Prints \"Hello, World\" to the terminal window.\r\n        accessKey=\"AKIAIOSFODNN7EXAMPLE\";\r\n        System.out.println(\"Hello, World\");\r\n    }\r\n\r\n}"
+	results := NewDetectionResults()
+	content := []byte(awsAccessKeyIDExample)
+	filename := "filename"
+	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
+
+	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
+}
+
+func TestShouldNotFlagPotentialSecretsWithinSafeJavaCode(t *testing.T) {
+	const awsAccessKeyIDExample string = "public class HelloWorld {\r\n\r\n    public static void main(String[] args) {\r\n        // Prints \"Hello, World\" to the terminal window.\r\n        System.out.println(\"Hello, World\");\r\n    }\r\n\r\n}"
+	results := NewDetectionResults()
+	content := []byte(awsAccessKeyIDExample)
+	filename := "filename"
+	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
+
+	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
