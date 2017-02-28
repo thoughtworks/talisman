@@ -34,43 +34,51 @@ func (fc *FileContentDetector) Test(additions []git_repo.Addition, ignores Ignor
 			result.Ignore(addition.Path, fmt.Sprintf("%s was ignored by .talismanignore", addition.Path))
 			continue
 		}
-		base64Text := fc.detectFile(addition.Data)
-		if base64Text != "" {
+		base64Results := fc.detectFile(addition.Data)
+		fillDetectionResults(base64Results, addition, result)
+	}
+}
+
+func fillDetectionResults(base64Results []string, addition git_repo.Addition, result *DetectionResults) {
+	for _, base64Res := range base64Results {
+		if base64Res != "" {
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
 			}).Info("Failing file as it contains a base64 encoded text.")
-			result.Fail(addition.Path, fmt.Sprintf("Expected file to not to contain base64 encoded texts such as: %s", base64Text))
+			result.Fail(addition.Path, fmt.Sprintf("Expected file to not to contain base64 or hex encoded texts such as: %s", base64Res))
 		}
 	}
 }
 
-func (fc *FileContentDetector) detectFile(data []byte) string {
+func (fc *FileContentDetector) detectFile(data []byte) []string {
 	content := string(data)
 	return fc.checkEachLine(content)
 }
 
-func (fc *FileContentDetector) checkEachLine(content string) string {
+func (fc *FileContentDetector) checkEachLine(content string) []string {
 	lines := strings.Split(content, "\n")
+	res := []string{}
 	for _, line := range lines {
-		res := fc.checkEachWord(line)
-		if res != "" {
-			return res
+		lineResult := fc.checkEachWord(line)
+		if len(lineResult) > 0 {
+			res = append(res, lineResult...)
 		}
 	}
-	return ""
+	return res
 }
 
-func (fc *FileContentDetector) checkEachWord(line string) string {
+func (fc *FileContentDetector) checkEachWord(line string) []string {
 	words := strings.Fields(line)
+	res := []string{}
 	for _, word := range words {
-		res := fc.base64Detector.checkBase64Encoding(word)
-		if res != "" {
-			return res
+		wordResult := fc.base64Detector.checkBase64Encoding(word)
+		if wordResult != "" {
+			res = append(res, wordResult)
 		}
-		res = fc.hexDetector.checkHexEncoding(word)
-		if res != "" {
-			return res
+		wordResult = fc.hexDetector.checkHexEncoding(word)
+		if wordResult != "" {
+			res = append(res, wordResult)
 		}
 	}
-	return ""
+	return res
 }

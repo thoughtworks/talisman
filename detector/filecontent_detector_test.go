@@ -96,3 +96,34 @@ func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
 	NewFileContentDetector().Test(additions, NewIgnores(), results)
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
+
+func TestResultsShouldContainHexTextsIfHexAndBase64ExistInFile(t *testing.T) {
+	const hex string = "68656C6C6F20776F726C6421"
+	const base64 string = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+	const hexAndBase64 = hex + "\n" + base64
+	results := NewDetectionResults()
+	content := []byte(hexAndBase64)
+	filename := "filename"
+	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
+	filePath := additions[0].Path
+
+	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	expectedMsg := "Expected file to not to contain base64 or hex encoded texts such as: " + hex
+	assert.Equal(t, expectedMsg, results.Failures(filePath)[0])
+}
+
+func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) {
+	const hex string = "68656C6C6F20776F726C6421"
+	const base64 string = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+	const hexAndBase64 = hex + "\n" + base64
+	results := NewDetectionResults()
+	content := []byte(hexAndBase64)
+	filename := "filename"
+	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
+	filePath := additions[0].Path
+
+	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	expectedMsg := "Expected file to not to contain base64 or hex encoded texts such as: " + base64
+	assert.Equal(t, expectedMsg, results.Failures(filePath)[1])
+
+}
