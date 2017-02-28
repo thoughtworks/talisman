@@ -16,6 +16,17 @@ func TestShouldNotFlagSafeText(t *testing.T) {
 	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
 
+func TestShouldIgnoreFileIfNeeded(t *testing.T) {
+	results := NewDetectionResults()
+	content := []byte("prettySafe")
+	filename := "filename"
+	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
+	ignores := NewIgnores(filename)
+
+	NewFileContentDetector().Test(additions, ignores, results)
+	assert.True(t, results.Successful(), "Expected file %s to be ignored by pattern", filename)
+}
+
 func TestShouldNotFlag4CharSafeText(t *testing.T) {
 	/*This only tell that an input could have been a b64 encoded value, but it does not tell whether or not the
 	input is actually a b64 encoded value. In other words, abcd will match, but it is not necessarily represent
@@ -54,9 +65,9 @@ func TestShouldFlagPotentialJWT(t *testing.T) {
 }
 
 func TestShouldFlagPotentialSecretsWithinJavaCode(t *testing.T) {
-	const awsAccessKeyIDExample string = "public class HelloWorld {\r\n\r\n    public static void main(String[] args) {\r\n        // Prints \"Hello, World\" to the terminal window.\r\n        accessKey=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\";\r\n        System.out.println(\"Hello, World\");\r\n    }\r\n\r\n}"
+	const safeJavaCode string = "public class HelloWorld {\r\n\r\n    public static void main(String[] args) {\r\n        // Prints \"Hello, World\" to the terminal window.\r\n        accessKey=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\";\r\n        System.out.println(\"Hello, World\");\r\n    }\r\n\r\n}"
 	results := NewDetectionResults()
-	content := []byte(awsAccessKeyIDExample)
+	content := []byte(safeJavaCode)
 	filename := "filename"
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 
@@ -65,12 +76,23 @@ func TestShouldFlagPotentialSecretsWithinJavaCode(t *testing.T) {
 }
 
 func TestShouldNotFlagPotentialSecretsWithinSafeJavaCode(t *testing.T) {
-	const awsAccessKeyIDExample string = "public class HelloWorld {\r\n\r\n    public static void main(String[] args) {\r\n        // Prints \"Hello, World\" to the terminal window.\r\n        System.out.println(\"Hello, World\");\r\n    }\r\n\r\n}"
+	const safeJavaCode string = "public class HelloWorld {\r\n\r\n    public static void main(String[] args) {\r\n        // Prints \"Hello, World\" to the terminal window.\r\n        System.out.println(\"Hello, World\");\r\n    }\r\n\r\n}"
 	results := NewDetectionResults()
-	content := []byte(awsAccessKeyIDExample)
+	content := []byte(safeJavaCode)
 	filename := "filename"
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 
 	NewFileContentDetector().Test(additions, NewIgnores(), results)
 	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
+}
+
+func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
+	const hex string = "68656C6C6F20776F726C6421"
+	results := NewDetectionResults()
+	content := []byte(hex)
+	filename := "filename"
+	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
+
+	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }

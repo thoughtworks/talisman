@@ -8,10 +8,10 @@ import (
 var delimiters = []string{".", "-", "="}
 const aggressivenessThreshold = 15 //decreasing makes it more aggressive
 
-type AggressiveFileContentDetector struct {
+type Base64AggressiveDetector struct {
 }
 
-func (ac *AggressiveFileContentDetector) Test(s string) string {
+func (ac *Base64AggressiveDetector) Test(s string) string {
 	for _, d := range delimiters {
 		subStrings := strings.Split(s, d)
 		res := checkEachSubString(subStrings)
