@@ -16,28 +16,6 @@ func TestShouldNotFlagSafeText(t *testing.T) {
 	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
 
-func TestShouldFlagPotentialAWSAccessKeys(t *testing.T) {
-	const awsAccessKeyIDExample string = "AKIAIOSFODNN7EXAMPLE\n"
-	results := NewDetectionResults()
-	content := []byte(awsAccessKeyIDExample)
-	filename := "filename"
-	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
-
-	NewFileContentDetector().Test(additions, NewIgnores(), results)
-	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
-}
-
-func TestShouldFlagPotentialAWSAccessKeysInPropertyDefinition(t *testing.T) {
-	const awsAccessKeyIDExample string = "accessKey=AKIAIOSFODNN7EXAMPLE;"
-	results := NewDetectionResults()
-	content := []byte(awsAccessKeyIDExample)
-	filename := "filename"
-	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
-
-	NewFileContentDetector().Test(additions, NewIgnores(), results)
-	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
-}
-
 func TestShouldNotFlag4CharSafeText(t *testing.T) {
 	/*This only tell that an input could have been a b64 encoded value, but it does not tell whether or not the
 	input is actually a b64 encoded value. In other words, abcd will match, but it is not necessarily represent
@@ -76,7 +54,7 @@ func TestShouldFlagPotentialJWT(t *testing.T) {
 }
 
 func TestShouldFlagPotentialSecretsWithinJavaCode(t *testing.T) {
-	const awsAccessKeyIDExample string = "public class HelloWorld {\r\n\r\n    public static void main(String[] args) {\r\n        // Prints \"Hello, World\" to the terminal window.\r\n        accessKey=\"AKIAIOSFODNN7EXAMPLE\";\r\n        System.out.println(\"Hello, World\");\r\n    }\r\n\r\n}"
+	const awsAccessKeyIDExample string = "public class HelloWorld {\r\n\r\n    public static void main(String[] args) {\r\n        // Prints \"Hello, World\" to the terminal window.\r\n        accessKey=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\";\r\n        System.out.println(\"Hello, World\");\r\n    }\r\n\r\n}"
 	results := NewDetectionResults()
 	content := []byte(awsAccessKeyIDExample)
 	filename := "filename"

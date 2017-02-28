@@ -9,15 +9,24 @@ import (
 )
 
 const BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+const MIN_SECRET_LENGTH = 20
+const BASE64_ENTROPY_THRESHOLD = 4.5
 
 type FileContentDetector struct {
 	base64Map map[string]bool
+	aggressiveDetector *AggressiveFileContentDetector
 }
 
-func NewFileContentDetector() Detector {
+func NewFileContentDetector() *FileContentDetector {
 	fc := FileContentDetector{}
 	fc.initBase64Map()
+	fc.aggressiveDetector = nil
 	return &fc
+}
+
+func (fc *FileContentDetector) AggressiveMode() *FileContentDetector {
+	fc.aggressiveDetector = &AggressiveFileContentDetector{}
+	return fc
 }
 
 func (fc *FileContentDetector) initBase64Map() {
@@ -36,12 +45,12 @@ func (fc *FileContentDetector) Test(additions []git_repo.Addition, ignores Ignor
 			result.Ignore(addition.Path, fmt.Sprintf("%s was ignored by .talismanignore", addition.Path))
 			continue
 		}
-		base64 := fc.checkBase64EncodingForFile(addition.Data)
-		if base64 == true {
+		base64Text := fc.checkBase64EncodingForFile(addition.Data)
+		if base64Text != "" {
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
 			}).Info("Failing file as it contains a base64 encoded text.")
-			result.Fail(addition.Path, fmt.Sprint("Expected file to not to contain base64 encoded texts"))
+			result.Fail(addition.Path, fmt.Sprintf("Expected file to not to contain base64 encoded texts such as: %s", base64Text))
 		}
 	}
 }
@@ -60,66 +69,69 @@ func (fc *FileContentDetector) getShannonEntropy(str string, superSet string) fl
 	return entropy
 }
 
-func (fc *FileContentDetector) checkBase64Encoding(word string) bool {
-	entropyCandidates := fc.getEntropyCandidatesWithinWord(word, 20, fc.base64Map)
+func (fc *FileContentDetector) checkBase64Encoding(word string) string {
+	entropyCandidates := fc.getEntropyCandidatesWithinWord(word, MIN_SECRET_LENGTH, fc.base64Map)
 	for _, candidate := range entropyCandidates {
 		entropy := fc.getShannonEntropy(candidate, BASE64_CHARS)
-		if entropy > 4.5 {
-			return true
+		if entropy > BASE64_ENTROPY_THRESHOLD {
+			return word
 		}
 	}
-	return false
+	if fc.aggressiveDetector != nil {
+		return fc.aggressiveDetector.Test(word)
+	}
+	return ""
 }
 
-func (fc *FileContentDetector) getEntropyCandidatesWithinWord(word string, threshold int, superSet map[string]bool) []string {
+func (fc *FileContentDetector) getEntropyCandidatesWithinWord(word string, minCandidateLength int, superSet map[string]bool) []string {
 	candidates := []string{}
 	count := 0
 	subSet := ""
+	if len(word) < minCandidateLength {
+		return candidates
+	}
 	for _, c := range word {
 		char := string(c)
-		if _, ok := superSet[char]; ok {
+		if superSet[char] {
 			subSet += char
 			count++
 		} else {
-			if count > threshold {
+			if count > minCandidateLength {
 				candidates = append(candidates, subSet)
 			}
 			subSet = ""
 			count = 0
 		}
 	}
-	if count > threshold {
+	if count > minCandidateLength {
 		candidates = append(candidates, subSet)
 	}
 	return candidates
-
 }
 
-func (fc *FileContentDetector) checkBase64EncodingForFile(data []byte) bool {
+func (fc *FileContentDetector) checkBase64EncodingForFile(data []byte) string {
 	content := string(data)
-	isBase64 := fc.checkEachLine(content)
-	if isBase64 {
-		return true
-	}
-	return false
+	return fc.checkEachLine(content)
 }
 
-func (fc *FileContentDetector) checkEachLine(content string) bool {
+func (fc *FileContentDetector) checkEachLine(content string) string {
 	lines := strings.Split(content, "\n")
 	for _, line := range lines {
-		if fc.checkEachWord(line) {
-			return true
+		res := fc.checkEachWord(line)
+		if res != "" {
+			return res
 		}
 	}
-	return false
+	return ""
 }
 
-func (fc *FileContentDetector) checkEachWord(line string) bool {
+func (fc *FileContentDetector) checkEachWord(line string) string {
 	words := strings.Fields(line)
 	for _, word := range words {
-		if fc.checkBase64Encoding(word) {
-			return true
+		res := fc.checkBase64Encoding(word)
+		if res != "" {
+			return res
 		}
 	}
-	return false
+	return ""
 }
