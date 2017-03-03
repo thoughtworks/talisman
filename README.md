@@ -105,6 +105,10 @@ you.
 
 To run tests ```` godep go test ./...  ````
 
+To build Talisman, we can use [gox](https://github.com/mitchellh/gox):
+
+```` gox -osarch="darwin/amd64 linux/386 linux/amd64" ````
+
 #### Contributing to Talisman
 
 TODO: Add notes about forking and golang import mechanisms to warn
