@@ -76,9 +76,9 @@ func TestShouldFlagPotentialJWT(t *testing.T) {
 }
 
 func TestShouldFlagPotentialSecretsWithinJavaCode(t *testing.T) {
-	const safeJavaCode string = "public class HelloWorld {\r\n\r\n    public static void main(String[] args) {\r\n        // Prints \"Hello, World\" to the terminal window.\r\n        accessKey=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\";\r\n        System.out.println(\"Hello, World\");\r\n    }\r\n\r\n}"
+	const dangerousJavaCode string = "public class HelloWorld {\r\n\r\n    public static void main(String[] args) {\r\n        // Prints \"Hello, World\" to the terminal window.\r\n        accessKey=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\";\r\n        System.out.println(\"Hello, World\");\r\n    }\r\n\r\n}"
 	results := NewDetectionResults()
-	content := []byte(safeJavaCode)
+	content := []byte(dangerousJavaCode)
 	filename := "filename"
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 
