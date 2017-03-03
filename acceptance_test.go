@@ -39,7 +39,8 @@ func TestAddingSecretKeyShouldExitOne(t *testing.T) {
 }
 
 func TestAddingSecretKeyAsFileContentShouldExitOne(t *testing.T) {
-	const awsAccessKeyIDExample string = "accessKey=AKIAIOSFODNN7EXAMPLE"
+	const awsAccessKeyIDExample string = "accessKey=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+	
 	withNewTmpGitRepo(func(gitPath string) {
 		git.SetupBaselineFiles(gitPath, "simple-file")
 		git.CreateFileWithContents(gitPath, "contains_keys.properties", awsAccessKeyIDExample)
