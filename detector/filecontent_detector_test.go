@@ -41,6 +41,17 @@ func TestShouldNotFlag4CharSafeText(t *testing.T) {
 	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
 
+func TestShouldNotFlagLowEntropyBase64Text(t *testing.T) {
+	const lowEntropyString string = "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWEK"
+	results := NewDetectionResults()
+	content := []byte(lowEntropyString)
+	filename := "filename"
+	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
+
+	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
+}
+
 func TestShouldFlagPotentialAWSSecretKeys(t *testing.T) {
 	const awsSecretAccessKey string = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 	results := NewDetectionResults()
