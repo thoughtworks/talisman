@@ -4,13 +4,38 @@ set -euo pipefail
 # we call run() at the end of the script to prevent inconsistent state in case
 # user runs with curl|bash and curl fails in the middle of the download
 # (https://www.seancassidy.me/dont-pipe-to-your-shell.html)
+
+if [ $# -eq 0 ]
+  then
+    echo "Installing the pre-push hook which is default, to install the pre-commit hook please provide the "pre-commit" parameter to install-talisman shell script"
+    REPO_HOOK=".git/hooks/pre-push"
+    HOOK="pre-push"
+fi
+
+if [ $# -eq 1 ]
+  then
+    if [ $1 == 'pre-push' ]
+       then 
+          REPO_HOOK=".git/hooks/pre-push"
+          HOOK="pre-push"
+    elif [ $1 == 'pre-commit' ]
+         then
+           REPO_HOOK=".git/hooks/pre-commit"
+           HOOK="pre-commit"
+    else
+      echo "Talisman only supports either pre-push or pre-commit hooks"
+      exit 0
+    fi
+else
+  echo "The number of arguements provided to the script are incorrect"
+  exit 0
+fi
+
 run() {
   IFS=$'\n'
-
   VERSION="v0.2.0"
-  GITHUB_URL="https://github.com/thoughtworks/talisman"
+  GITHUB_URL="https://github.com/karanmilan/talisman"
   BINARY_BASE_URL="$GITHUB_URL/releases/download/$VERSION/talisman"
-  REPO_PRE_PUSH_HOOK=".git/hooks/pre-push"
   DEFAULT_GLOBAL_TEMPLATE_DIR="$HOME/.git-templates"
   
   EXPECTED_BINARY_SHA_LINUX_AMD64="92b9a75e04451ca71cb7b75dae395cced4b68e3d62a0df68d7062fda3b32563d"
@@ -58,7 +83,7 @@ run() {
   }
 
 
-  download_and_verify() {
+  download() {
     if [[ ! -x "$(which curl 2>/dev/null)" ]]; then
       echo_error "This script requires 'curl' to download the Talisman binary."
       exit $E_DEPENDENCY_NOT_FOUND
@@ -77,49 +102,27 @@ run() {
 
     ARCH_SUFFIX=$(binary_arch_suffix)
     
-    curl --location --silent "${BINARY_BASE_URL}_${ARCH_SUFFIX}" > $TMP_DIR/talisman
-
-    DOWNLOAD_SHA=$(shasum -b -a256 $TMP_DIR/talisman | cut -d' ' -f1)
-
-    declare EXPECTED_BINARY_SHA
-    case "$ARCH_SUFFIX" in
-      linux_386)
-        EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_LINUX_X86"
-        ;;
-      linux_amd64)
-        EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_LINUX_AMD64"
-        ;;
-      darwin_amd64)
-        EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_DARWIN_AMD64"
-        ;;
-    esac
-
-    if [[ ! "$DOWNLOAD_SHA" == "$EXPECTED_BINARY_SHA" ]]; then
-      echo_error "Uh oh... SHA256 checksum did not verify. Binary download must have been corrupted in some way."
-      echo_error "Expected SHA: $EXPECTED_BINARY_SHA"
-      echo_error "Download SHA: $DOWNLOAD_SHA"
-      exit $E_CHECKSUM_MISMATCH
-    fi
+    curl --location --silent "${BINARY_BASE_URL}_${ARCH_SUFFIX}_${HOOK}" > $TMP_DIR/talisman
 
     DOWNLOADED_BINARY="$TMP_DIR/talisman"
   }
 
   install_to_repo() {
-    if [[ -x "$REPO_PRE_PUSH_HOOK" ]]; then
-      echo_error "Oops, it looks like you already have a pre-push hook installed at '$REPO_PRE_PUSH_HOOK'."
-      echo_error "Talisman is not compatible with other hooks right now, sorry."
+          
+    if [[ -x "$REPO_HOOK" ]]; then
+      echo_error "Oops, it looks like you already have a similar hook installed at '$REPO_HOOK'."
       echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
       exit $E_HOOK_ALREADY_PRESENT
     fi
 
-    download_and_verify
+    download
 
-    mkdir -p $(dirname $REPO_PRE_PUSH_HOOK)
-    cp $DOWNLOADED_BINARY $REPO_PRE_PUSH_HOOK
-    chmod +x $REPO_PRE_PUSH_HOOK
+    mkdir -p $(dirname $REPO_HOOK)
+    cp $DOWNLOADED_BINARY $REPO_HOOK
+    chmod +x $REPO_HOOK
 
     echo -ne $(tput setaf 2)
-    echo "Talisman successfully installed to '$REPO_PRE_PUSH_HOOK'."
+    echo "Talisman successfully installed to '$REPO_HOOK'."
     echo -ne $(tput sgr0)
   }
 
@@ -179,7 +182,7 @@ run() {
     
     mkdir -p "$TEMPLATE_DIR/hooks"
 
-    download_and_verify
+    download
 
     cp $DOWNLOADED_BINARY "$TEMPLATE_DIR/hooks/pre-push"
     chmod +x "$TEMPLATE_DIR/hooks/pre-push"
