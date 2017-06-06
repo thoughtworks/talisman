@@ -33,7 +33,7 @@ fi
 
 run() {
   IFS=$'\n'
-  VERSION="v0.2.0"
+  VERSION="v0.2.1"
   GITHUB_URL="https://github.com/karanmilan/talisman"
   BINARY_BASE_URL="$GITHUB_URL/releases/download/$VERSION/talisman"
   DEFAULT_GLOBAL_TEMPLATE_DIR="$HOME/.git-templates"
