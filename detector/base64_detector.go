@@ -8,6 +8,7 @@ type Base64Detector struct {
 	base64Map map[string]bool
 	aggressiveDetector *Base64AggressiveDetector
 	entropy *Entropy
+	wordCheck *WordCheck
 }
 
 func NewBase64Detector() *Base64Detector {
@@ -29,7 +30,7 @@ func (bd *Base64Detector) checkBase64Encoding(word string) string {
 	entropyCandidates := bd.entropy.GetEntropyCandidatesWithinWord(word, MIN_BASE64_SECRET_LENGTH, bd.base64Map)
 	for _, candidate := range entropyCandidates {
 		entropy := bd.entropy.GetShannonEntropy(candidate, BASE64_CHARS)
-		if entropy > BASE64_ENTROPY_THRESHOLD {
+		if entropy > BASE64_ENTROPY_THRESHOLD && !bd.wordCheck.containsWordsOnly(candidate) {
 			return word
 		}
 	}
