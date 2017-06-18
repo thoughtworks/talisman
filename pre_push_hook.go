@@ -10,6 +10,8 @@ import (
 const (
 	//EmptySha represents the state of a brand new ref
 	EmptySha string = "0000000000000000000000000000000000000000"
+	//ShaId of the empty tree in Git
+	EmptyTreeSha string = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 )
 
 type PrePushHook struct {
@@ -20,9 +22,8 @@ func NewPrePushHook(localRef, localCommit, remoteRef, remoteCommit string) *PreP
 	return &PrePushHook{localRef, localCommit, remoteRef, remoteCommit}
 }
 
-//Brand new repositoris are not validated at all
 //If the outgoing ref does not exist on the remote, all commits on the local ref will be checked
-//If the outgoing ref already exists, all additions in the range beween "localSha" and "remoteSha" will be validated
+//If the outgoing ref already exists, all additions in the range between "localSha" and "remoteSha" will be validated
 func (p *PrePushHook) GetRepoAdditions() []git_repo.Addition {
 	if p.runningOnDeletedRef() {
 		log.WithFields(log.Fields{
@@ -43,7 +44,7 @@ func (p *PrePushHook) GetRepoAdditions() []git_repo.Addition {
 			"remoteCommit": p.remoteCommit,
 		}).Info("Running on a new ref. All changes in the ref will be verified.")
 
-		return []git_repo.Addition{}
+		return p.getRepoAdditionsFrom(EmptyTreeSha, p.localCommit)
 	}
 
 	log.WithFields(log.Fields{
@@ -65,7 +66,11 @@ func (p *PrePushHook) runningOnNewRef() bool {
 }
 
 func (p *PrePushHook) getRepoAdditions() []git_repo.Addition {
+	return p.getRepoAdditionsFrom(p.remoteCommit, p.localCommit)
+}
+
+func (p *PrePushHook) getRepoAdditionsFrom(oldCommit, newCommit string) []git_repo.Addition {
 	wd, _ := os.Getwd()
 	repo := git_repo.RepoLocatedAt(wd)
-	return repo.AdditionsWithinRange(p.remoteCommit, p.localCommit)
+	return repo.AdditionsWithinRange(oldCommit, newCommit)
 }
