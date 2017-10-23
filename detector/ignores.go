@@ -10,6 +10,7 @@ import (
 const (
 	//CommentPattern represents the prefix of a comment line in the ignore file
 	CommentPattern string = "#"
+	LinePattern string = "^([^#]+)?\\s*(#(.*))?$"
 
 	//DefaultIgnoreFileName represents the name of the default file in which the ignore patterns are configured
 	DefaultIgnoreFileName string = ".talismanignore"
@@ -18,7 +19,12 @@ const (
 //Ignores represents a set of patterns that have been configured to be ignored by the Detectors.
 //Detectors are expected to honor these ignores.
 type Ignores struct {
-	patterns []string
+	patterns []Ignore
+}
+//Ignore represents a single pattern and its comment
+type Ignore struct {
+	pattern string
+	comment string
 }
 
 //ReadIgnoresFromFile builds an Ignores from the lines configured in a File.
@@ -29,17 +35,24 @@ func ReadIgnoresFromFile(repoFileRead func(string) ([]byte, error)) Ignores {
 	if err != nil {
 		panic(err)
 	}
-	var trimmedLines []string
-	for _, line := range strings.Split(string(contents), "\n") {
-		trimmedLines = append(trimmedLines, strings.TrimSpace(line))
-	}
-	return NewIgnores(trimmedLines...)
+	return NewIgnores(strings.Split(string(contents), "\n")...)
 }
 
+func NewIgnore(pattern string, comment string) Ignore {
+	return Ignore{pattern: pattern, comment: comment}
+}
 //NewIgnores builds a new Ignores with the patterns specified in the ignoreSpecs
 //Empty lines and comments are ignored.
-func NewIgnores(ignoreSpecs ...string) Ignores {
-	return Ignores{ignoreSpecs}
+func NewIgnores(lines ...string) Ignores {
+	var ignores []Ignore
+	for _, line := range lines {
+		var commentPattern = regexp.MustCompile(LinePattern)
+		groups := commentPattern.FindStringSubmatch(line)
+		if len(groups) == 4 {
+			ignores = append(ignores, NewIgnore(strings.TrimSpace(groups[1]), strings.TrimSpace(groups[3])))
+		}
+	}
+	return Ignores{ignores}
 }
 
 //AcceptsAll returns true if there are no rules specified
@@ -64,15 +77,11 @@ func (i Ignores) Deny(addition git_repo.Addition) bool {
 func (i Ignores) effectiveRules() []string {
 	var result []string
 	for _, pattern := range i.patterns {
-		if !isEmptyOrComment(pattern) {
-			result = append(result, pattern)
+		if !isEmptyString(pattern.pattern) {
+			result = append(result, pattern.pattern)
 		}
 	}
 	return result
-}
-
-func isEmptyOrComment(pattern string) bool {
-	return isEmptyString(pattern) || strings.HasPrefix(pattern, CommentPattern)
 }
 
 func isEmptyString(str string) bool {

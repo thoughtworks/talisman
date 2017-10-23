@@ -63,6 +63,18 @@ func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnored(t *testing.T) {
 	})
 }
 
+func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnoredAndCommented(t *testing.T) {
+	withNewTmpGitRepo(func(gitPath string) {
+		git.SetupBaselineFiles(gitPath, "simple-file")
+		git.CreateFileWithContents(gitPath, "private.pem", "secret")
+		git.CreateFileWithContents(gitPath, ".talismanignore", "*.pem # I know what I'm doing")
+		git.AddAndcommit(gitPath, "*", "add private key")
+
+		exitStatus := runTalisman(gitPath)
+		assert.Equal(t, 0, exitStatus, "Expected run() to return 0 and pass as pem file was ignored")
+	})
+}
+
 func TestStagingSecretKeyShouldExitOneWhenPreCommitFlagIsSet(t *testing.T) {
 	withNewTmpGitRepo(func(gitPath string) {
 		git.SetupBaselineFiles(gitPath, "simple-file")

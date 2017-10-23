@@ -19,6 +19,17 @@ func TestShouldIgnoreLinesThatBeginWithThePound(t *testing.T) {
 	}
 }
 
+func TestShouldParseIgnoreLinesProperly(t *testing.T) {
+	assert.Equal(t, NewIgnores("foo* # comment"), SingleIgnore("foo*", "comment"))
+	assert.Equal(t, NewIgnores("foo* # comment with multiple words"), SingleIgnore("foo*", "comment with multiple words"))
+	assert.Equal(t, NewIgnores("foo* # comment with#multiple#words"), SingleIgnore("foo*", "comment with#multiple#words"))
+	assert.Equal(t, NewIgnores("foo*# comment"), SingleIgnore("foo*", "comment"))
+	assert.Equal(t, NewIgnores("# comment"), SingleIgnore("", "comment"))
+	assert.Equal(t, NewIgnores("#comment"), SingleIgnore("", "comment"))
+	assert.Equal(t, NewIgnores(""), SingleIgnore("", ""))
+	assert.Equal(t, NewIgnores(" "), SingleIgnore("", ""))
+}
+
 func TestRawPatterns(t *testing.T) {
 	assertAccepts("foo", "bar", t)
 	assertAccepts("foo", "foobar", t)
@@ -52,6 +63,17 @@ func TestDirectoryPatterns(t *testing.T) {
 	assertDenies("foo/", "foo/bar/baz.txt", t)
 }
 
+func TestCommentPatterns(t *testing.T) {
+	assertAccepts("foo # some comment", "bar", t)
+	assertDenies("foo # some comment", "foo", t)
+
+	assertDenies("foo* # comment", "foo", t)
+	assertAccepts("foo* # comment", "bar", t)
+
+	assertAccepts("foo/ # comment", "bar", t)
+	assertDenies("foo/ # comment", "foo/bar", t)
+}
+
 func assertDenies(pattern, path string, t *testing.T) {
 	assert.True(t, NewIgnores(pattern).Deny(testAddition(path)), "%s is expected to deny a file named %s.", pattern, path)
 }
@@ -62,4 +84,7 @@ func assertAccepts(pattern, path string, t *testing.T) {
 
 func testAddition(path string) git_repo.Addition {
 	return git_repo.NewAddition(path, make([]byte, 0))
+}
+func SingleIgnore(pattern string, comment string) Ignores {
+	return Ignores{patterns: []Ignore{{pattern: pattern, comment: comment}}}
 }
