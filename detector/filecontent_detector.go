@@ -27,7 +27,7 @@ func (fc *FileContentDetector) AggressiveMode() *FileContentDetector {
 
 func (fc *FileContentDetector) Test(additions []git_repo.Addition, ignores Ignores, result *DetectionResults) {
 	for _, addition := range additions {
-		if ignores.Deny(addition) {
+		if ignores.Deny(addition, "filecontent") {
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
 			}).Info("Ignoring addition as it was specified to be ignored.")

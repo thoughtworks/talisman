@@ -86,6 +86,20 @@ Note that we can ignore files in a few different ways:
   is matched against the base name of the file. Thus, the pattern will
   match files with that name anywhere in the repository.
 
+You can also disable only specific detectors.
+For example, if your filename triggers a warning, you can only disable
+this warning while still being alerted if other things go wrong (e.g. file content):
+
+```bash
+echo './init-env.sh # ignore:filename,filesize' >> .talismanignore
+```
+
+At the moment, you can ignore
+
+* `filecontent`
+* `filename`
+* `filesize`
+
 #### Developing locally
 
 To contribute to Talisman, you need a working golang development

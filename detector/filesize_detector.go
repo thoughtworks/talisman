@@ -21,7 +21,7 @@ func NewFileSizeDetector(size int) Detector {
 
 func (fd FileSizeDetector) Test(additions []git_repo.Addition, ignores Ignores, result *DetectionResults) {
 	for _, addition := range additions {
-		if ignores.Deny(addition) {
+		if ignores.Deny(addition, "filesize") {
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
 			}).Info("Ignoring addition as it was specified to be ignored.")
