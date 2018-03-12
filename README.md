@@ -111,5 +111,18 @@ To build Talisman, we can use [gox](https://github.com/mitchellh/gox):
 
 #### Contributing to Talisman
 
-TODO: Add notes about forking and golang import mechanisms to warn
-users.
+##### Working off a fork
+
+Keep in mind that Go namespaces imports by git repo, so if you fork Talisman to work on a PR you will likely have to change imports in a few places -- for example, [`talisman.go:11`](https://github.com/thoughtworks/talisman/blob/d4b1b1d11137dbb173bf681a03f16183a9d82255/talisman.go#L11).
+
+##### Releasing
+
+* Follow the instructions at the end of 'Developing locally' to build the binaries
+* Bump the [version in install.sh](https://github.com/thoughtworks/talisman/blob/d4b1b1d11137dbb173bf681a03f16183a9d82255/install.sh#L10) according to [semver](https://semver.org/) conventions
+* Update the [expected hashes in install.sh](https://github.com/thoughtworks/talisman/blob/d4b1b1d11137dbb173bf681a03f16183a9d82255/install.sh#L16-L18) to match the new binaries you just created (`shasum -b -a256 ...`)
+* Make release commit and tag with the new version prefixed by `v` (like `git tag v0.3.0`)
+* Push your release commit and tag: `git push && git push --tags`
+* [Create a new release in github](https://github.com/thoughtworks/talisman/releases/new), filling in the new commit tag you just created
+* Update the install script hosted on github pages: `git checkout gh-pages`, `git checkout master -- install.sh`, `git commit -m ...`
+
+The latest version will now be accessible to anyone who builds their own binaries, downloads binaries directly from github releases, or uses the install script from the website.
