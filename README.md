@@ -69,7 +69,7 @@ If you're *really* sure you want to push that file, you can add it to
 a `.talismanignore` file in the project root:
 
 ```bash
-echo './danger.pem' >> .talismanignore
+echo 'danger.pem' >> .talismanignore
 ```
 
 Note that we can ignore files in a few different ways:
