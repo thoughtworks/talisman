@@ -2,9 +2,10 @@ package detector
 
 import (
 	"bufio"
-	"fmt"
 	"strings"
 	"os"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 type WordCheck struct {
@@ -53,7 +54,7 @@ func howManyWordsExistInText(reader *bufio.Reader, text string) int {
 		}
 
 		if err != nil { //EOF
-			fmt.Println("wordCount, ", wordCount)
+			log.Debugf("[WordChecker]: Found %d words", wordCount)
 			break
 		}
 	}
