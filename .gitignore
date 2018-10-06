@@ -4,3 +4,7 @@ _workspace
 *.swp
 talisman
 .idea/**
+checksums
+talisman_linux_*
+talisman_darwin_*
+talisman_windows_*
