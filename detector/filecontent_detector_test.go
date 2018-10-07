@@ -97,6 +97,18 @@ func TestShouldNotFlagPotentialSecretsWithinSafeJavaCode(t *testing.T) {
 	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
 
+func TestShouldNotFlagPotentialSecretsWithinSafeLongMethodName(t *testing.T) {
+	const safeLongMethodName string = "TestBase64DetectorShouldNotDetectLongMethodNamesEvenWithRidiculousHighEntropyWordsMightExist"
+	results := NewDetectionResults()
+	content := []byte(safeLongMethodName)
+	filename := "filename"
+	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
+
+	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
+}
+
+
 func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
 	const hex string = "68656C6C6F20776F726C6421"
 	results := NewDetectionResults()
@@ -136,5 +148,4 @@ func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) 
 	NewFileContentDetector().Test(additions, NewIgnores(), results)
 	expectedMsg := "Expected file to not to contain base64 or hex encoded texts such as: " + base64
 	assert.Equal(t, expectedMsg, results.Failures(filePath)[1])
-
 }
