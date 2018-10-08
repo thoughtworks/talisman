@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"flag"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -14,6 +15,8 @@ import (
 var (
 	fdebug  bool
 	githook string
+	showVersion bool
+	Version string = "Development Build"
 )
 
 const (
@@ -34,8 +37,15 @@ type Options struct {
 func main() {
 	flag.BoolVar(&fdebug, "debug", false, "enable debug mode (warning: very verbose)")
 	flag.BoolVar(&fdebug, "d", false, "short form of debug (warning: very verbose)")
+	flag.BoolVar(&showVersion, "v", false, "show current version of talisman" )
+	flag.BoolVar(&showVersion, "version", false, "show current version of talisman")
 	flag.StringVar(&githook, "githook", PrePush, "either pre-push or pre-commit")
 	flag.Parse()
+
+	if showVersion {
+		fmt.Printf("talisman %s\n", Version)
+		os.Exit(0)
+	}
 
 	options := Options{
 		debug:   fdebug,
@@ -56,7 +66,7 @@ func run(stdin io.Reader, options Options) (returnCode int) {
 		options.githook = PrePush
 	}
 
-	log.Info("Running %s hook", options.githook)
+	log.Infof("Running %s hook", options.githook)
 
 	var additions []git_repo.Addition
 	if options.githook == PreCommit {
