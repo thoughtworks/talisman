@@ -1,0 +1,3 @@
+#!/bin/sh
+gox -os="linux darwin windows" -arch="386 amd64" -ldflags "-X main.Version=$(git describe --tags HEAD)"
+shasum -b -a256 talisman_{l,d,w}* > checksums

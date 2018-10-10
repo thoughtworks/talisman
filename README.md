@@ -69,7 +69,7 @@ If you're *really* sure you want to push that file, you can add it to
 a `.talismanignore` file in the project root:
 
 ```bash
-echo './danger.pem' >> .talismanignore
+echo 'danger.pem' >> .talismanignore
 ```
 
 Note that we can ignore files in a few different ways:
@@ -100,6 +100,20 @@ At the moment, you can ignore
 * `filename`
 * `filesize`
 
+#### Usage with the [pre-commit](https://pre-commit.com) git hooks framework
+
+Add this to your `.pre-commit-config.yaml` (be sure to update `rev` to point to
+a real git revision!)
+
+```yaml
+-   repo: https://github.com/thoughtworks/talisman
+    rev: ''  # Update me!
+    hooks:
+    # either `commit` or `push` support
+    -   id: talisman-commit
+    # -   id: talisman-push
+```
+
 #### Developing locally
 
 To contribute to Talisman, you need a working golang development
@@ -125,5 +139,18 @@ To build Talisman, we can use [gox](https://github.com/mitchellh/gox):
 
 #### Contributing to Talisman
 
-TODO: Add notes about forking and golang import mechanisms to warn
-users.
+##### Working off a fork
+
+Keep in mind that Go namespaces imports by git repo, so if you fork Talisman to work on a PR you will likely have to change imports in a few places -- for example, [`talisman.go:11`](https://github.com/thoughtworks/talisman/blob/d4b1b1d11137dbb173bf681a03f16183a9d82255/talisman.go#L11).
+
+##### Releasing
+
+* Follow the instructions at the end of 'Developing locally' to build the binaries
+* Bump the [version in install.sh](https://github.com/thoughtworks/talisman/blob/d4b1b1d11137dbb173bf681a03f16183a9d82255/install.sh#L10) according to [semver](https://semver.org/) conventions
+* Update the [expected hashes in install.sh](https://github.com/thoughtworks/talisman/blob/d4b1b1d11137dbb173bf681a03f16183a9d82255/install.sh#L16-L18) to match the new binaries you just created (`shasum -b -a256 ...`)
+* Make release commit and tag with the new version prefixed by `v` (like `git tag v0.3.0`)
+* Push your release commit and tag: `git push && git push --tags`
+* [Create a new release in github](https://github.com/thoughtworks/talisman/releases/new), filling in the new commit tag you just created
+* Update the install script hosted on github pages: `git checkout gh-pages`, `git checkout master -- install.sh`, `git commit -m ...`
+
+The latest version will now be accessible to anyone who builds their own binaries, downloads binaries directly from github releases, or uses the install script from the website.

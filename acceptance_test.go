@@ -48,7 +48,7 @@ func TestAddingSecretKeyAsFileContentShouldExitOne(t *testing.T) {
 		git.AddAndcommit(gitPath, "*", "add private key as content")
 
 		exitStatus := runTalisman(gitPath)
-		assert.Equal(t, 1, exitStatus, "Expected run() to return 1 and fail as pem file was present in the repo")
+		assert.Equal(t, 1, exitStatus, "Expected run() to return 1 and fail as file contains some secrets")
 	})
 }
 

@@ -22,3 +22,12 @@ func TestBase64DetectorShouldDetectBase64Text(t *testing.T) {
 	res := bd.checkBase64Encoding(s)
 	assert.Equal(t, s, res)
 }
+
+func TestBase64DetectorShouldNotDetectLongMethodNamesEvenWithHighEntropy(t *testing.T) {
+	s := "TestBase64DetectorShouldNotDetectLongMethodNamesEvenWithRidiculousHighEntropyWordsMightExist"
+	bd := Base64Detector{}
+	bd.initBase64Map()
+
+	res := bd.checkBase64Encoding(s)
+	assert.Equal(t, "", res)
+}

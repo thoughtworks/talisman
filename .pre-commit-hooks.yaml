@@ -1,0 +1,17 @@
+-   id: talisman-commit
+    name: talisman
+    entry: talisman -githook pre-commit
+    stages: [commit]
+    # talisman currently discovers files by itself and does not take them on the cli
+    pass_filenames: false
+    types: [text]
+    language: golang
+
+-   id: talisman-push
+    name: talisman
+    entry: talisman -githook pre-push
+    stages: [push]
+    # talisman currently discovers files by itself and does not take them on the cli
+    pass_filenames: false
+    types: [text]
+    language: golang
