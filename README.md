@@ -86,6 +86,20 @@ Note that we can ignore files in a few different ways:
   is matched against the base name of the file. Thus, the pattern will
   match files with that name anywhere in the repository.
 
+#### Usage with the [pre-commit](https://pre-commit.com) git hooks framework
+
+Add this to your `.pre-commit-config.yaml` (be sure to update `rev` to point to
+a real git revision!)
+
+```yaml
+-   repo: https://github.com/thoughtworks/talisman
+    rev: ''  # Update me!
+    hooks:
+    # either `commit` or `push` support
+    -   id: talisman-commit
+    # -   id: talisman-push
+```
+
 #### Developing locally
 
 To contribute to Talisman, you need a working golang development
