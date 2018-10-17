@@ -8,3 +8,4 @@ checksums
 talisman_linux_*
 talisman_darwin_*
 talisman_windows_*
+vendor/
