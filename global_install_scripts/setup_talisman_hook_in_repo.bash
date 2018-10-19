@@ -2,6 +2,11 @@
 set -euo pipefail
 
 function run() {
+
+    TALISMAN_HOOK_SCRIPT_PATH=$1
+    EXCEPTIONS_FILE=$2
+    DOT_GIT_DIR=$3
+
     function echo_error() {
 	echo -ne $(tput setaf 1) >&2
 	echo "$1" >&2
@@ -20,10 +25,6 @@ function run() {
 	echo "$1" >&2
 	echo -ne $(tput sgr0)
     }
-
-    TALISMAN_HOOK_SCRIPT_PATH=$1
-    EXCEPTIONS_FILE=$2
-    DOT_GIT_DIR=$3
 
     REPO_HOOK_SCRIPT=${DOT_GIT_DIR}/hooks/pre-commit
     #check if a hook already exists
