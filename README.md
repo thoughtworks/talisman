@@ -106,18 +106,15 @@ To contribute to Talisman, you need a working golang development
 environment. Check [this link](https://golang.org/doc/install) to help
 you get started with that.
 
-Once that is done, you will need to have the godep dependency manager
-installed. To install godep, you will need to fetch it from Github.
-
-```` go get github.com/tools/godep ````
+Talisman now uses go modules (GO111MODULE=on) to manage dependencies
 
 Once you have godep installed, clone the talisman repository. In your
 working copy, fetch the dependencies by having godep fetch them for
 you.
 
-```` godep restore ````
+```` GO111MODULE=on go mod vendor ````
 
-To run tests ```` godep go test ./...  ````
+To run tests ```` GO111MODULE=on go test -mod=vendor ./...  ````
 
 To build Talisman, we can use [gox](https://github.com/mitchellh/gox):
 
