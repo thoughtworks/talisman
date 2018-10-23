@@ -36,12 +36,12 @@ func (r *DetectionResults) Fail(filePath git_repo.FilePath, message string) {
 
 //Ignore is used to mark the supplied FilePath as being ignored.
 //The most common reason for this is that the FilePath is Denied by the Ignores supplied to the Detector, however, Detectors may use more sophisticated reasons to ignore files.
-func (r *DetectionResults) Ignore(filePath git_repo.FilePath, message string) {
+func (r *DetectionResults) Ignore(filePath git_repo.FilePath, detector string) {
 	ignores, ok := r.ignores[filePath]
 	if !ok {
-		r.ignores[filePath] = []string{message}
+		r.ignores[filePath] = []string{detector}
 	} else {
-		r.ignores[filePath] = append(ignores, message)
+		r.ignores[filePath] = append(ignores, detector)
 	}
 }
 
@@ -71,8 +71,12 @@ func (r *DetectionResults) Report() string {
 	for filePath := range r.failures {
 		result = result + r.ReportFileFailures(filePath)
 	}
+
+	if len(r.ignores) > 0 {
+		result = result + fmt.Sprintf("The following files were ignored:\n")
+	}
 	for filePath := range r.ignores {
-		result = result + fmt.Sprintf("\t%s\n", strings.Join(r.ignores[filePath], ", "))
+		result = result + fmt.Sprintf("\t%s was ignored by .talismanignore for the following detectors: %s\n", filePath, strings.Join(r.ignores[filePath], ", "))
 	}
 	return result
 }

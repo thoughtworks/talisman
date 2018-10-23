@@ -25,7 +25,7 @@ func (fd FileSizeDetector) Test(additions []git_repo.Addition, ignores Ignores, 
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
 			}).Info("Ignoring addition as it was specified to be ignored.")
-			result.Ignore(addition.Path, fmt.Sprintf("%s was ignored by .talismanignore", addition.Path))
+			result.Ignore(addition.Path, "filesize")
 			continue
 		}
 		size := len(addition.Data)
