@@ -19,6 +19,26 @@ func TestShouldIgnoreLinesThatBeginWithThePound(t *testing.T) {
 	}
 }
 
+func TestShouldParseIgnoreLinesProperly(t *testing.T) {
+	assert.Equal(t, NewIgnores("foo* # comment"), SingleIgnore("foo*", "comment"))
+	assert.Equal(t, NewIgnores("foo* # comment with multiple words"), SingleIgnore("foo*", "comment with multiple words"))
+	assert.Equal(t, NewIgnores("foo* # comment with#multiple#words"), SingleIgnore("foo*", "comment with#multiple#words"))
+	assert.Equal(t, NewIgnores("foo*# comment"), SingleIgnore("foo*", "comment"))
+
+	assert.Equal(t, NewIgnores("# comment"), SingleIgnore("", "comment"))
+	assert.Equal(t, NewIgnores("#comment"), SingleIgnore("", "comment"))
+
+	assert.Equal(t, NewIgnores(""), SingleIgnore("", ""))
+	assert.Equal(t, NewIgnores(" "), SingleIgnore("", ""))
+
+
+	assert.Equal(t, NewIgnores("foo # ignore:some-detector"), SingleIgnore("foo", "ignore:some-detector","some-detector"))
+	assert.Equal(t, NewIgnores("foo # ignore:some-detector,some-other-detector"), SingleIgnore("foo", "ignore:some-detector,some-other-detector","some-detector", "some-other-detector"))
+	assert.Equal(t, NewIgnores("foo # ignore:some-detector because of some reason"), SingleIgnore("foo", "ignore:some-detector because of some reason","some-detector"))
+
+
+}
+
 func TestRawPatterns(t *testing.T) {
 	assertAccepts("foo", "bar", t)
 	assertAccepts("foo", "foobar", t)
@@ -52,14 +72,46 @@ func TestDirectoryPatterns(t *testing.T) {
 	assertDenies("foo/", "foo/bar/baz.txt", t)
 }
 
-func assertDenies(pattern, path string, t *testing.T) {
-	assert.True(t, NewIgnores(pattern).Deny(testAddition(path)), "%s is expected to deny a file named %s.", pattern, path)
+func TestCommentPatterns(t *testing.T) {
+	assertAccepts("foo # some comment", "bar", t)
+	assertDenies("foo # some comment", "foo", t)
+
+	assertDenies("foo* # comment", "foo", t)
+	assertAccepts("foo* # comment", "bar", t)
+
+	assertAccepts("foo/ # comment", "bar", t)
+	assertDenies("foo/ # comment", "foo/bar", t)
 }
 
-func assertAccepts(pattern, path string, t *testing.T) {
-	assert.True(t, NewIgnores(pattern).Accept(testAddition(path)), "%s is expected to accept a file named %s.", pattern, path)
+func TestIgnoringDetectors(t *testing.T) {
+	assertDeniesDetector("foo # ignore:someDetector", "foo", "someDetector", t)
+	assertAcceptsDetector("foo # ignore:someDetector", "foo", "someOtherDetector", t)
+}
+
+
+func assertDenies(line, path string, t *testing.T) {
+	assertDeniesDetector(line, path, "someDetector", t)
+}
+
+func assertDeniesDetector(line, path string, detectorName string, t *testing.T) {
+	assert.True(t, NewIgnores(line).Deny(testAddition(path), detectorName), "%s is expected to deny a file named %s.", line, path)
+}
+
+func assertAccepts(line, path string, t *testing.T, detectorNames ...string) {
+	assertAcceptsDetector(line, path, "someDetector", t)
+}
+
+func assertAcceptsDetector(line, path string, detectorName string, t *testing.T) {
+	assert.True(t, NewIgnores(line).Accept(testAddition(path), detectorName), "%s is expected to accept a file named %s.", line, path)
 }
 
 func testAddition(path string) git_repo.Addition {
 	return git_repo.NewAddition(path, make([]byte, 0))
+}
+func SingleIgnore(pattern string, comment string, ignoredDetectors ...string) Ignores {
+	return Ignores{patterns: []Ignore{{
+		pattern: pattern,
+		comment: comment,
+		ignoredDetectors: ignoredDetectors,
+	}}}
 }

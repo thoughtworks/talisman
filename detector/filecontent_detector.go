@@ -27,11 +27,11 @@ func (fc *FileContentDetector) AggressiveMode() *FileContentDetector {
 
 func (fc *FileContentDetector) Test(additions []git_repo.Addition, ignores Ignores, result *DetectionResults) {
 	for _, addition := range additions {
-		if ignores.Deny(addition) {
+		if ignores.Deny(addition, "filecontent") {
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
 			}).Info("Ignoring addition as it was specified to be ignored.")
-			result.Ignore(addition.Path, fmt.Sprintf("%s was ignored by .talismanignore", addition.Path))
+			result.Ignore(addition.Path, "filecontent")
 			continue
 		}
 		base64Results := fc.detectFile(addition.Data)

@@ -12,6 +12,8 @@ import (
 	git "github.com/thoughtworks/talisman/git_testing"
 )
 
+const awsAccessKeyIDExample string = "accessKey=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+
 func TestNotHavingAnyOutgoingChangesShouldNotFail(t *testing.T) {
 	withNewTmpGitRepo(func(gitPath string) {
 		git.SetupBaselineFiles(gitPath, "simple-file")
@@ -39,8 +41,7 @@ func TestAddingSecretKeyShouldExitOne(t *testing.T) {
 }
 
 func TestAddingSecretKeyAsFileContentShouldExitOne(t *testing.T) {
-	const awsAccessKeyIDExample string = "accessKey=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-	
+
 	withNewTmpGitRepo(func(gitPath string) {
 		git.SetupBaselineFiles(gitPath, "simple-file")
 		git.CreateFileWithContents(gitPath, "contains_keys.properties", awsAccessKeyIDExample)
@@ -62,6 +63,31 @@ func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnored(t *testing.T) {
 		assert.Equal(t, 0, exitStatus, "Expected run() to return 0 and pass as pem file was ignored")
 	})
 }
+
+func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnoredAndCommented(t *testing.T) {
+	withNewTmpGitRepo(func(gitPath string) {
+		git.SetupBaselineFiles(gitPath, "simple-file")
+		git.CreateFileWithContents(gitPath, "private.pem", "secret")
+		git.CreateFileWithContents(gitPath, ".talismanignore", "*.pem # I know what I'm doing")
+		git.AddAndcommit(gitPath, "*", "add private key")
+
+		exitStatus := runTalisman(gitPath)
+		assert.Equal(t, 0, exitStatus, "Expected run() to return 0 and pass as pem file was ignored")
+	})
+}
+
+func TestAddingSecretKeyShouldExitOneIfTheyContainBadContentButOnlyFilenameDetectorWasIgnored(t *testing.T) {
+	withNewTmpGitRepo(func(gitPath string) {
+		git.SetupBaselineFiles(gitPath, "simple-file")
+		git.CreateFileWithContents(gitPath, "private.pem", awsAccessKeyIDExample)
+		git.CreateFileWithContents(gitPath, ".talismanignore", "*.pem # ignore:filename")
+		git.AddAndcommit(gitPath, "*", "add private key")
+
+		exitStatus := runTalisman(gitPath)
+		assert.Equal(t, 1, exitStatus, "Expected run() to return 0 and pass as pem file was ignored")
+	})
+}
+
 
 func TestStagingSecretKeyShouldExitOneWhenPreCommitFlagIsSet(t *testing.T) {
 	withNewTmpGitRepo(func(gitPath string) {

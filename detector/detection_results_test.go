@@ -42,12 +42,15 @@ func TestResultsReportsFailures(t *testing.T) {
 
 func TestLoggingIgnoredFilesDoesNotCauseFailure(t *testing.T) {
 	results := NewDetectionResults()
-	results.Ignore("some_file", "Ignoring this file, just because")
-	results.Ignore("some/other_file", "Ignoring this file too")
+	results.Ignore("some_file", "some-detector")
+	results.Ignore("some/other_file", "some-other-detector")
+	results.Ignore("some_file_ignored_for_multiple_things", "some-detector")
+	results.Ignore("some_file_ignored_for_multiple_things", "some-other-detector")
 	assert.True(t, results.Successful(), "Calling ignore should keep the result successful.")
 	assert.True(t, results.HasIgnores(), "Calling ignore should be logged.")
 	assert.False(t, results.HasFailures(), "Calling ignore should not cause a result to fail.")
 
-	assert.Regexp(t, "Ignoring this file, just because", results.Report(), "foo")
-	assert.Regexp(t, "Ignoring this file too", results.Report(), "foo")
+	assert.Regexp(t, "some_file was ignored by .talismanignore for the following detectors: some-detector", results.Report(), "foo")
+	assert.Regexp(t, "some/other_file was ignored by .talismanignore for the following detectors: some-other-detector", results.Report(), "foo")
+	assert.Regexp(t, "some_file_ignored_for_multiple_things was ignored by .talismanignore for the following detectors: some-detector, some-other-detector", results.Report(), "foo")
 }
