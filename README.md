@@ -87,12 +87,13 @@ Note that we can ignore files in a few different ways:
   match files with that name anywhere in the repository.
 
 You can also disable only specific detectors.
-For example, if your filename triggers a warning, you can only disable
+For example, if your `init-env.sh` filename triggers a warning, you can only disable
 this warning while still being alerted if other things go wrong (e.g. file content):
-
 ```bash
-echo './init-env.sh # ignore:filename,filesize' >> .talismanignore
+echo 'init-env.sh # ignore:filename,filesize' >> .talismanignore
 ```
+Note: Here both filename and filesize detectors are ignored for init-env.sh, but 
+filecontent detector will still activate on `init-env.sh` 
 
 At the moment, you can ignore
 
@@ -123,7 +124,7 @@ you get started with that.
 Talisman now uses go modules (GO111MODULE=on) to manage dependencies
 
 Once you have godep installed, clone the talisman repository. In your
-working copy, fetch the dependencies by having godep fetch them for
+working copy, fetch the dependencies by having go mod fetch them for
 you.
 
 ```` GO111MODULE=on go mod vendor ````
