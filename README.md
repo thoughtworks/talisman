@@ -123,7 +123,7 @@ you get started with that.
 
 Talisman now uses go modules (GO111MODULE=on) to manage dependencies
 
-Once you have godep installed, clone the talisman repository. In your
+Once you have go 1.11 installed and setup, clone the talisman repository. In your
 working copy, fetch the dependencies by having go mod fetch them for
 you.
 
