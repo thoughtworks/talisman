@@ -272,6 +272,8 @@ END_OF_SCRIPT
 	read -p "Please enter root directory to search for git repos (Default: ${HOME}): " SEARCH_ROOT
 	SEARCH_ROOT=${SEARCH_ROOT:-$HOME}
 	setup_git_talisman_hooks_at $SEARCH_ROOT
+	echo
+	printf "\e[%sm%s\e[00m\n" 32 "You will need TALISMAN_HOME to be set up. Please set up TALISMAN_HOME=${TALISMAN_SETUP_DIR} in your preferred bash profile"
 }
 
 run $0 $@
