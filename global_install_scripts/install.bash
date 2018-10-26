@@ -44,7 +44,7 @@ function run() {
     SCRIPT_BASE="https://raw.githubusercontent.com/${SCRIPT_ORG_REPO}/master/global_install_scripts"
 
     TEMP_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'talisman_setup')
-    trap "rm -r ${TEMP_DIR}" EXIT
+    #trap "rm -r ${TEMP_DIR}" EXIT
     chmod 0700 ${TEMP_DIR}
 
     REPO_HOOK_SETUP_SCRIPT_PATH="${TEMP_DIR}/setup_talisman_hook_in_repo.bash"   # script for setting up git hooks on one repo
@@ -72,7 +72,7 @@ function run() {
     export -f echo_success
     
     function collect_version_artifact_download_urls() {
-	curl --silent "https://api.github.com/repos/${INSTALL_ORG_REPO}/releases/${VERSION}" | \
+	curl --silent "https://api.github.com/repos/${INSTALL_ORG_REPO}/releases/${VERSION}" | 
 	    grep -e browser_download_url | grep -o 'https.*' | tr -d '"' > ${TEMP_DIR}/download_urls
 	echo_debug "All release artifact download urls can be found at ${TEMP_DIR}/download_urls:"
 	[[ -z "${DEBUG}" ]] && return
@@ -88,8 +88,10 @@ function run() {
 		ARCHITECTURE="linux" ;;
 	    "Darwin")
 		ARCHITECTURE="darwin" ;;
-	    *)
-		echo_error "Talisman currently only supports Linux and MacOS(darwin) systems."
+		"MINGW32_NT-10.0-WOW")
+		ARCHITECTURE="windows" ;;
+		*)
+		echo_error "Talisman currently only supports Windows, Linux and MacOS(darwin) systems."
 		echo_error "If this is a problem for you, please open an issue: https://github.com/${INSTALL_ORG_REPO}/issues/new"
 		exit $E_UNSUPPORTED_ARCH
 		;;
@@ -99,9 +101,9 @@ function run() {
 	case $ARCH in
 	    "x86_64")
 		ARCHITECTURE="${ARCHITECTURE}_amd64" ;;
-	    '^i.?86')
+	    "i686" | "i386")
 		ARCHITECTURE="${ARCHITECTURE}_386" ;;
-	    *)
+		*)
 		echo_error "Talisman currently only supports x86 and x86_64 architectures."
 		echo_error "If this is a problem for you, please open an issue: https://github.com/${INSTALL_ORG_REPO}/issues/new"
 		exit $E_UNSUPPORTED_ARCH
@@ -109,6 +111,9 @@ function run() {
     	esac
 	
 	TALISMAN_BINARY_NAME="talisman_${ARCHITECTURE}"
+	if [[ "$OS" == "MINGW32_NT-10.0-WOW" ]]; then
+		TALISMAN_BINARY_NAME="${TALISMAN_BINARY_NAME}.exe"
+	fi
     }
     
     function download() {
@@ -160,7 +165,7 @@ function run() {
 	# if git-template dir already contains the pre-<commit/push> script that we want to use for talisman,
 	#    don't setup talisman, warn the user and suggest using a hook chaining mechanism like pre-commit (from pre-commit.com)
 	# Setup a symlink from <.git-template dir>/hooks/pre-<commit/push> to the central talisman hook script
-	
+	echo "setup_hook"
 	TEMPLATE_DIR=$(git config --global init.templatedir) || true # find the template_dir if it exists
 	
 	if [[ "$TEMPLATE_DIR" == "" ]]; then # if no template dir, create one
@@ -194,7 +199,17 @@ function run() {
 	else
 	    mkdir -p "$TEMPLATE_DIR/hooks"
 	    echo "Setting up template ${HOOK_SCRIPT} hook"
-	    ln -svf ${TALISMAN_HOOK_SCRIPT_PATH} ${TEMPLATE_DIR}/hooks/${HOOK_SCRIPT}
+		
+	    OS=$(uname -s)
+		case $OS in
+			"MINGW32_NT-10.0-WOW")
+			TEMPLATE_DIR_WIN=$(sed -e 's/\/c/C:/g' -e 's/\//\\/g' <<< "$TEMPLATE_DIR")
+			TALISMAN_HOOK_SCRIPT_PATH_WIN=$(sed -e 's/\/c/C:/g' -e 's/\//\\/g' <<< "$TALISMAN_HOOK_SCRIPT_PATH")
+			cmd <<< "mklink /H "$TEMPLATE_DIR_WIN\\hooks\\$HOOK_SCRIPT"  "$TALISMAN_HOOK_SCRIPT_PATH_WIN"" > /dev/null;;
+			*)
+			ln -svf ${TALISMAN_HOOK_SCRIPT_PATH} ${TEMPLATE_DIR}/hooks/${HOOK_SCRIPT}
+			;;
+		esac
 	    echo_success "Talisman template hook successfully installed."
 	fi
     }
