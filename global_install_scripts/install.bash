@@ -44,7 +44,7 @@ function run() {
     SCRIPT_BASE="https://raw.githubusercontent.com/${SCRIPT_ORG_REPO}/master/global_install_scripts"
 
     TEMP_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'talisman_setup')
-    #trap "rm -r ${TEMP_DIR}" EXIT
+    trap "rm -r ${TEMP_DIR}" EXIT
     chmod 0700 ${TEMP_DIR}
 
     REPO_HOOK_SETUP_SCRIPT_PATH="${TEMP_DIR}/setup_talisman_hook_in_repo.bash"   # script for setting up git hooks on one repo
