@@ -165,7 +165,7 @@ function run() {
 	# if git-template dir already contains the pre-<commit/push> script that we want to use for talisman,
 	#    don't setup talisman, warn the user and suggest using a hook chaining mechanism like pre-commit (from pre-commit.com)
 	# Setup a symlink from <.git-template dir>/hooks/pre-<commit/push> to the central talisman hook script
-	
+
 	TEMPLATE_DIR=$(git config --global init.templatedir) || true # find the template_dir if it exists
 	
 	if [[ "$TEMPLATE_DIR" == "" ]]; then # if no template dir, create one
@@ -203,8 +203,8 @@ function run() {
 	    OS=$(uname -s)
 		case $OS in
 			"MINGW32_NT-10.0-WOW")
-			TEMPLATE_DIR_WIN=$(sed -e 's/\/c/C:/g' -e 's/\//\\/g' <<< "$TEMPLATE_DIR")
-			TALISMAN_HOOK_SCRIPT_PATH_WIN=$(sed -e 's/\/c/C:/g' -e 's/\//\\/g' <<< "$TALISMAN_HOOK_SCRIPT_PATH")
+			TEMPLATE_DIR_WIN=$(sed -e 's/\/\([a-z]\)\//\1:\\/' -e 's/\//\\/g' <<< "$TEMPLATE_DIR")
+			TALISMAN_HOOK_SCRIPT_PATH_WIN=$(sed -e 's/\/\([a-z]\)\//\1:\\/' -e 's/\//\\/g' <<< "$TALISMAN_HOOK_SCRIPT_PATH")
 			cmd <<< "mklink /H "$TEMPLATE_DIR_WIN\\hooks\\$HOOK_SCRIPT"  "$TALISMAN_HOOK_SCRIPT_PATH_WIN"" > /dev/null;;
 			*)
 			ln -svf ${TALISMAN_HOOK_SCRIPT_PATH} ${TEMPLATE_DIR}/hooks/${HOOK_SCRIPT}
