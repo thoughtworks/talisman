@@ -242,7 +242,7 @@ function run() {
     hooks:
     -   id: talisman-precommit
         name: talisman
-        entry: ${TALISMAN_HOOK_SCRIPT_PATH} pre-commit
+        entry: bash -c 'if [ -n "\${TALISMAN_HOME:-}" ]; then \${TALISMAN_HOME}/talisman_hook_script pre-commit; else echo "TALISMAN does not exist. Consider installing from https://github.com/thoughtworks/talisman . If you already have talisman installed, please ensure TALISMAN_HOME variable is set to where talisman_hook_script resides, for example, TALISMAN_HOME=\${HOME}/.talisman/bin"; fi'
         language: system
         pass_filenames: false
         types: [text]
@@ -272,6 +272,8 @@ END_OF_SCRIPT
 	read -p "Please enter root directory to search for git repos (Default: ${HOME}): " SEARCH_ROOT
 	SEARCH_ROOT=${SEARCH_ROOT:-$HOME}
 	setup_git_talisman_hooks_at $SEARCH_ROOT
+	echo
+	printf "\e[%sm%s\e[00m\n" 32 "You will need TALISMAN_HOME variable to be set up in your environment. Please set up as TALISMAN_HOME=${TALISMAN_SETUP_DIR}"
 }
 
 run $0 $@
