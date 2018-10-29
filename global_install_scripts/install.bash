@@ -165,7 +165,7 @@ function run() {
 	# if git-template dir already contains the pre-<commit/push> script that we want to use for talisman,
 	#    don't setup talisman, warn the user and suggest using a hook chaining mechanism like pre-commit (from pre-commit.com)
 	# Setup a symlink from <.git-template dir>/hooks/pre-<commit/push> to the central talisman hook script
-	echo "setup_hook"
+	
 	TEMPLATE_DIR=$(git config --global init.templatedir) || true # find the template_dir if it exists
 	
 	if [[ "$TEMPLATE_DIR" == "" ]]; then # if no template dir, create one

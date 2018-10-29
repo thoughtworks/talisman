@@ -39,7 +39,7 @@ function run() {
 	    echo ${DOT_GIT_DIR} | sed 's#/.git$##' >> ${EXCEPTIONS_FILE}
 	fi
     else
-	echo "Setting up pre-commit real hook in ${DOT_GIT_DIR}/hooks"
+	echo "Setting up pre-commit hook in ${DOT_GIT_DIR}/hooks"
 	mkdir -p ${DOT_GIT_DIR}/hooks || (echo_error "Could not create hooks directory" && return)
 	LN_FLAGS="-sf"
 	[ -n "true" ] && LN_FLAGS="${LN_FLAGS}v"
