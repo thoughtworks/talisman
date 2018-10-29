@@ -242,7 +242,7 @@ function run() {
     hooks:
     -   id: talisman-precommit
         name: talisman
-        entry: bash -c 'if [ -n "\${TALISMAN_HOME:-}" ]; then \${TALISMAN_HOME}/talisman_hook_script pre-commit; else echo "TALISMAN does not exist. Consider installing from https://github.com/thoughtworks/talisman . If you already have talisman installed, please ensure TALISMAN_HOME variable is set as TALISMAN_HOME=\${HOME}/.talisman/bin"; fi'
+        entry: bash -c 'if [ -n "\${TALISMAN_HOME:-}" ]; then \${TALISMAN_HOME}/talisman_hook_script pre-commit; else echo "TALISMAN does not exist. Consider installing from https://github.com/thoughtworks/talisman . If you already have talisman installed, please ensure TALISMAN_HOME variable is set to where talisman_hook_script resides, for example, TALISMAN_HOME=\${HOME}/.talisman/bin"; fi'
         language: system
         pass_filenames: false
         types: [text]
