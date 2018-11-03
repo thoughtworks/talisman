@@ -1,9 +1,11 @@
 package detector
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/thoughtworks/talisman/git_repo"
 	"testing"
+
+	"talisman/git_repo"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestShouldFlagPotentialAWSAccessKeysInAggressiveMode(t *testing.T) {

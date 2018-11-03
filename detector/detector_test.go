@@ -3,8 +3,9 @@ package detector
 import (
 	"testing"
 
+	"talisman/git_repo"
+
 	"github.com/stretchr/testify/assert"
-	"github.com/thoughtworks/talisman/git_repo"
 )
 
 func TestEmptyValidationChainPassesAllValidations(t *testing.T) {

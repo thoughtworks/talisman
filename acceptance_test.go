@@ -8,8 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"talisman/git_testing"
+
 	"github.com/stretchr/testify/assert"
-	git "github.com/thoughtworks/talisman/git_testing"
 )
 
 const awsAccessKeyIDExample string = "accessKey=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"

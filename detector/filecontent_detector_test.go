@@ -1,9 +1,11 @@
 package detector
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/thoughtworks/talisman/git_repo"
 	"testing"
+
+	"talisman/git_repo"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestShouldNotFlagSafeText(t *testing.T) {
@@ -107,7 +109,6 @@ func TestShouldNotFlagPotentialSecretsWithinSafeLongMethodName(t *testing.T) {
 	NewFileContentDetector().Test(additions, NewIgnores(), results)
 	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
-
 
 func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
 	const hex string = "68656C6C6F20776F726C6421"
