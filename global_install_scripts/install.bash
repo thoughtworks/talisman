@@ -158,6 +158,7 @@ function run() {
 
 	sed -e "s@\${TALISMAN_BINARY}@"${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME}"@" ${TEMP_DIR}/talisman_hook_script.bash > ${TALISMAN_HOOK_SCRIPT_PATH}
 	chmod +x ${TALISMAN_HOOK_SCRIPT_PATH}
+	add_talisman_home_as $TALISMAN_SETUP_DIR
     }
     
     function setup_git_template_talisman_hook() {
@@ -212,6 +213,60 @@ function run() {
 		esac
 	    echo_success "Talisman template hook successfully installed."
 	fi
+    }
+
+    function add_talisman_home_as() {
+    # set TALISMAN_HOME path for user if user opts for it
+    #   user has option to set TALISMAN_HOME in .bashrc or .profile
+    #   user can opt out of auto-setup of TALISMAN_HOME to set it up later manually
+    TALISMAN_SETUP_DIR="$1"
+    echo "Setting up TALISMAN_HOME in path"
+
+    if [ -n "${TALISMAN_HOME:-}" ]; then
+        echo -e "TALISMAN_HOME is already set\n"
+        return 0;
+    fi
+
+    BASHRC_OPT="Set TALISMAN_HOME in ~/.bashrc"
+    BASHPROFILE_OPT="Set TALISMAN_HOME in ~/.bash_profile"
+    PROFILE_OPT="Set TALISMAN_HOME in ~/.profile"
+    SELFSETUP_OPT="I will set it later"
+    TALISMAN_HOME=""
+
+    echo -e "\n\nPLEASE CHOOSE WHERE YOU WISH TO SET TALISMAN_HOME VARIABLE (Enter option number): "
+    options=(${BASHRC_OPT} ${BASHPROFILE_OPT} ${PROFILE_OPT} ${SELFSETUP_OPT})
+    select opt in "${options[@]}"
+    do
+     case $opt in
+        ${BASHRC_OPT})
+            set_talisman_home_in ~/.bashrc
+            break
+            ;;
+        ${BASHPROFILE_OPT})
+            set_talisman_home_in ~/.bash_profile
+            break
+            ;;
+        ${PROFILE_OPT})
+            set_talisman_home_in ~/.profile
+            break
+            ;;
+        ${SELFSETUP_OPT})
+            echo "You chose to set TALISMAN_HOME by yourself. Remember to set TALISMAN_HOME=${TALISMAN_SETUP_DIR}\n\n"
+            break
+            ;;
+        *) echo "invalid option $REPLY";;
+     esac
+    done
+    }
+
+    function set_talisman_home_in() {
+      ENV_FILE="$1"
+      echo -e "Setting up TALISMAN_HOME in ${ENV_FILE}"
+      echo "export TALISMAN_HOME=${TALISMAN_SETUP_DIR}" >> ${ENV_FILE}
+      printf '\e[1;34m%-6s\e[m' "After the installation is complete, you will need to manually restart the terminal or source ${ENV_FILE} file"
+      echo
+      read -n 1 -s -r -p "Press any key to continue ..."
+      echo
     }
 
     function setup_git_talisman_hooks_at() {
@@ -287,8 +342,6 @@ END_OF_SCRIPT
 	read -p "Please enter root directory to search for git repos (Default: ${HOME}): " SEARCH_ROOT
 	SEARCH_ROOT=${SEARCH_ROOT:-$HOME}
 	setup_git_talisman_hooks_at $SEARCH_ROOT
-	echo
-	printf "\e[%sm%s\e[00m\n" 32 "You will need TALISMAN_HOME variable to be set up in your environment. Please set up as TALISMAN_HOME=${TALISMAN_SETUP_DIR}"
-}
+	}
 
 run $0 $@

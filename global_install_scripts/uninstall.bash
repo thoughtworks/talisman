@@ -109,7 +109,12 @@ function run() {
 
     echo_debug "Removing talisman from $TALISMAN_SETUP_DIR"
     rm -rf $TALISMAN_SETUP_DIR && \
-	echo_success "Removed global talisman install from ${TALISMAN_SETUP_DIR}" 
+	echo_success "Removed global talisman install from ${TALISMAN_SETUP_DIR}"
+
+	if [ -n "${TALISMAN_HOME:-}" ]; then
+        echo "Please remember to remove TALISMAN_HOME from your environment variables"
+    fi
+
 }
 
 run $0 $@
