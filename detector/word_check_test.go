@@ -1,8 +1,9 @@
 package detector
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestWordCheckWithWordsOnlyText(t *testing.T) {
@@ -52,5 +53,3 @@ func TestWordCheckWithHalfWordsHalfSecret(t *testing.T) {
 	isWordsOnly := wc.containsWordsOnly("wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEYhelloWorldGreetingsFromThoughtWorks")
 	assert.False(t, isWordsOnly)
 }
-
-

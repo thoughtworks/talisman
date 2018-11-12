@@ -3,8 +3,9 @@ package detector
 import (
 	"fmt"
 
+	"talisman/git_repo"
+
 	log "github.com/Sirupsen/logrus"
-	"github.com/thoughtworks/talisman/git_repo"
 )
 
 type FileSizeDetector struct {

@@ -1,8 +1,9 @@
 package detector
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestBase64DetectorShouldNotDetectSafeText(t *testing.T) {

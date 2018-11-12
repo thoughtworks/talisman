@@ -9,94 +9,113 @@ import (
 	"strings"
 	"testing"
 
+	"talisman/git_testing"
+
+	"github.com/Sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	git "github.com/thoughtworks/talisman/git_testing"
 )
+
+var testLocation1 = filepath.Join("data", "testLocation1")
+
+var logger *logrus.Entry
+
+func init() {
+	git_testing.Logger = logrus.WithField("Environment", "Debug")
+	git_testing.Logger.Debug("Accetpance test started")
+	logger = git_testing.Logger
+}
 
 func TestNewRepoGetsCreatedWithAbsolutePath(t *testing.T) {
 	cleanTestData()
-	repo := RepoLocatedAt("data/testLocation1")
+	repo := RepoLocatedAt(testLocation1)
 	assert.True(t, path.IsAbs(repo.root))
 }
 
 func TestInitializingANewRepoSetsUpFolderAndGitStructures(t *testing.T) {
 	cleanTestData()
-	repo := RepoLocatedAt("data/dir/sub_dir/testLocation2")
-	git.Init(repo.root)
+	repo := RepoLocatedAt(filepath.Join("data", "dir", "sub_dir", "testLocation2"))
+	git_testing.Init(repo.root)
 	assert.True(t, exists(repo.root), "Git Repo initialization should create the directory structure required")
 	assert.True(t, isGitRepo(repo.root), "Repo root does not contain the .git folder")
 }
 
 func TestSettingUpBaselineFilesSetsUpACommitInRepo(t *testing.T) {
 	cleanTestData()
-	repo := RepoLocatedAt("data/testLocation1")
-	git.Init(repo.root)
-	git.SetupBaselineFiles(repo.root, "a.txt", "alice/bob/b.txt")
-	verifyPresenceOfGitRepoWithCommits("data/testLocation1", 1, t)
+	repo := RepoLocatedAt(testLocation1)
+	git := git_testing.Init(repo.root)
+	git.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
+	verifyPresenceOfGitRepoWithCommits(testLocation1, 1, t)
 }
 
 func TestEditingFilesInARepoWorks(t *testing.T) {
 	cleanTestData()
-	repo := RepoLocatedAt("data/testLocation1")
-	git.Init(repo.root)
-	git.SetupBaselineFiles(repo.root, "a.txt", "alice/bob/b.txt")
-	git.AppendFileContent(repo.root, "a.txt", "\nmonkey see.\n", "monkey do.")
-	content := git.FileContents(repo.root, "a.txt")
+	repo := RepoLocatedAt(testLocation1)
+	git := git_testing.Init(repo.root)
+	git.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
+	git.AppendFileContent("a.txt", "\nmonkey see.\n", "monkey do.")
+	content := git.FileContents("a.txt")
 	assert.True(t, strings.HasSuffix(string(content), "monkey see.\nmonkey do."))
-	git.AddAndcommit(repo.root, "a.txt", "modified content")
-	verifyPresenceOfGitRepoWithCommits("data/testLocation1", 2, t)
+	git.AddAndcommit("a.txt", "modified content")
+	verifyPresenceOfGitRepoWithCommits(testLocation1, 2, t)
 }
 
 func TestRemovingFilesInARepoWorks(t *testing.T) {
 	cleanTestData()
-	repo := RepoLocatedAt("data/testLocation1")
-	git.Init(repo.root)
-	git.SetupBaselineFiles(repo.root, "a.txt", "alice/bob/b.txt")
-	git.RemoveFile(repo.root, "a.txt")
-	assert.False(t, exists("data/testLocation1/a.txt"), "Unexpected. Deleted file a.txt still exists inside the repo")
-	git.AddAndcommit(repo.root, "a.txt", "removed it")
-	verifyPresenceOfGitRepoWithCommits("data/testLocation1", 2, t)
+	repo := RepoLocatedAt(testLocation1)
+	git := git_testing.Init(repo.root)
+	git.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
+	git.RemoveFile("a.txt")
+	assert.False(t, exists(filepath.Join("data", "testLocation1", "a.txt")), "Unexpected. Deleted file a.txt still exists inside the repo")
+	git.AddAndcommit("a.txt", "removed it")
+	verifyPresenceOfGitRepoWithCommits(testLocation1, 2, t)
 }
 
 func TestCloningARepoToAnotherWorks(t *testing.T) {
 	cleanTestData()
-	repo := RepoLocatedAt("data/testLocation1")
-	git.Init(repo.root)
-	git.SetupBaselineFiles(repo.root, "a.txt", "alice/bob/b.txt")
-	git.GitClone(repo.root, "data/somewhereElse/testLocationClone")
-	verifyPresenceOfGitRepoWithCommits("data/testLocation1", 1, t)
-	verifyPresenceOfGitRepoWithCommits("data/somewhereElse/testLocationClone", 1, t)
+	repo := RepoLocatedAt(testLocation1)
+	git := git_testing.Init(repo.root)
+	git.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
+	cwd, _ := os.Getwd()
+	anotherRepoLocation := filepath.Join(cwd, "data", "somewhereElse", "testLocationClone")
+	git.GitClone(anotherRepoLocation)
+	verifyPresenceOfGitRepoWithCommits(testLocation1, 1, t)
+	logger.Debug("Finished with first verification")
+	logger.Debugf("Another location is %s\n", anotherRepoLocation)
+	verifyPresenceOfGitRepoWithCommits(anotherRepoLocation, 1, t)
 }
 
 func TestEarliestCommits(t *testing.T) {
 	cleanTestData()
-	repo := RepoLocatedAt("data/testLocation1")
-	git.Init(repo.root)
-	git.SetupBaselineFiles(repo.root, "a.txt")
-	initialCommit := git.EarliestCommit(repo.root)
-	git.AppendFileContent(repo.root, "a.txt", "\nmonkey see.\n", "monkey do.")
-	git.AddAndcommit(repo.root, "a.txt", "modified content")
-	assert.Equal(t, initialCommit, git.EarliestCommit(repo.root), "First commit is not expected to change on repo modifications")
+	repo := RepoLocatedAt(testLocation1)
+	git := git_testing.Init(repo.root)
+	git.SetupBaselineFiles("a.txt")
+	initialCommit := git.EarliestCommit()
+	git.AppendFileContent("a.txt", "\nmonkey see.\n", "monkey do.")
+	git.AddAndcommit("a.txt", "modified content")
+	assert.Equal(t, initialCommit, git.EarliestCommit(), "First commit is not expected to change on repo modifications")
 }
 
 func TestLatestCommits(t *testing.T) {
 	cleanTestData()
-	repo := RepoLocatedAt("data/testLocation1")
-	git.Init(repo.root)
-	git.SetupBaselineFiles(repo.root, "a.txt")
-	git.AppendFileContent(repo.root, "a.txt", "\nmonkey see.\n", "monkey do.")
-	git.AddAndcommit(repo.root, "a.txt", "modified content")
-	git.AppendFileContent(repo.root, "a.txt", "\nline n-1.\n", "line n.")
-	git.AddAndcommit(repo.root, "a.txt", "more modified content")
-	assert.NotEqual(t, git.EarliestCommit(repo.root), git.LatestCommit(repo.root)) //bad test.
+	repo := RepoLocatedAt(testLocation1)
+	git := git_testing.Init(repo.root)
+	git.SetupBaselineFiles("a.txt")
+	git.AppendFileContent("a.txt", "\nmonkey see.\n", "monkey do.")
+	git.AddAndcommit("a.txt", "modified content")
+	git.AppendFileContent("a.txt", "\nline n-1.\n", "line n.")
+	git.AddAndcommit("a.txt", "more modified content")
+	assert.NotEqual(t, git.EarliestCommit(), git.LatestCommit()) //bad test.
 }
 
 func verifyPresenceOfGitRepoWithCommits(location string, expectedCommitCount int, t *testing.T) {
+	wd, _ := os.Getwd()
+	os.Chdir(location)
+	defer func() { os.Chdir(wd) }()
+
 	cmd := exec.Command("git", "log", "--pretty=short")
-	cmd.Dir = location
 	o, err := cmd.CombinedOutput()
 	dieOnError(err)
-	matches := regExp("(?m)^commit\\s[a-z0-9]+$").FindAllString(string(o), -1)
+	matches := regExp("(?m)^commit\\s[a-z0-9]+\\s+.*$").FindAllString(string(o), -1)
 	assert.Len(t, matches, expectedCommitCount, "Repo root does not contain exactly %d commits.", expectedCommitCount)
 }
 

@@ -135,11 +135,9 @@ To build Talisman, we can use [gox](https://github.com/mitchellh/gox):
 
 ```` gox -osarch="darwin/amd64 linux/386 linux/amd64" ````
 
+Convenince scripts ```./build``` and ```./clean``` perform build and clean-up as mentioned above.
+
 #### Contributing to Talisman
-
-##### Working off a fork
-
-Keep in mind that Go namespaces imports by git repo, so if you fork Talisman to work on a PR you will likely have to change imports in a few places -- for example, [`talisman.go:11`](https://github.com/thoughtworks/talisman/blob/d4b1b1d11137dbb173bf681a03f16183a9d82255/talisman.go#L11).
 
 ##### Releasing
 

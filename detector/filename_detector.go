@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"regexp"
 
+	"talisman/git_repo"
+
 	log "github.com/Sirupsen/logrus"
-	"github.com/thoughtworks/talisman/git_repo"
 )
 
 //FileNameDetector represents tests performed against the fileName of the Additions.

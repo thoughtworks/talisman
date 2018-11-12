@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/thoughtworks/talisman/detector"
-	"github.com/thoughtworks/talisman/git_repo"
+	"talisman/detector"
+	"talisman/git_repo"
 )
 
 const (

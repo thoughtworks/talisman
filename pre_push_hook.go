@@ -4,7 +4,7 @@ import (
 	"os"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/thoughtworks/talisman/git_repo"
+	"talisman/git_repo"
 )
 
 const (
