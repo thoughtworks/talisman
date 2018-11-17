@@ -1,4 +1,6 @@
-To install talisman globally in your machine as pre-commit hook, run:
+## Installation
+
+You can install Talisman as a global hook in your machine as a pre-commit or a pre-push hook, run:
 
 ```
 curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/install.bash > /tmp/install_talisman.bash && /bin/bash /tmp/install_talisman.bash 
@@ -24,5 +26,6 @@ This will
 1. ask you for the base dir of all your repos, find all git repos inside it and remove talisman hooks
 2. remove talisman hook from .git-template 
 3. remove talisman from the central install location ($HOME/.talisman/bin)
+You will have to manually remove TALISMAN_HOME from your environment variables
 
 
