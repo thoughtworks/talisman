@@ -30,7 +30,7 @@ We recommend installing it as a git hook template, as that will cause
 Talisman to be present, not only in your existing git repositories, but also in any new repository that you 'init' or
 'clone'.
 
-Use the [Global scripts Readme] (global_install_scripts/Readme.md) to guide you through the installation process.
+Use the [Global scripts Readme](global_install_scripts/Readme.md) to guide you through the installation process.
 
 ### Installation to a single project
 
