@@ -14,10 +14,31 @@ curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/gl
 This will
 1. dowload the appropriate version of talisman for your machine and install it at $HOME/.talisman/bin  
 2. create a bash script talisman_hook_script at $HOME/.talisman/bin to run talisman
-3. setup hook in .git-template (symlink to hook script at $HOME/.talisman/bin) - any new repo (git init OR git clone) will automatically get the hook
-4. ask you for the base dir of all your repos, find all git repos inside it and setup hooks (as symlink)
+3. ask you for an appropriate place to set the TALISMAN\_HOME in path. TALISMAN\_HOME=$HOME/.talisman/bin [This should be the file which sets the profile source on your machine (.bash_Profile or .bashrc or .profile). Remember to execute 'source <filename>' or restart your terminal. You could also choose to set the variable yourself later]
+4. setup hook in .git-template (symlink to hook script at $HOME/.talisman/bin) - any new repo (git init OR git clone) will automatically get the hook
+5. ask you for the base dir of all your repos, find all git repos inside it and setup hooks (as symlink)
 This script will not clobber pre-existing hooks
 
+#### Handling existing hooks
+Installation of Talisman globally does not clobber pre-existing hooks on repositories.
+If the installation script finds any existing hooks, it will only indicate so on the console.
+It will also suggest the following:
+ 1. use [pre-commit](https://pre-commit.com) tool to manage all the existing hooks alongwith Talisman.
+ 2. In the suggestion, it will prompt the following code to be included in .pre-commit-config.yaml
+    ```bash
+    -   repo: local
+        hooks:
+        -   id: talisman-precommit
+            name: talisman
+            entry: bash -c 'if [ -n "${TALISMAN_HOME:-}" ]; then ${TALISMAN_HOME}/talisman_hook_script pre-commit; else echo "TALISMAN does not exist. Consider installing from https://github.com/thoughtworks/talisman . If you already have talisman installed, please ensure TALISMAN_HOME variable is set to where talisman_hook_script resides, for example, TALISMAN_HOME=${HOME}/.talisman/bin"; fi'
+            language: system
+            pass_filenames: false
+            types: [text]
+            verbose: true
+    ```
+
+
+## Uninstallation
 To uninstall talisman globally from your machine, run:
 ```
 curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/uninstall.bash > /tmp/uninstall_talisman.bash && /bin/bash /tmp/uninstall_talisman.bash 

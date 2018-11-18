@@ -20,8 +20,9 @@ ideally, code that implements your ideas and suggestions!
 
 ## Installation
 
-Talisman can either be installed into a single git repo, or as a global
+Talisman can either be installed into a single git repository, or as a global
 [git hook template](https://git-scm.com/docs/git-init#_template_directory).
+
 Talisman can be set up a as a pre-push or pre-commit hook on git repositories.
 
 
