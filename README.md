@@ -18,88 +18,34 @@ wish to incorporate. However, we encourage folks that want to
 contribute to have a look around and contribute ideas/suggestions or
 ideally, code that implements your ideas and suggestions!
 
-#### Running Talisman
+## Installation
 
-Talisman can either be installed into a single git repo, or as a
+Talisman can either be installed into a single git repository, or as a global
 [git hook template](https://git-scm.com/docs/git-init#_template_directory).
 
+Talisman can be set up a as a pre-push or pre-commit hook on git repositories.
+
+
+### Installation as a global hook template (recommended)
 We recommend installing it as a git hook template, as that will cause
-Talisman to be present in any new repository that you 'init' or
+Talisman to be present, not only in your existing git repositories, but also in any new repository that you 'init' or
 'clone'.
 
-You could download the
-[Talisman binary](https://github.com/thoughtworks/talisman/releases)
-manually and copy it into your project/template `hooks` directory --
-or you can use our `install.sh` script.
+Use the [Global scripts Readme](global_install_scripts/Readme.md) to guide you through the installation process.
+
+### Installation to a single project
 
 ```bash
+# Download the talisman binary
 curl https://thoughtworks.github.io/talisman/install.sh > ~/install-talisman.sh
 chmod +x ~/install-talisman.sh
 ```
 
-If you run this script from inside a git repo, it will add Talisman to
-that repo. Otherwise, it will prompt you to install as a git hook
-template.
-
 ```bash
-# Install to a single project
+# Install to a single project (as pre-push hook)
 cd my-git-project
 ~/install-talisman.sh
 ```
-
-```bash
-# Install as a git hook template
-cd ~
-~/install-talisman.sh
-```
-
-From now on Talisman will run checks for obvious secrets automatically before each push:
-
-```bash
-$ git push
-The following errors were detected in danger.pem
-         The file name "danger.pem" failed checks against the pattern ^.+\.pem$
-
-error: failed to push some refs to 'git@github.com:jacksingleton/talisman-demo.git'
-```
-
-#### Ignoring Files
-
-If you're *really* sure you want to push that file, you can add it to
-a `.talismanignore` file in the project root:
-
-```bash
-echo 'danger.pem' >> .talismanignore
-```
-
-Note that we can ignore files in a few different ways:
-
-* If the pattern ends in a path separator, then all files inside a
-  directory with that name are matched. However, files with that name
-  itself will not be matched.
-  
-* If a pattern contains the path separator in any other location, the
-  match works according to the pattern logic of the default golang
-  glob mechanism.
-  
-* If there is no path separator anywhere in the pattern, the pattern
-  is matched against the base name of the file. Thus, the pattern will
-  match files with that name anywhere in the repository.
-
-You can also disable only specific detectors.
-For example, if your `init-env.sh` filename triggers a warning, you can only disable
-this warning while still being alerted if other things go wrong (e.g. file content):
-```bash
-echo 'init-env.sh # ignore:filename,filesize' >> .talismanignore
-```
-Note: Here both filename and filesize detectors are ignored for init-env.sh, but 
-filecontent detector will still activate on `init-env.sh` 
-
-At the moment, you can ignore
-
-* `filecontent`
-* `filename`
-* `filesize`
 
 #### Usage with the [pre-commit](https://pre-commit.com) git hooks framework
 
@@ -115,7 +61,58 @@ a real git revision!)
     # -   id: talisman-push
 ```
 
-#### Developing locally
+## Talisman in action
+
+After the installation is successful, Talisman will run checks for obvious secrets automatically before each push:
+
+```bash
+$ git push
+The following errors were detected in danger.pem
+         The file name "danger.pem" failed checks against the pattern ^.+\.pem$
+
+error: failed to push some refs to 'git@github.com:jacksingleton/talisman-demo.git'
+```
+
+### Ignoring Files
+
+If you're *really* sure you want to push that file, you can add it to
+a `.talismanignore` file in the project root:
+
+```bash
+echo 'danger.pem' >> .talismanignore
+```
+
+Note that we can ignore files in a few different ways:
+
+* If the pattern ends in a path separator, then all files inside a
+  directory with that name are matched. However, files with that name
+  itself will not be matched.
+
+* If a pattern contains the path separator in any other location, the
+  match works according to the pattern logic of the default golang
+  glob mechanism.
+
+* If there is no path separator anywhere in the pattern, the pattern
+  is matched against the base name of the file. Thus, the pattern will
+  match files with that name anywhere in the repository.
+
+You can also disable only specific detectors.
+For example, if your `init-env.sh` filename triggers a warning, you can only disable
+this warning while still being alerted if other things go wrong (e.g. file content):
+```bash
+echo 'init-env.sh # ignore:filename,filesize' >> .talismanignore
+```
+Note: Here both filename and filesize detectors are ignored for init-env.sh, but
+filecontent detector will still activate on `init-env.sh`
+
+At the moment, you can ignore
+
+* `filecontent`
+* `filename`
+* `filesize`
+
+
+## Developing locally
 
 To contribute to Talisman, you need a working golang development
 environment. Check [this link](https://golang.org/doc/install) to help
