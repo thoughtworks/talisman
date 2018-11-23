@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/thoughtworks/talisman/git_repo"
+	"talisman/git_repo"
 )
 
 type PreCommitHook struct{}

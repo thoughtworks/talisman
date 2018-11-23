@@ -3,8 +3,9 @@ package detector
 import (
 	"testing"
 
+	"talisman/git_repo"
+
 	"github.com/stretchr/testify/assert"
-	"github.com/thoughtworks/talisman/git_repo"
 )
 
 func TestShouldIgnoreEmptyLinesInTheFile(t *testing.T) {
@@ -31,11 +32,9 @@ func TestShouldParseIgnoreLinesProperly(t *testing.T) {
 	assert.Equal(t, NewIgnores(""), SingleIgnore("", ""))
 	assert.Equal(t, NewIgnores(" "), SingleIgnore("", ""))
 
-
-	assert.Equal(t, NewIgnores("foo # ignore:some-detector"), SingleIgnore("foo", "ignore:some-detector","some-detector"))
-	assert.Equal(t, NewIgnores("foo # ignore:some-detector,some-other-detector"), SingleIgnore("foo", "ignore:some-detector,some-other-detector","some-detector", "some-other-detector"))
-	assert.Equal(t, NewIgnores("foo # ignore:some-detector because of some reason"), SingleIgnore("foo", "ignore:some-detector because of some reason","some-detector"))
-
+	assert.Equal(t, NewIgnores("foo # ignore:some-detector"), SingleIgnore("foo", "ignore:some-detector", "some-detector"))
+	assert.Equal(t, NewIgnores("foo # ignore:some-detector,some-other-detector"), SingleIgnore("foo", "ignore:some-detector,some-other-detector", "some-detector", "some-other-detector"))
+	assert.Equal(t, NewIgnores("foo # ignore:some-detector because of some reason"), SingleIgnore("foo", "ignore:some-detector because of some reason", "some-detector"))
 
 }
 
@@ -88,7 +87,6 @@ func TestIgnoringDetectors(t *testing.T) {
 	assertAcceptsDetector("foo # ignore:someDetector", "foo", "someOtherDetector", t)
 }
 
-
 func assertDenies(line, path string, t *testing.T) {
 	assertDeniesDetector(line, path, "someDetector", t)
 }
@@ -110,8 +108,8 @@ func testAddition(path string) git_repo.Addition {
 }
 func SingleIgnore(pattern string, comment string, ignoredDetectors ...string) Ignores {
 	return Ignores{patterns: []Ignore{{
-		pattern: pattern,
-		comment: comment,
+		pattern:          pattern,
+		comment:          comment,
 		ignoredDetectors: ignoredDetectors,
 	}}}
 }

@@ -8,19 +8,23 @@ import (
 	"os"
 	"strings"
 
+	"talisman/git_repo"
+
 	log "github.com/Sirupsen/logrus"
-	"github.com/thoughtworks/talisman/git_repo"
 )
 
 var (
-	fdebug  bool
-	githook string
+	fdebug      bool
+	githook     string
 	showVersion bool
-	Version string = "Development Build"
+	//Version : Version of talisman
+	Version = "Development Build"
 )
 
 const (
-	PrePush   = "pre-push"
+	//PrePush : Const for name of pre-push hook
+	PrePush = "pre-push"
+	//PreCommit : Const for name of of pre-commit hook
 	PreCommit = "pre-commit"
 )
 
@@ -28,7 +32,7 @@ func init() {
 	log.SetOutput(os.Stderr)
 }
 
-type Options struct {
+type options struct {
 	debug   bool
 	githook string
 }
@@ -37,7 +41,7 @@ type Options struct {
 func main() {
 	flag.BoolVar(&fdebug, "debug", false, "enable debug mode (warning: very verbose)")
 	flag.BoolVar(&fdebug, "d", false, "short form of debug (warning: very verbose)")
-	flag.BoolVar(&showVersion, "v", false, "show current version of talisman" )
+	flag.BoolVar(&showVersion, "v", false, "show current version of talisman")
 	flag.BoolVar(&showVersion, "version", false, "show current version of talisman")
 	flag.StringVar(&githook, "githook", PrePush, "either pre-push or pre-commit")
 	flag.Parse()
@@ -47,29 +51,29 @@ func main() {
 		os.Exit(0)
 	}
 
-	options := Options{
+	_options := options{
 		debug:   fdebug,
 		githook: githook,
 	}
 
-	os.Exit(run(os.Stdin, options))
+	os.Exit(run(os.Stdin, _options))
 }
 
-func run(stdin io.Reader, options Options) (returnCode int) {
-	if options.debug {
+func run(stdin io.Reader, _options options) (returnCode int) {
+	if _options.debug {
 		log.SetLevel(log.DebugLevel)
 	} else {
 		log.SetLevel(log.ErrorLevel)
 	}
 
-	if options.githook == "" {
-		options.githook = PrePush
+	if _options.githook == "" {
+		_options.githook = PrePush
 	}
 
-	log.Infof("Running %s hook", options.githook)
+	log.Infof("Running %s hook", _options.githook)
 
 	var additions []git_repo.Addition
-	if options.githook == PreCommit {
+	if _options.githook == PreCommit {
 		preCommitHook := NewPreCommitHook()
 		additions = preCommitHook.GetRepoAdditions()
 	} else {

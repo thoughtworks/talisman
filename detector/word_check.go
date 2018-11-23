@@ -2,8 +2,8 @@ package detector
 
 import (
 	"bufio"
-	"strings"
 	"os"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -12,14 +12,12 @@ type WordCheck struct {
 }
 
 const AVERAGE_LENGTH_OF_WORDS_IN_ENGLISH = 5 //See http://bit.ly/2qYFzFf for reference
-const UNIX_WORDS_PATH = "/usr/share/dict/words" //See https://en.wikipedia.org/wiki/Words_(Unix) for reference
-const UNIX_WORDS_ALTERNATIVE_PATH = "/usr/dict/words" //See https://en.wikipedia.org/wiki/Words_(Unix) for reference
 
 func (en *WordCheck) containsWordsOnly(text string) bool {
 	text = strings.ToLower(text)
 	file := &os.File{}
 	defer file.Close()
-	reader := getWordsFileReader(file, UNIX_WORDS_PATH, UNIX_WORDS_ALTERNATIVE_PATH)
+	reader := bufio.NewReader(strings.NewReader(DictionaryWordsString))
 	if reader == nil {
 		return false
 	}
@@ -28,18 +26,6 @@ func (en *WordCheck) containsWordsOnly(text string) bool {
 		return true
 	}
 	return false
-}
-
-func getWordsFileReader(file *os.File, filePaths... string) *bufio.Reader {
-	for _, filePath := range filePaths {
-		var err error = nil
-		file, err = os.Open(filePath)
-		if err != nil {
-			continue
-		}
-		return bufio.NewReader(file)
-	}
-	return nil
 }
 
 func howManyWordsExistInText(reader *bufio.Reader, text string) int {

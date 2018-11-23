@@ -2,14 +2,16 @@ package detector
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
-	"github.com/thoughtworks/talisman/git_repo"
 	"strings"
+
+	"talisman/git_repo"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 type FileContentDetector struct {
 	base64Detector *Base64Detector
-	hexDetector *HexDetector
+	hexDetector    *HexDetector
 }
 
 func NewFileContentDetector() *FileContentDetector {
@@ -23,7 +25,6 @@ func (fc *FileContentDetector) AggressiveMode() *FileContentDetector {
 	fc.base64Detector.aggressiveDetector = &Base64AggressiveDetector{}
 	return fc
 }
-
 
 func (fc *FileContentDetector) Test(additions []git_repo.Addition, ignores Ignores, result *DetectionResults) {
 	for _, addition := range additions {

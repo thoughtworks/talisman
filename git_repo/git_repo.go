@@ -1,6 +1,7 @@
 package git_repo
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -82,7 +83,9 @@ func NewAddition(filePath string, content []byte) Addition {
 
 //ReadRepoFile returns the contents of the supplied relative filename by locating it in the git repo
 func (repo GitRepo) ReadRepoFile(fileName string) ([]byte, error) {
-	return ioutil.ReadFile(path.Join(repo.root, fileName))
+	path := filepath.Join(repo.root, fileName)
+	log.Debugf("reading file %s", path)
+	return ioutil.ReadFile(path)
 }
 
 //ReadRepoFileOrNothing returns the contents of the supplied relative filename by locating it in the git repo.
@@ -159,14 +162,17 @@ func (repo GitRepo) executeRepoCommand(commandName string, args ...string) []byt
 	}).Debug("Building repo command")
 	result := exec.Command(commandName, args...)
 	result.Dir = repo.root
-	o, err := result.Output()
+	co, err := result.CombinedOutput()
 	logEntry := log.WithFields(log.Fields{
-		"output": string(o),
+		"dir":     repo.root,
+		"command": fmt.Sprintf("%s %s", commandName, strings.Join(args, " ")),
+		"output":  string(co),
+		"error":   err,
 	})
 	if err == nil {
-		logEntry.Debug("Command excuted successfully")
+		logEntry.Debug("Git command excuted successfully")
 	} else {
-		logEntry.WithError(err).Fatal("Command execution failed")
+		logEntry.Fatal("Git command execution failed")
 	}
-	return o
+	return co
 }

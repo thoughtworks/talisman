@@ -1,6 +1,6 @@
 package detector
 
-import "github.com/thoughtworks/talisman/git_repo"
+import "talisman/git_repo"
 
 //Detector represents a single kind of test to be performed against a set of Additions
 //Detectors are expected to honor the ignores that are passed in and log them in the results

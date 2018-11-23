@@ -1,106 +1,149 @@
 package git_testing
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
-	"path"
+	"path/filepath"
 	"strings"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/drhodes/golorem"
 )
 
-func Init(gitRoot string) {
+var Logger *logrus.Entry
+
+type GitTesting struct {
+	gitRoot string
+}
+
+func Init(gitRoot string) *GitTesting {
 	os.MkdirAll(gitRoot, 0777)
-	ExecCommand(gitRoot, "git", "init", ".")
+	testingRepo := &GitTesting{gitRoot}
+	testingRepo.ExecCommand("git", "init", ".")
+	return testingRepo
 }
 
-func GitClone(existingRepoRoot string, cloneName string) string {
-	ExecCommand("", "git", "clone", existingRepoRoot, cloneName)
-	return cloneName
+func (git *GitTesting) GitClone(cloneName string) *GitTesting {
+	result := git.ExecCommand("git", "clone", git.gitRoot, cloneName)
+	Logger.Debugf("Clone result : %s\n", result)
+	Logger.Debugf("GitRoot :%s \t CloneRoot: %s\n", git.gitRoot, cloneName)
+	retval := &GitTesting{cloneName}
+	return retval
 }
 
-func SetupBaselineFiles(gitRoot string, filenames ...string) {
-	for _, filename := range filenames {
-		CreateFileWithContents(gitRoot, filename, lorem.Sentence(8, 10), lorem.Sentence(8, 10))
-	}
-	AddAndcommit(gitRoot, "*", "initial commit")
+func (git *GitTesting) SetupBaselineFiles(filenames ...string) {
+	Logger.Debugf("Creating %v in %s\n", filenames, git.gitRoot)
+	git.doInGitRoot(func() {
+		for _, filename := range filenames {
+			git.CreateFileWithContents(filename, lorem.Sentence(8, 10), lorem.Sentence(8, 10))
+		}
+	})
+	git.AddAndcommit("*", "initial commit")
 }
 
-func EarliestCommit(gitRoot string) string {
-	return ExecCommand(gitRoot, "git", "rev-list", "--max-parents=0", "HEAD")
+func (git *GitTesting) EarliestCommit() string {
+	return git.ExecCommand("git", "rev-list", "--max-parents=0", "HEAD")
 }
 
-func LatestCommit(gitRoot string) string {
-	return ExecCommand(gitRoot, "git", "rev-parse", "HEAD")
+func (git *GitTesting) LatestCommit() string {
+	return git.ExecCommand("git", "rev-parse", "HEAD")
 }
 
-func CreateFileWithContents(gitRoot string, name string, contents ...string) string {
-	fileName := path.Join(gitRoot, name)
-	os.MkdirAll(path.Dir(fileName), 0777)
-	f, err := os.Create(fileName)
-	die(err)
-	defer f.Close()
-	for _, line := range contents {
-		f.WriteString(line)
-	}
-	return name
+func (git *GitTesting) CreateFileWithContents(filePath string, contents ...string) string {
+	git.doInGitRoot(func() {
+		os.MkdirAll(filepath.Dir(filePath), 0700)
+		f, err := os.Create(filePath)
+		git.die(fmt.Sprintf("when creating file %s", filePath), err)
+		defer f.Close()
+		for _, line := range contents {
+			f.WriteString(line)
+		}
+	})
+	return filePath
 }
 
-func OverwriteFileContent(gitRoot string, name string, contents ...string) {
-	fileName := path.Join(gitRoot, name)
-	f, err := os.Create(fileName)
-	die(err)
-	defer f.Close()
-	for _, line := range contents {
-		f.WriteString(line)
-	}
-	f.Sync()
+func (git *GitTesting) OverwriteFileContent(filePath string, contents ...string) {
+	git.doInGitRoot(func() {
+		os.MkdirAll(filepath.Dir(filePath), 0770)
+		f, err := os.Create(filePath)
+		git.die(fmt.Sprintf("when overwriting file %s", filePath), err)
+		defer f.Close()
+		for _, line := range contents {
+			f.WriteString(line)
+		}
+		f.Sync()
+	})
 }
 
-func AppendFileContent(gitRoot string, name string, contents ...string) {
-	fileName := path.Join(gitRoot, name)
-	f, err := os.OpenFile(fileName, os.O_RDWR|os.O_APPEND, 0660)
-	die(err)
-	defer f.Close()
-	for _, line := range contents {
-		f.WriteString(line)
-	}
-	f.Sync()
+func (git *GitTesting) AppendFileContent(filePath string, contents ...string) {
+	git.doInGitRoot(func() {
+		os.MkdirAll(filepath.Dir(filePath), 0770)
+		f, err := os.OpenFile(filePath, os.O_RDWR|os.O_APPEND, 0660)
+		git.die(fmt.Sprintf("when appending file %s", filePath), err)
+		defer f.Close()
+		for _, line := range contents {
+			f.WriteString(line)
+		}
+		f.Sync()
+	})
 }
 
-func RemoveFile(gitRoot string, filename string) {
-	os.Remove(path.Join(gitRoot, filename))
+func (git *GitTesting) RemoveFile(filename string) {
+	git.doInGitRoot(func() {
+		os.Remove(filename)
+	})
 }
 
-func FileContents(gitRoot string, name string) []byte {
-	fileName := path.Join(gitRoot, name)
-	result, err := ioutil.ReadFile(fileName)
-	die(err)
+func (git *GitTesting) FileContents(filePath string) []byte {
+	var result []byte
+	var err error
+	git.doInGitRoot(func() {
+		result, err = ioutil.ReadFile(filePath)
+		git.die(fmt.Sprintf("when reading file %s", filePath), err)
+	})
 	return result
 }
 
-func AddAndcommit(gitRoot string, fileName string, message string) {
-	ExecCommand(gitRoot, "git", "add", fileName)
-	ExecCommand(gitRoot, "git", "commit", fileName, "-m", message)
+func (git *GitTesting) AddAndcommit(fileName string, message string) {
+	git.ExecCommand("git", "add", fileName)
+	git.ExecCommand("git", "commit", fileName, "-m", message)
 }
 
-func Add(gitRoot string, fileName string) {
-	ExecCommand(gitRoot, "git", "add", fileName)
+func (git *GitTesting) Add(fileName string) {
+	git.ExecCommand("git", "add", fileName)
 }
 
-func ExecCommand(gitRoot string, commandName string, args ...string) string {
-	result := exec.Command(commandName, args...)
-	if len(gitRoot) > 0 {
-		result.Dir = gitRoot
+func (git *GitTesting) ExecCommand(commandName string, args ...string) string {
+	var output []byte
+	git.doInGitRoot(func() {
+		result := exec.Command(commandName, args...)
+		var err error
+		output, err = result.Output()
+		git.die(fmt.Sprintf("when executing command %s %v in %s", commandName, args, git.gitRoot), err)
+		Logger.Debugf("Output of command %s %v in %s is: %s\n", commandName, args, git.gitRoot, string(output))
+	})
+	if len(output) > 0 {
+		return strings.Trim(string(output), "\n")
 	}
-	o, err := result.Output()
-	die(err)
-	return strings.Trim(string(o), "\n")
+	return ""
 }
 
-func die(err error) {
+func (git *GitTesting) die(msg string, err error) {
 	if err != nil {
+		Logger.Debugf("Error %s: %s\n", msg, err.Error())
 		panic(err)
 	}
+}
+
+func (git *GitTesting) doInGitRoot(operation func()) {
+	wd, _ := os.Getwd()
+	os.Chdir(git.gitRoot)
+	defer func() { os.Chdir(wd) }()
+	operation()
+}
+
+func (git *GitTesting) GetRoot() string {
+	return git.gitRoot
 }
