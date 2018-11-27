@@ -17,6 +17,7 @@ var (
 	fdebug      bool
 	githook     string
 	showVersion bool
+	pattern     string
 	//Version : Version of talisman
 	Version = "Development Build"
 )
@@ -35,15 +36,19 @@ func init() {
 type options struct {
 	debug   bool
 	githook string
+	pattern string
 }
 
 //Logger is the default log device, set to emit at the Error level by default
 func main() {
+	flag.BoolVar(&fdebug, "d", false, "short form of debug")
 	flag.BoolVar(&fdebug, "debug", false, "enable debug mode (warning: very verbose)")
-	flag.BoolVar(&fdebug, "d", false, "short form of debug (warning: very verbose)")
-	flag.BoolVar(&showVersion, "v", false, "show current version of talisman")
+	flag.BoolVar(&showVersion, "v", false, "short form of version")
 	flag.BoolVar(&showVersion, "version", false, "show current version of talisman")
+	flag.StringVar(&pattern, "p", "", "short form of pattern")
+	flag.StringVar(&pattern, "pattern", "", "pattern (glob-like) of files to scan (ignores githooks)")
 	flag.StringVar(&githook, "githook", PrePush, "either pre-push or pre-commit")
+
 	flag.Parse()
 
 	if showVersion {
@@ -54,6 +59,7 @@ func main() {
 	_options := options{
 		debug:   fdebug,
 		githook: githook,
+		pattern: pattern,
 	}
 
 	os.Exit(run(os.Stdin, _options))
@@ -70,13 +76,17 @@ func run(stdin io.Reader, _options options) (returnCode int) {
 		_options.githook = PrePush
 	}
 
-	log.Infof("Running %s hook", _options.githook)
-
 	var additions []git_repo.Addition
-	if _options.githook == PreCommit {
+	if _options.pattern != "" {
+		log.Infof("Running %s pattern", _options.pattern)
+		directoryHook := NewDirectoryHook()
+		additions = directoryHook.GetFilesFromDirectory(_options.pattern)
+	} else if _options.githook == PreCommit {
+		log.Infof("Running %s hook", _options.githook)
 		preCommitHook := NewPreCommitHook()
 		additions = preCommitHook.GetRepoAdditions()
 	} else {
+		log.Infof("Running %s hook", _options.githook)
 		prePushHook := NewPrePushHook(readRefAndSha(stdin))
 		additions = prePushHook.GetRepoAdditions()
 	}
