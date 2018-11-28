@@ -2,6 +2,7 @@ package detector
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"talisman/git_repo"
@@ -60,6 +61,10 @@ func (fc *FileContentDetector) checkEachLine(content string) []string {
 	lines := strings.Split(content, "\n")
 	res := []string{}
 	for _, line := range lines {
+		if isIgnoredLine(line) {
+			continue
+		}
+
 		lineResult := fc.checkEachWord(line)
 		if len(lineResult) > 0 {
 			res = append(res, lineResult...)
@@ -82,4 +87,9 @@ func (fc *FileContentDetector) checkEachWord(line string) []string {
 		}
 	}
 	return res
+}
+
+func isIgnoredLine(line string) bool {
+	re := regexp.MustCompile("talisman-ignore-line")
+	return re.MatchString(line)
 }

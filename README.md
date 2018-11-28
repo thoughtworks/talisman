@@ -124,6 +124,16 @@ At the moment, you can ignore
 * `filename`
 * `filesize`
 
+### Ignoring Specific Lines in Files
+
+You can ignore a line from talisman's scanning by using the `//talisman-ignore-line` 
+comment at the end of the line
+
+```javascript
+const someSecretKey = 'some-secret' // talisman-ignore-line
+```
+
+It will also work with other comment syntaxes (eg: //, ##, #)
 
 ## Developing locally
 

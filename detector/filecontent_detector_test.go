@@ -121,6 +121,17 @@ func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
 
+func TestShoultNotFlagIgnoredLine(t *testing.T) {
+	const stringContent string = "some-text \n 68656C6C6F20776F726C6421 // talisman-ignore-line"
+	results := NewDetectionResults()
+	content := []byte(stringContent)
+	filename := "filename"
+	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
+
+	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	assert.False(t, results.HasFailures(), "Expected detector to exclude second line from scanning")
+}
+
 func TestResultsShouldContainHexTextsIfHexAndBase64ExistInFile(t *testing.T) {
 	const hex string = "68656C6C6F20776F726C6421"
 	const base64 string = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
