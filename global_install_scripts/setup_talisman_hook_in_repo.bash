@@ -45,7 +45,7 @@ function run() {
 	[ -n "true" ] && LN_FLAGS="${LN_FLAGS}v"
 	OS=$(uname -s)
 	case $OS in
-		"MINGW32_NT-10.0-WOW")
+		"MINGW32_NT-10.0-WOW" | "MINGW64_NT-10.0")
 		DOT_GIT_DIR_WIN=$(sed -e 's/\/\([a-z]\)\//\1:\\/' -e 's/\//\\/g' <<< "$DOT_GIT_DIR")
 		TALISMAN_HOOK_SCRIPT_PATH_WIN=$(sed -e 's/\/\([a-z]\)\//\1:\\/' -e 's/\//\\/g' <<< "$TALISMAN_HOOK_SCRIPT_PATH")
 		cmd <<< "mklink /H "${DOT_GIT_DIR_WIN}\\hooks\\pre-commit" "${TALISMAN_HOOK_SCRIPT_PATH_WIN}"" > /dev/null;;
