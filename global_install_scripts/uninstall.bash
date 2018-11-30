@@ -78,8 +78,9 @@ function run() {
 	fi
 	EXCEPTIONS_FILE=${TEMP_DIR}/repos_with_multiple_hooks.paths
 	touch ${EXCEPTIONS_FILE}
-	
-	CMD_STRING="${SUDO_PREFIX} ${SEARCH_CMD} ${SEARCH_ROOT} ${EXTRA_SEARCH_OPTS} -name .git -type d -exec ${DELETE_REPO_HOOK_SCRIPT} ${TALISMAN_SETUP_DIR} ${EXCEPTIONS_FILE} {} ${HOOK_SCRIPT} \;"
+
+	TALISMAN_PATH=${TALISMAN_SETUP_DIR}/talisman_hook_script
+	CMD_STRING="${SUDO_PREFIX} ${SEARCH_CMD} ${SEARCH_ROOT} ${EXTRA_SEARCH_OPTS} -name .git -type d -exec ${DELETE_REPO_HOOK_SCRIPT} ${TALISMAN_PATH} ${EXCEPTIONS_FILE} {} ${HOOK_SCRIPT} \;"
 	echo_debug "EXECUTING: ${CMD_STRING}"
 	eval "${CMD_STRING}"
 		
