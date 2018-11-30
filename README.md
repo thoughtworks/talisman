@@ -20,18 +20,12 @@ ideally, code that implements your ideas and suggestions!
 
 ## Installation
 
-Talisman can either be installed into a single git repository, or as a global
-[git hook template](https://git-scm.com/docs/git-init#_template_directory).
+Talisman can either be installed and used in three different ways 
+1. As a git hook into a single git repository
+2. As a git hook as a global [git hook template](https://git-scm.com/docs/git-init#_template_directory)
+3. As a CLI with the `--pattern` argument to find files
 
-Talisman can be set up a as a pre-push or pre-commit hook on git repositories.
-
-
-### Installation as a global hook template (recommended)
-We recommend installing it as a git hook template, as that will cause
-Talisman to be present, not only in your existing git repositories, but also in any new repository that you 'init' or
-'clone'.
-
-Use the [Global scripts Readme](global_install_scripts/Readme.md) to guide you through the installation process.
+As a git hook, Talisman can be set up a as a pre-push or pre-commit hook on git repositories.
 
 ### Installation to a single project
 
@@ -46,6 +40,25 @@ chmod +x ~/install-talisman.sh
 cd my-git-project
 ~/install-talisman.sh
 ```
+
+### Installation as a CLI
+
+1. Download the Talisman binary from the [Releases page](https://github.com/thoughtworks/talisman/releases) corresponding to your system type
+2. Place the binary somewhere (either directly in your repository, or by putting it somewhere in your system and adding it to your `$PATH`)
+3. Run talisman with the `--pattern` argument (matches glob-like patterns, [see more](https://github.com/bmatcuk/doublestar#patterns))
+```bash
+# finds all .go and .md files in the current directory (recursively) 
+talisman --pattern="./**/*.{go,md}"
+```
+
+### Installation as a global hook template (recommended)
+We recommend installing it as a git hook template, as that will cause
+Talisman to be present, not only in your existing git repositories, but also in any new repository that you 'init' or
+'clone'.
+
+Use the [Global scripts Readme](global_install_scripts/Readme.md) to guide you through the installation process.
+
+### Installation 
 
 #### Usage with the [pre-commit](https://pre-commit.com) git hooks framework
 

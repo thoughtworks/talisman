@@ -104,6 +104,48 @@ func TestStagingSecretKeyShouldExitOneWhenPreCommitFlagIsSet(t *testing.T) {
 	})
 }
 
+func TestPatternFindsSecretKey(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		_options := options{
+			debug:   false,
+			pattern: "./*.*",
+		}
+
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents("private.pem", "secret")
+
+		assert.Equal(t, 1, runTalismanWithOptions(git, _options), "Expected run() to return 1 and fail as pem file was present in the repo")
+	})
+}
+
+func TestPatternFindsNestedSecretKey(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		_options := options{
+			debug:   false,
+			pattern: "./**/*.*",
+		}
+
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents("some-dir/private.pem", "secret")
+
+		assert.Equal(t, 1, runTalismanWithOptions(git, _options), "Expected run() to return 1 and fail as nested pem file was present in the repo")
+	})
+}
+
+func TestPatternFindsSecretInNestedFile(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		_options := options{
+			debug:   false,
+			pattern: "./**/*.*",
+		}
+
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents("some-dir/some-file.txt", awsAccessKeyIDExample)
+
+		assert.Equal(t, 1, runTalismanWithOptions(git, _options), "Expected run() to return 1 and fail as nested pem file was present in the repo")
+	})
+}
+
 func runTalisman(git *git_testing.GitTesting) int {
 	_options := options{
 		debug:   false,
