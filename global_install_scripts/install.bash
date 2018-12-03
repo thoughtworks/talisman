@@ -208,7 +208,7 @@ function run() {
 			"MINGW32_NT-10.0-WOW" | "MINGW64_NT-10.0")
 			TEMPLATE_DIR_WIN=$(sed -e 's/\/\([a-z]\)\//\1:\\/' -e 's/\//\\/g' <<< "$TEMPLATE_DIR")
 			TALISMAN_HOOK_SCRIPT_PATH_WIN=$(sed -e 's/\/\([a-z]\)\//\1:\\/' -e 's/\//\\/g' <<< "$TALISMAN_HOOK_SCRIPT_PATH")
-			cmd <<< "mklink /H "$TEMPLATE_DIR_WIN\\hooks\\$HOOK_SCRIPT"  "$TALISMAN_HOOK_SCRIPT_PATH_WIN"" > /dev/null;;
+			cmd <<< "mklink "$TEMPLATE_DIR_WIN\\hooks\\$HOOK_SCRIPT"  "$TALISMAN_HOOK_SCRIPT_PATH_WIN"" > /dev/null;;
 			*)
 			ln -svf ${TALISMAN_HOOK_SCRIPT_PATH} ${TEMPLATE_DIR}/hooks/${HOOK_SCRIPT}
 			;;
