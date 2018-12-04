@@ -140,19 +140,26 @@ func shouldIgnoreFilesWhichWouldOtherwiseTriggerErrors(fileName, ignore string, 
 
 func shouldNotFailWithDefaultDetectorAndIgnores(fileName, ignore string, t *testing.T) {
 	results := NewDetectionResults()
-	DefaultFileNameDetector().Test(additionsNamed(fileName), NewIgnores(ignore), results)
+
+	fileIgnoreConfig := FileIgnoreConfig{}
+	fileIgnoreConfig.FileName = ignore
+	talismanRCIgnore := TalismanRCIgnore{}
+	talismanRCIgnore.FileIgnoreConfig = make([]FileIgnoreConfig, 1)
+	talismanRCIgnore.FileIgnoreConfig[0] = fileIgnoreConfig
+
+	DefaultFileNameDetector().Test(additionsNamed(fileName), talismanRCIgnore, results)
 	assert.True(t, results.Successful(), "Expected file %s to be ignored by pattern", fileName, ignore)
 }
 
 func shouldFailWithSpecificPattern(fileName, pattern string, t *testing.T) {
 	results := NewDetectionResults()
-	NewFileNameDetector(pattern).Test(additionsNamed(fileName), NewIgnores(), results)
+	NewFileNameDetector(pattern).Test(additionsNamed(fileName), TalismanRCIgnore{}, results)
 	assert.True(t, results.HasFailures(), "Expected file %s to fail the check against the %s pattern", fileName, pattern)
 }
 
 func shouldFailWithDefaultDetector(fileName, pattern string, t *testing.T) {
 	results := NewDetectionResults()
-	DefaultFileNameDetector().Test(additionsNamed(fileName), NewIgnores(), results)
+	DefaultFileNameDetector().Test(additionsNamed(fileName), TalismanRCIgnore{}, results)
 	assert.True(t, results.HasFailures(), "Expected file %s to fail the check against default detector. Missing pattern %s?", fileName, pattern)
 }
 

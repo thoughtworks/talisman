@@ -8,15 +8,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var talismanRCData =  `
+fileignoreconfig:
+- filename : 'foo'
+  checksum : 
+  ignore_detectors : 
+    - someDetector
+`
+
 func TestShouldIgnoreEmptyLinesInTheFile(t *testing.T) {
 	for _, s := range []string{"", " ", "  "} {
-		assert.True(t, NewIgnores(s).AcceptsAll(), "Expected '%s' to result in no ignore patterns.", s)
+		assert.True(t, NewTalismanRCIgnore([]byte (s)).AcceptsAll(), "Expected '%s' to result in no ignore patterns.", s)
 	}
 }
 
-func TestShouldIgnoreLinesThatBeginWithThePound(t *testing.T) {
+func TestShouldIgnoreUnformattedFiles(t *testing.T) {
 	for _, s := range []string{"#", "#monkey", "# this monkey likes bananas  "} {
-		assert.True(t, NewIgnores(s).AcceptsAll(), "Expected commented line '%s' to result in no ignore patterns", s)
+		assert.True(t, NewTalismanRCIgnore([]byte (s)).AcceptsAll(), "Expected commented line '%s' to result in no ignore patterns", s)
 	}
 }
 
@@ -92,7 +100,7 @@ func assertDenies(line, path string, t *testing.T) {
 }
 
 func assertDeniesDetector(line, path string, detectorName string, t *testing.T) {
-	assert.True(t, NewIgnores(line).Deny(testAddition(path), detectorName), "%s is expected to deny a file named %s.", line, path)
+	assert.True(t, NewTalismanRCIgnore([]byte (talismanRCData)).Deny(testAddition(path), detectorName), "%s is expected to deny a file named %s.", line, path)
 }
 
 func assertAccepts(line, path string, t *testing.T, detectorNames ...string) {
@@ -100,7 +108,7 @@ func assertAccepts(line, path string, t *testing.T, detectorNames ...string) {
 }
 
 func assertAcceptsDetector(line, path string, detectorName string, t *testing.T) {
-	assert.True(t, NewIgnores(line).Accept(testAddition(path), detectorName), "%s is expected to accept a file named %s.", line, path)
+	assert.True(t, NewTalismanRCIgnore([]byte (talismanRCData)).Accept(testAddition(path), detectorName), "%s is expected to accept a file named %s.", line, path)
 }
 
 func testAddition(path string) git_repo.Addition {

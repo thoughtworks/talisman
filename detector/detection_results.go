@@ -76,7 +76,7 @@ func (r *DetectionResults) Report() string {
 		result = result + fmt.Sprintf("The following files were ignored:\n")
 	}
 	for filePath := range r.ignores {
-		result = result + fmt.Sprintf("\t%s was ignored by .talismanignore for the following detectors: %s\n", filePath, strings.Join(r.ignores[filePath], ", "))
+		result = result + fmt.Sprintf("\t%s was ignored by .talismanrc for the following detectors: %s\n", filePath, strings.Join(r.ignores[filePath], ", "))
 	}
 	return result
 }

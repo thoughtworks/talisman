@@ -26,9 +26,9 @@ func (fc *FileContentDetector) AggressiveMode() *FileContentDetector {
 	return fc
 }
 
-func (fc *FileContentDetector) Test(additions []git_repo.Addition, ignores Ignores, result *DetectionResults) {
+func (fc *FileContentDetector) Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
 	for _, addition := range additions {
-		if ignores.Deny(addition, "filecontent") {
+		if ignoreConfig.Deny(addition, "filecontent") {
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
 			}).Info("Ignoring addition as it was specified to be ignored.")
@@ -39,6 +39,7 @@ func (fc *FileContentDetector) Test(additions []git_repo.Addition, ignores Ignor
 		fillDetectionResults(base64Results, addition, result)
 	}
 }
+
 
 func fillDetectionResults(base64Results []string, addition git_repo.Addition, result *DetectionResults) {
 	for _, base64Res := range base64Results {

@@ -1,0 +1,9 @@
+fileignoreconfig:
+   - filename    : foo.java
+     checksum    : 4A5DFg7
+     ignore_detectors : file_name
+   - filename    : abc.java
+   - filename
+additional_content_patterns:
+   - filename: abc.java
+
