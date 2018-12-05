@@ -300,16 +300,29 @@ function run() {
 	eval "${CMD_STRING}"
 	
 	NUMBER_OF_EXCEPTION_REPOS=`cat ${EXCEPTIONS_FILE} | wc -l`
-	
+
+	OS=$(uname -s)
 	if [ ${NUMBER_OF_EXCEPTION_REPOS} -gt 0 ]; then
-	    EXCEPTIONS_FILE_HOME_PATH="${HOME}/talisman_missed_repositories.paths"
-	    mv ${EXCEPTIONS_FILE} ${EXCEPTIONS_FILE_HOME_PATH}
-	    echo_error ""
-	    echo_error "Please see ${EXCEPTIONS_FILE_HOME_PATH} for a list of repositories"
-	    echo_error "that couldn't automatically be hooked up with talisman as ${HOOK_SCRIPT}"
-	    echo_error "You should consider installing a tool like pre-commit (https://pre-commit.com) in those repositories"
-	    echo_error "Add the following repo definition into .pre-commit-config.yaml after installing pre-commit in each such repository"
-	    tee $HOME/.talisman-precommit-config <<END_OF_SCRIPT
+	    if [[ "$OS" == "MINGW32_NT-10.0-WOW" || "$OS" == "MINGW64_NT-10.0" ]]; then
+
+            EXCEPTIONS_FILE_HOME_PATH="${HOME}/talisman_missed_repositories.paths"
+            mv ${EXCEPTIONS_FILE} ${EXCEPTIONS_FILE_HOME_PATH}
+            echo_error ""
+            echo_error "Please see ${EXCEPTIONS_FILE_HOME_PATH} for a list of repositories"
+            echo_error "that couldn't automatically be hooked up with talisman as ${HOOK_SCRIPT}"
+            echo_error "If you are already using husky"
+            echo_error "Add the following script to husky pre-commit in your package.json"
+            echo "\"bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" -githook pre-commit'\""
+
+	    else
+            EXCEPTIONS_FILE_HOME_PATH="${HOME}/talisman_missed_repositories.paths"
+            mv ${EXCEPTIONS_FILE} ${EXCEPTIONS_FILE_HOME_PATH}
+            echo_error ""
+            echo_error "Please see ${EXCEPTIONS_FILE_HOME_PATH} for a list of repositories"
+            echo_error "that couldn't automatically be hooked up with talisman as ${HOOK_SCRIPT}"
+            echo_error "You should consider installing a tool like pre-commit (https://pre-commit.com) in those repositories"
+            echo_error "Add the following repo definition into .pre-commit-config.yaml after installing pre-commit in each such repository"
+            tee $HOME/.talisman-precommit-config <<END_OF_SCRIPT
 -   repo: local
     hooks:
     -   id: talisman-precommit
@@ -320,6 +333,7 @@ function run() {
         types: [text]
         verbose: true
 END_OF_SCRIPT
+        fi;
 	fi
     }
 
