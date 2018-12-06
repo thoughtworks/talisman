@@ -15,12 +15,17 @@ import (
 )
 
 const awsAccessKeyIDExample string = "accessKey=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-var talismanRCData =  `
+
+const talismanRCDataWithIgnoreDetector =  `
 fileignoreconfig:
 - filename    : '*.pem'
-  checksum    : 4A5DFg7
   ignore_detectors : 
     - filename
+`
+
+const talismanRCDataWithFileName = `
+fileignoreconfig:
+- filename    : '*.pem'
 `
 
 func init() {
@@ -67,7 +72,7 @@ func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnored(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
-		git.CreateFileWithContents(".talismanignore", "*.pem")
+		git.CreateFileWithContents(".talismanrc", talismanRCDataWithFileName)
 		git.AddAndcommit("*", "add private key")
 
 		assert.Equal(t, 0, runTalisman(git), "Expected run() to return 0 and pass as pem file was ignored")
@@ -78,7 +83,7 @@ func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnoredAndCommented(t *testin
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
-		git.CreateFileWithContents(".talismanignore", "*.pem # ignore:filename")
+		git.CreateFileWithContents(".talismanrc", talismanRCDataWithIgnoreDetector)
 		git.AddAndcommit("*", "add private key")
 
 		assert.Equal(t, 0, runTalisman(git), "Expected run() to return 0 and pass as pem file was ignored")
@@ -89,10 +94,10 @@ func TestAddingSecretKeyShouldExitOneIfTheyContainBadContentButOnlyFilenameDetec
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", awsAccessKeyIDExample)
-		git.CreateFileWithContents(".talismanignore", "*.pem # ignore:filename")
+		git.CreateFileWithContents(".talismanrc", talismanRCDataWithIgnoreDetector)
 		git.AddAndcommit("*", "add private key")
 
-		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 0 and pass as pem file was ignored")
+		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 1 and fail as only filename was ignored")
 	})
 }
 
@@ -115,8 +120,7 @@ func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnoredAndCommentedInTalisman
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", awsAccessKeyIDExample)
-		git.CreateFileWithContents(".talismanignore", "*.pem # ignore:filename")
-		git.CreateFileWithContents(".talismanrc", talismanRCData)
+		git.CreateFileWithContents(".talismanrc", talismanRCDataWithIgnoreDetector)
 		git.AddAndcommit("*", "add private key")
 
 		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 0 and pass as pem file was ignored")

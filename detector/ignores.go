@@ -58,6 +58,7 @@ func ReadConfigFromRCFile(repoFileRead func(string) ([]byte, error)) TalismanRCI
 	return NewTalismanRCIgnore(fileContents)
 }
 
+
 func NewTalismanRCIgnore(fileContents []byte) (TalismanRCIgnore) {
 	talismanRCIgnore := TalismanRCIgnore{}
 	err := yaml.Unmarshal([]byte(fileContents), &talismanRCIgnore)
