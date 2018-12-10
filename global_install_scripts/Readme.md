@@ -27,7 +27,7 @@ To achieve running multiple hooks we suggest the following two tools
 ##### 1. Pre-commit (Linux/Unix)
  1. use [pre-commit](https://pre-commit.com) tool to manage all the existing hooks along with Talisman.
  2. In the suggestion, it will prompt the following code to be included in .pre-commit-config.yaml
-    ```bash
+```
     -   repo: local
         hooks:
         -   id: talisman-precommit
@@ -37,7 +37,7 @@ To achieve running multiple hooks we suggest the following two tools
             pass_filenames: false
             types: [text]
             verbose: true
-    ```
+```
 
 ##### 2. Husky (Linux/Unix/Windows)
  1. [husky](https://github.com/typicode/husky/blob/master/DOCS.md) is a npm module for managing git hooks.
@@ -45,39 +45,37 @@ To achieve running multiple hooks we suggest the following two tools
  
  ##### Existing Users
  If you already are using husky, add the following lines to husky pre-commit in package.json
-   ###### Windows
-    ``` 
+###### Windows
+``` 
     "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" -githook pre-commit'" 
-    ```
-   ###### Linux/Unix
-    ```
+```
+###### Linux/Unix
+```
     $TALISMAN_HOME/talisman_hook_script pre-commit
-    ```
+```
 ##### New Users
 If you want to use husky with multiple hooks along with talisman, add the following snippet to you package json.
     
   ###### Windows
-    ```
+```
      {
         "husky": {
           "hooks": {
-            "pre-commit": [
-               "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" -githook pre-commit'" && "other-scripts"]
+            "pre-commit": "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" -githook pre-commit'" && "other-scripts"
             }
         }
     }
-    ```
+```
  ###### Linux/Unix
-    ```
+```
     {
       "husky": {
        "hooks": {
-         "pre-commit": [
-            "$TALISMAN_HOME/talisman_hook_script pre-commit" && "other-scripts"]
+         "pre-commit": "$TALISMAN_HOME/talisman_hook_script pre-commit" && "other-scripts"
           }
         }
       }
-    ```
+```
 
 
 ## Uninstallation
