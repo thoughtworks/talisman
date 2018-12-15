@@ -39,10 +39,9 @@ func (dc *Chain) AddDetector(d Detector) *Chain {
 //Test validates the additions against each detector in the chain.
 //The results are passed in from detector to detector and thus collect all errors from all detectors
 func (dc *Chain) Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
-
+	cs := NewChecksumCalculator()
+	ignoreConfigModified := cs.FilterIgnoresBasedOnChecksums(additions, ignoreConfig)
 	for _, v := range dc.detectors {
-		v.Test(additions, ignoreConfig, result)
+		v.Test(additions, ignoreConfigModified, result)
 	}
 }
-
-

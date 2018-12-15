@@ -104,9 +104,9 @@ func (repo GitRepo) ReadRepoFileOrNothing(fileName string) ([]byte, error) {
 func (repo GitRepo) CheckIfFileExists(fileName string) bool {
 	filepath := path.Join(repo.root, fileName)
 	if _, err := os.Stat(filepath); os.IsNotExist(err) {
-		return false;
+		return false
 	} else {
-		return true;
+		return true
 	}
 }
 
@@ -121,7 +121,7 @@ func (a Addition) Matches(pattern string) bool {
 	} else if strings.ContainsRune(pattern, os.PathSeparator) {
 		result, _ = path.Match(pattern, string(a.Path))
 	} else {
-		result, _ = path.Match(pattern, string(a.Name))
+		result, _ = path.Match(pattern, string(a.Path))
 	}
 	log.WithFields(log.Fields{
 		"pattern":  pattern,

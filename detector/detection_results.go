@@ -3,8 +3,9 @@ package detector
 import (
 	"fmt"
 	"strings"
-
 	"talisman/git_repo"
+
+	yaml "gopkg.in/yaml.v2"
 )
 
 //DetectionResults represents all interesting information collected during a detection run.
@@ -71,7 +72,10 @@ func (r *DetectionResults) Report() string {
 	for filePath := range r.failures {
 		result = result + r.ReportFileFailures(filePath)
 	}
-
+	if len(r.failures) > 0 {
+		result = result + r.suggestTalismanRC()
+		result = result + fmt.Sprintf("\n\n")
+	}
 	if len(r.ignores) > 0 {
 		result = result + fmt.Sprintf("The following files were ignored:\n")
 	}
@@ -79,6 +83,19 @@ func (r *DetectionResults) Report() string {
 		result = result + fmt.Sprintf("\t%s was ignored by .talismanrc for the following detectors: %s\n", filePath, strings.Join(r.ignores[filePath], ", "))
 	}
 	return result
+}
+
+func (r *DetectionResults) suggestTalismanRC() string {
+	var fileIgnoreConfigs []FileIgnoreConfig
+	for filePath := range r.failures {
+		currentChecksum := CalculateCollectiveHash([]string{string(filePath)})
+		fileIgnoreConfig := FileIgnoreConfig{string(filePath), currentChecksum, []string{}}
+		fileIgnoreConfigs = append(fileIgnoreConfigs, fileIgnoreConfig)
+	}
+
+	talismanRcIgnoreConfig := TalismanRCIgnore{fileIgnoreConfigs}
+	m, _ := yaml.Marshal(&talismanRcIgnoreConfig)
+	return string(m)
 }
 
 //ReportFileFailures returns a string documenting the various failures detected on the supplied FilePath by all detectors in the current run
