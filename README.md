@@ -1,5 +1,6 @@
-<div align=centre> <img class=logo src="https://thoughtworks.github.io/talisman/logo.svg" /> </div>
-
+<div style="display: flex; justify-content: center;">
+	<img class=logo width="10%" height="10%" src="https://thoughtworks.github.io/talisman/logo.svg" />
+</div>
 <h1 align="center">Talisman</h1>
 
 Talisman is a tool to validate code changes that are to be pushed out
@@ -21,7 +22,7 @@ contribute to have a look around and contribute ideas/suggestions or
 ideally, code that implements your ideas and suggestions!
 
 ## Table of Contents
-- [Installation](#installation)
+- [Installation : MacOSX, Linux, Windows](#installation)
 	- [As a global hook template (Recommended)](#installation-as-a-global-hook-template-(recommended))
 	- [To a single repository](#installation-to-a-single-project) 
 - [Talisman in action](#talisman-in-action)
