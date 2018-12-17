@@ -1,6 +1,7 @@
 <div style="display: flex; justify-content: center;">
-	<h1 align="center">Talisman
-	<img class=logo width="10%" height="10%" src="https://thoughtworks.github.io/talisman/logo.svg" /></h1>
+	<h1 align="center">
+		<img class=logo align=bottom width="5%" height="5%" src="https://thoughtworks.github.io/talisman/logo.svg" />
+		Talisman</h1>
 </div>
 
 Talisman is a tool to validate code changes that are to be pushed out
