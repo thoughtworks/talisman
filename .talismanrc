@@ -1,4 +1,4 @@
 fileignoreconfig:
-- filename    : *.pem
-  checksum    :
+- filename    : private.pem
+  checksum    : 
   ignore_detectors : [filename,filecontent]
