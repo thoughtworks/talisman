@@ -1,7 +1,7 @@
 <div style="display: flex; justify-content: center;">
+	<h1 align="center">Talisman</h1>
 	<img class=logo width="10%" height="10%" src="https://thoughtworks.github.io/talisman/logo.svg" />
 </div>
-<h1 align="center">Talisman</h1>
 
 Talisman is a tool to validate code changes that are to be pushed out
 of a local Git repository on a developer's workstation. By hooking
