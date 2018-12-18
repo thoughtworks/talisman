@@ -69,27 +69,31 @@ func (r *DetectionResults) Failures(fileName git_repo.FilePath) []string {
 //Report returns a string documenting the various failures and ignored files for the current run
 func (r *DetectionResults) Report() string {
 	var result string
+	var filePathsForIgnoresAndFailures []string
 	for filePath := range r.failures {
+		filePathsForIgnoresAndFailures = append(filePathsForIgnoresAndFailures, string(filePath))
 		result = result + r.ReportFileFailures(filePath)
-	}
-	if len(r.failures) > 0 {
-		result = result + r.suggestTalismanRC()
-		result = result + fmt.Sprintf("\n\n")
 	}
 	if len(r.ignores) > 0 {
 		result = result + fmt.Sprintf("The following files were ignored:\n")
 	}
 	for filePath := range r.ignores {
+		filePathsForIgnoresAndFailures = append(filePathsForIgnoresAndFailures, string(filePath))
 		result = result + fmt.Sprintf("\t%s was ignored by .talismanrc for the following detectors: %s\n", filePath, strings.Join(r.ignores[filePath], ", "))
+	}
+	if len(r.failures) > 0 {
+		result = result + fmt.Sprintf("\nIn order to ignore detectors on these files paste the following format in the .talismanrc\n")
+		result = result + r.suggestTalismanRC(filePathsForIgnoresAndFailures)
+		result = result + fmt.Sprintf("\n\n")
 	}
 	return result
 }
 
-func (r *DetectionResults) suggestTalismanRC() string {
+func (r *DetectionResults) suggestTalismanRC(filePaths []string) string {
 	var fileIgnoreConfigs []FileIgnoreConfig
-	for filePath := range r.failures {
-		currentChecksum := CalculateCollectiveHash([]string{string(filePath)})
-		fileIgnoreConfig := FileIgnoreConfig{string(filePath), currentChecksum, []string{}}
+	for _, filePath := range filePaths {
+		currentChecksum := CalculateCollectiveHash([]string{filePath})
+		fileIgnoreConfig := FileIgnoreConfig{filePath, currentChecksum, []string{}}
 		fileIgnoreConfigs = append(fileIgnoreConfigs, fileIgnoreConfig)
 	}
 
