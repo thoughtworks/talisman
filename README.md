@@ -24,12 +24,12 @@ ideally, code that implements your ideas and suggestions!
 
 ## Table of Contents
 - [Installation : MacOSX, Linux, Windows](#installation)
-	- [As a global hook template (Recommended)](#installation-as-a-global-hook-template-(recommended))
+	- [As a global hook template (Recommended)](#installation-as-a-global-hook-template)
 	- [To a single repository](#installation-to-a-single-project) 
 - [Talisman in action](#talisman-in-action)
 	- [Ignoring files](#ignoring-files)
 - [Developing locally](#developing-locally)
-	- [Contributing to Talisman](#contributing-to-Talisman)
+	- [Contributing to Talisman](#contributing-to-talisman)
 		- [Releasing](#releasing)  
 
 
@@ -42,7 +42,8 @@ Talisman can either be installed into a single git repository, or as a global
 Talisman can be set up a as a pre-push or pre-commit hook on git repositories.
 
 
-### Installation as a global hook template (recommended)
+### Installation as a global hook template 
+### (Recommended)
 We recommend installing it as a git hook template, as that will cause
 Talisman to be present, not only in your existing git repositories, but also in any new repository that you 'init' or
 'clone'.
