@@ -27,6 +27,7 @@ func DefaultChain() *Chain {
 	result := NewChain()
 	result.AddDetector(DefaultFileNameDetector())
 	result.AddDetector(NewFileContentDetector())
+	result.AddDetector(NewPatternDetector())
 	return result
 }
 

@@ -2,6 +2,7 @@ module talisman
 
 require (
 	github.com/Sirupsen/logrus v0.0.0-20151204141443-446d1c146faa
+	github.com/bmatcuk/doublestar v1.1.1
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/drhodes/golorem v0.0.0-20120624033213-6e38d8d5e455
 	github.com/pmezard/go-difflib v1.0.0 // indirect

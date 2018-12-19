@@ -90,6 +90,8 @@ function run() {
 		ARCHITECTURE="darwin" ;;
 		"MINGW32_NT-10.0-WOW")
 		ARCHITECTURE="windows" ;;
+		"MINGW64_NT-10.0")
+		ARCHITECTURE="windows" ;;
 		*)
 		echo_error "Talisman currently only supports Windows, Linux and MacOS(darwin) systems."
 		echo_error "If this is a problem for you, please open an issue: https://github.com/${INSTALL_ORG_REPO}/issues/new"
@@ -111,7 +113,7 @@ function run() {
     	esac
 	
 	TALISMAN_BINARY_NAME="talisman_${ARCHITECTURE}"
-	if [[ "$OS" == "MINGW32_NT-10.0-WOW" ]]; then
+	if [[ "$OS" == "MINGW32_NT-10.0-WOW" || "$OS" == "MINGW64_NT-10.0" ]]; then
 		TALISMAN_BINARY_NAME="${TALISMAN_BINARY_NAME}.exe"
 	fi
     }
@@ -203,10 +205,10 @@ function run() {
 		
 	    OS=$(uname -s)
 		case $OS in
-			"MINGW32_NT-10.0-WOW")
+			"MINGW32_NT-10.0-WOW" | "MINGW64_NT-10.0")
 			TEMPLATE_DIR_WIN=$(sed -e 's/\/\([a-z]\)\//\1:\\/' -e 's/\//\\/g' <<< "$TEMPLATE_DIR")
 			TALISMAN_HOOK_SCRIPT_PATH_WIN=$(sed -e 's/\/\([a-z]\)\//\1:\\/' -e 's/\//\\/g' <<< "$TALISMAN_HOOK_SCRIPT_PATH")
-			cmd <<< "mklink /H "$TEMPLATE_DIR_WIN\\hooks\\$HOOK_SCRIPT"  "$TALISMAN_HOOK_SCRIPT_PATH_WIN"" > /dev/null;;
+			cmd <<< "mklink "$TEMPLATE_DIR_WIN\\hooks\\$HOOK_SCRIPT"  "$TALISMAN_HOOK_SCRIPT_PATH_WIN"" > /dev/null;;
 			*)
 			ln -svf ${TALISMAN_HOOK_SCRIPT_PATH} ${TEMPLATE_DIR}/hooks/${HOOK_SCRIPT}
 			;;
@@ -298,16 +300,29 @@ function run() {
 	eval "${CMD_STRING}"
 	
 	NUMBER_OF_EXCEPTION_REPOS=`cat ${EXCEPTIONS_FILE} | wc -l`
-	
+
+	OS=$(uname -s)
 	if [ ${NUMBER_OF_EXCEPTION_REPOS} -gt 0 ]; then
-	    EXCEPTIONS_FILE_HOME_PATH="${HOME}/talisman_missed_repositories.paths"
-	    mv ${EXCEPTIONS_FILE} ${EXCEPTIONS_FILE_HOME_PATH}
-	    echo_error ""
-	    echo_error "Please see ${EXCEPTIONS_FILE_HOME_PATH} for a list of repositories"
-	    echo_error "that couldn't automatically be hooked up with talisman as ${HOOK_SCRIPT}"
-	    echo_error "You should consider installing a tool like pre-commit (https://pre-commit.com) in those repositories"
-	    echo_error "Add the following repo definition into .pre-commit-config.yaml after installing pre-commit in each such repository"
-	    tee $HOME/.talisman-precommit-config <<END_OF_SCRIPT
+	    if [[ "$OS" == "MINGW32_NT-10.0-WOW" || "$OS" == "MINGW64_NT-10.0" ]]; then
+
+            EXCEPTIONS_FILE_HOME_PATH="${HOME}/talisman_missed_repositories.paths"
+            mv ${EXCEPTIONS_FILE} ${EXCEPTIONS_FILE_HOME_PATH}
+            echo_error ""
+            echo_error "Please see ${EXCEPTIONS_FILE_HOME_PATH} for a list of repositories"
+            echo_error "that couldn't automatically be hooked up with talisman as ${HOOK_SCRIPT}"
+            echo_error "If you are already using husky for git hooks (https://github.com/typicode/husky)"
+            echo_error "Add the following script to husky pre-commit in your package.json for the repositories listed ${EXCEPTIONS_FILE_HOME_PATH}"
+            echo "\"bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" -githook pre-commit'\""
+
+	    else
+            EXCEPTIONS_FILE_HOME_PATH="${HOME}/talisman_missed_repositories.paths"
+            mv ${EXCEPTIONS_FILE} ${EXCEPTIONS_FILE_HOME_PATH}
+            echo_error ""
+            echo_error "Please see ${EXCEPTIONS_FILE_HOME_PATH} for a list of repositories"
+            echo_error "that couldn't automatically be hooked up with talisman as ${HOOK_SCRIPT}"
+            echo_error "You should consider installing a tool like pre-commit (https://pre-commit.com) in those repositories"
+            echo_error "Add the following repo definition into .pre-commit-config.yaml after installing pre-commit in each such repository"
+            tee $HOME/.talisman-precommit-config <<END_OF_SCRIPT
 -   repo: local
     hooks:
     -   id: talisman-precommit
@@ -318,6 +333,7 @@ function run() {
         types: [text]
         verbose: true
 END_OF_SCRIPT
+        fi;
 	fi
     }
 

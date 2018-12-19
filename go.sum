@@ -1,5 +1,7 @@
 github.com/Sirupsen/logrus v0.0.0-20151204141443-446d1c146faa h1:Yt7X+jyl7iyieH6aiMRd9gCaUT7Rw+wTKlzUVjjeaQ4=
 github.com/Sirupsen/logrus v0.0.0-20151204141443-446d1c146faa/go.mod h1:rmk17hk6i8ZSAJkSDa7nOxamrG+SP4P0mm+DAvExv4U=
+github.com/bmatcuk/doublestar v1.1.1 h1:YroD6BJCZBYx06yYFEWvUuKVWQn3vLLQAVmDmvTSaiQ=
+github.com/bmatcuk/doublestar v1.1.1/go.mod h1:UD6OnuiIn0yFxxA2le/rnRU1G4RaI4UvFv1sNto9p6w=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/drhodes/golorem v0.0.0-20120624033213-6e38d8d5e455 h1:WqCK3j5a2lJAQS/IMCLSLahINAQyI0P/RLp8WdEVR/M=
