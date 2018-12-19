@@ -3,6 +3,10 @@
 		<img class=logo align=bottom width="5%" height="5%" src="https://thoughtworks.github.io/talisman/logo.svg" />
 		Talisman</h1>
 </div>
+<p align="center">A pro-active secrets detection tool</p>
+
+<p align="center">[![Go Report Card](https://goreportcard.com/badge/thoughtworks/talisman)](https://goreportcard.com/report/thoughtworks/talisman) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/thoughtworks/talisman/issues)
+
 
 Talisman is a tool to validate code changes that are to be pushed out
 of a local Git repository on a developer's workstation. By hooking
