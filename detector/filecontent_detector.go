@@ -9,15 +9,19 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+type fn func(fc *FileContentDetector, word string) string
+
 type FileContentDetector struct {
-	base64Detector *Base64Detector
-	hexDetector    *HexDetector
+	base64Detector     *Base64Detector
+	hexDetector        *HexDetector
+	creditCardDetector *CreditCardDetector
 }
 
 func NewFileContentDetector() *FileContentDetector {
 	fc := FileContentDetector{}
 	fc.base64Detector = NewBase64Detector()
 	fc.hexDetector = NewHexDetector()
+	fc.creditCardDetector = NewCreditCardDetector()
 	return &fc
 }
 
@@ -35,32 +39,56 @@ func (fc *FileContentDetector) Test(additions []git_repo.Addition, ignores Ignor
 			result.Ignore(addition.Path, "filecontent")
 			continue
 		}
-		base64Results := fc.detectFile(addition.Data)
-		fillDetectionResults(base64Results, addition, result)
+		base64Results := fc.detectFile(addition.Data, checkBase64)
+		fillBase46DetectionResults(base64Results, addition, result)
+
+		hexResults := fc.detectFile(addition.Data, checkHex)
+		fillHexDetectionResults(hexResults, addition, result)
+
+		creditCardResults := fc.detectFile(addition.Data, checkCreditCardNumber)
+		fillCreditCardDetectionResults(creditCardResults, addition, result)
 	}
 }
 
-func fillDetectionResults(base64Results []string, addition git_repo.Addition, result *DetectionResults) {
-	for _, base64Res := range base64Results {
-		if base64Res != "" {
+func fillResults(results []string, addition git_repo.Addition, result *DetectionResults, info string, output string) {
+	for _, res := range results {
+		if res != "" {
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
-			}).Info("Failing file as it contains a base64 encoded text.")
-			result.Fail(addition.Path, fmt.Sprintf("Expected file to not to contain base64 or hex encoded texts such as: %s", base64Res))
+			}).Info(info)
+			result.Fail(addition.Path, fmt.Sprintf(output, res))
 		}
 	}
 }
 
-func (fc *FileContentDetector) detectFile(data []byte) []string {
-	content := string(data)
-	return fc.checkEachLine(content)
+func fillBase46DetectionResults(base64Results []string, addition git_repo.Addition, result *DetectionResults) {
+	const info = "Failing file as it contains a base64 encoded text."
+	const output = "Expected file to not to contain base64 encoded texts such as: %s"
+	fillResults(base64Results, addition, result, info, output)
 }
 
-func (fc *FileContentDetector) checkEachLine(content string) []string {
+func fillCreditCardDetectionResults(creditCardResults []string, addition git_repo.Addition, result *DetectionResults) {
+	const info = "Failing file as it contains a potential credit card number."
+	const output = "Expected file to not to contain credit card numbers such as: %s"
+	fillResults(creditCardResults, addition, result, info, output)
+}
+
+func fillHexDetectionResults(creditCardResults []string, addition git_repo.Addition, result *DetectionResults) {
+	const info = "Failing file as it contains a hex encoded text."
+	const output = "Expected file to not to contain hex encoded texts such as: %s"
+	fillResults(creditCardResults, addition, result, info, output)
+}
+
+func (fc *FileContentDetector) detectFile(data []byte, getResult fn) []string {
+	content := string(data)
+	return fc.checkEachLine(content, getResult)
+}
+
+func (fc *FileContentDetector) checkEachLine(content string, getResult fn) []string {
 	lines := strings.Split(content, "\n")
 	res := []string{}
 	for _, line := range lines {
-		lineResult := fc.checkEachWord(line)
+		lineResult := fc.checkEachWord(line, getResult)
 		if len(lineResult) > 0 {
 			res = append(res, lineResult...)
 		}
@@ -68,18 +96,26 @@ func (fc *FileContentDetector) checkEachLine(content string) []string {
 	return res
 }
 
-func (fc *FileContentDetector) checkEachWord(line string) []string {
+func (fc *FileContentDetector) checkEachWord(line string, getResult fn) []string {
 	words := strings.Fields(line)
 	res := []string{}
 	for _, word := range words {
-		wordResult := fc.base64Detector.checkBase64Encoding(word)
-		if wordResult != "" {
-			res = append(res, wordResult)
-		}
-		wordResult = fc.hexDetector.checkHexEncoding(word)
+		wordResult := getResult(fc, word)
 		if wordResult != "" {
 			res = append(res, wordResult)
 		}
 	}
 	return res
+}
+
+func checkBase64(fc *FileContentDetector, word string) string {
+	return fc.base64Detector.checkBase64Encoding(word)
+}
+
+func checkCreditCardNumber(fc *FileContentDetector, word string) string {
+	return fc.creditCardDetector.checkCreditCardNumber(word)
+}
+
+func checkHex(fc *FileContentDetector, word string) string {
+	return fc.hexDetector.checkHexEncoding(word)
 }
