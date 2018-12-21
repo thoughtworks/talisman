@@ -9,7 +9,7 @@
 
 
 ## Table of Contents
-- [What is Talisman?] (#what-is-talisman)
+- [What is Talisman?](#what-is-talisman)
 - [Installation](#installation)
 	- [As a global hook template (Recommended)](#installation-as-a-global-hook-template)
 	- [To a single repository](#installation-to-a-single-project) 
