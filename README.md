@@ -18,7 +18,7 @@
 	- [Ignoring files](#ignoring-files)
 - [Uninstallation](#uninstallation)
 	- [From a global hook template](#uninstallation-from-a-global-hook-template)
-	- [From a single repository](#uninstallation-from-a-single-project)   
+	- [From a single repository](#uninstallation-from-a-single-repository)   
 - [Contributing to Talisman](#contributing-to-talisman)
 	- [Developing locally](#developing-locally)
 	- [Releasing](#releasing)  
@@ -223,7 +223,14 @@ At the moment, you can ignore
 * `filesize`
 
 ## Uninstallation
+The uninstallation process depends on how you had installed Talisman.
+You could have chosen to install as a global hook template or at a single repository.
+
+Please follow the steps below based on which option you had chosen at installation.
+
+## Uninstallation from a global hook template
 To uninstall talisman globally from your machine, run:
+
 ```
 curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/uninstall.bash > /tmp/uninstall_talisman.bash && /bin/bash /tmp/uninstall_talisman.bash 
 ```
@@ -233,6 +240,10 @@ This will
 3. remove talisman from the central install location ($HOME/.talisman/bin)
 You will have to manually remove TALISMAN_HOME from your environment variables
 
+## Uninstallation from a single repository
+When you installed Talisman, it must have created a pre-commit or pre-push hook (as selected) in your repository during installation. 
+
+You can remove the hook manually by deleting the Talisman pre-commit or pre-push hook from .git/hooks folder in repository.
 
 ## Contributing to Talisman
 
