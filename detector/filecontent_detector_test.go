@@ -118,9 +118,11 @@ func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
 	content := []byte(hex)
 	filename := "filename"
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
+	filePath := additions[0].Path
 
-	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
-	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
+	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	expectedMsg := "Expected file to not to contain hex encoded texts such as: " + hex
+	assert.Equal(t, expectedMsg, results.Failures(filePath)[0])
 }
 
 func TestResultsShouldContainHexTextsIfHexAndBase64ExistInFile(t *testing.T) {
@@ -133,9 +135,9 @@ func TestResultsShouldContainHexTextsIfHexAndBase64ExistInFile(t *testing.T) {
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 	filePath := additions[0].Path
 
-	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
-	expectedMsg := "Expected file to not to contain base64 or hex encoded texts such as: " + hex
-	assert.Equal(t, expectedMsg, results.Failures(filePath)[0])
+	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	expectedMsg := "Expected file to not to contain hex encoded texts such as: " + hex
+	assert.Equal(t, expectedMsg, results.Failures(filePath)[1])
 }
 
 func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) {
@@ -148,7 +150,21 @@ func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) 
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 	filePath := additions[0].Path
 
-	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
-	expectedMsg := "Expected file to not to contain base64 or hex encoded texts such as: " + base64
-	assert.Equal(t, expectedMsg, results.Failures(filePath)[1])
+	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	expectedMsg := "Expected file to not to contain base64 encoded texts such as: " + base64
+	assert.Equal(t, expectedMsg, results.Failures(filePath)[0])
+}
+
+func TestResultsShouldContainCreditCardNumberIfCreditCardNumberExistInFile(t *testing.T) {
+	const creditCardNumber string = "340000000000009"
+	results := NewDetectionResults()
+	content := []byte(creditCardNumber)
+	filename := "filename"
+	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
+	filePath := additions[0].Path
+
+	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	expectedMsg := "Expected file to not to contain credit card numbers such as: " +
+		creditCardNumber
+	assert.Equal(t, expectedMsg, results.Failures(filePath)[0])
 }
