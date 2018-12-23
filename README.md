@@ -13,6 +13,7 @@
 - [Installation](#installation)
 	- [As a global hook template (Recommended)](#installation-as-a-global-hook-template)
 	- [To a single repository](#installation-to-a-single-project) 
+	- [As a CLI to find file types](#installation-as-a-cli)
 - [Talisman in action](#talisman-in-action)
 	- [Validations](#validations) 
 	- [Ignoring files](#ignoring-files)
@@ -34,15 +35,18 @@ keys, authorization tokens, private keys etc.
 
 Talisman supports MAC OSX, Linux and Windows.
 
-The recommended approach of installation is as a global
-[git hook template](https://git-scm.com/docs/git-init#_template_directory). You could also choose to install it at a per-repo level instead.
+Talisman can be installed and used in one of three different ways:
 
-Within each approach, Talisman can be set up as either a pre-commit or pre-push hook on the git repositories.
+1. As a git hook as a global [git hook template](https://git-scm.com/docs/git-init#_template_directory)
+2. As a git hook into a single git repository
+3. As a CLI with the `--pattern` argument to find files
+
+Talisman can be set up as either a pre-commit or pre-push hook on the git repositories.
 
 Find the instructions below.
 
 ## Installation as a global hook template 
-### [Recommended approach]
+## [Recommended approach]
 We recommend installing Talisman as a git hook template, as that will cause
 Talisman to be present, not only in your existing git repositories, but also in any new repository that you 'init' or
 'clone'.
@@ -63,23 +67,23 @@ curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/gl
 curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/install.bash > /tmp/install_talisman.bash && /bin/bash /tmp/install_talisman.bash pre-push
 ```
 
-2. If you do not have TALISMAN\_HOME set up in your path, you will be asked an appropriate place to set it up. Choose the option number where you set the profile source on your machine.
+2. If you do not have TALISMAN\_HOME set up in your `$PATH`, you will be asked an appropriate place to set it up. Choose the option number where you set the profile source on your machine.
 
 
   Remember to execute *source* on the path file or restart your terminal.
-If you choose to set the path later, please export TALISMAN\_HOME=$HOME/.talisman/bin to the path.
+If you choose to set the `$PATH` later, please export TALISMAN\_HOME=$HOME/.talisman/bin to the path.
 
 
 3. Choose a base directory where Talisman should scan for all git repositories, and setup a git hook (pre-commit or pre-push, as chosen in step 1) as a symlink.
   This script will not clobber pre-existing hooks. If you have existing hooks, [look for ways to chain Talisman into them.] (#handling-existing-hooks)
 
 
-#### Handling existing hooks
+### Handling existing hooks
 Installation of Talisman globally does not clobber pre-existing hooks on repositories. 
 If the installation script finds any existing hooks, it will only indicate so on the console.
 To achieve running multiple hooks we suggest the following two tools
 
-##### 1. Pre-commit (Linux/Unix)
+#### 1. Pre-commit (Linux/Unix)
 Use [pre-commit](https://pre-commit.com) tool to manage all the existing hooks along with Talisman.
 In the suggestion, it will prompt the following code to be included in .pre-commit-config.yaml
 ```
@@ -94,7 +98,7 @@ In the suggestion, it will prompt the following code to be included in .pre-comm
             verbose: true
 ```
 
-##### 2. Husky (Linux/Unix/Windows)
+#### 2. Husky (Linux/Unix/Windows)
 [husky](https://github.com/typicode/husky/blob/master/DOCS.md) is an npm module for managing git hooks.
 In order to use husky, make sure you set TALISMAN_HOME.
  
@@ -161,7 +165,17 @@ a real git revision!)
     # -   id: talisman-push
 ```
 
-## Talisman in action
+## Installation as a CLI
+1. Download the Talisman binary from the [Releases page](https://github.com/thoughtworks/talisman/releases) corresponding to your system type
+2. Place the binary somewhere (either directly in your repository, or by putting it somewhere in your system and adding it to your `$PATH`)
+3. Run talisman with the `--pattern` argument (matches glob-like patterns, [see more](https://github.com/bmatcuk/doublestar#patterns))
+
+```bash
+# finds all .go and .md files in the current directory (recursively) 
+talisman --pattern="./**/*.{go,md}"
+```
+
+# Talisman in action
 
 After the installation is successful, Talisman will run checks for obvious secrets automatically before each commit or push (as chosen during installation):
 
@@ -173,7 +187,7 @@ The following errors were detected in danger.pem
 error: failed to push some refs to 'git@github.com:jacksingleton/talisman-demo.git'
 ```
 
-### Validations
+## Validations
 The following detectors execute against the changesets to detect secrets/sensitive information:
 
 * **Encoded values** - scans for encoded secrets in Base64, hex etc.
@@ -184,7 +198,7 @@ The following detectors execute against the changesets to detect secrets/sensiti
 * **File names** - scans for file names and extensions that could indicate them potentially containing secrets, such as keys, credentials etc.
 
 
-### Ignoring Files
+## Ignoring Files
 
 If you're *really* sure you want to push that file, you can add it to
 a `.talismanignore` file in the project root:
@@ -222,7 +236,7 @@ At the moment, you can ignore
 * `filename`
 * `filesize`
 
-## Uninstallation
+# Uninstallation
 The uninstallation process depends on how you had installed Talisman.
 You could have chosen to install as a global hook template or at a single repository.
 
@@ -245,9 +259,9 @@ When you installed Talisman, it must have created a pre-commit or pre-push hook 
 
 You can remove the hook manually by deleting the Talisman pre-commit or pre-push hook from .git/hooks folder in repository.
 
-## Contributing to Talisman
+# Contributing to Talisman
 
-### Developing locally
+## Developing locally
 
 To contribute to Talisman, you need a working golang development
 environment. Check [this link](https://golang.org/doc/install) to help
@@ -270,7 +284,7 @@ To build Talisman, we can use [gox](https://github.com/mitchellh/gox):
 Convenince scripts ```./build``` and ```./clean``` perform build and clean-up as mentioned above.
 
 
-### Releasing
+## Releasing
 
 * Follow the instructions at the end of 'Developing locally' to build the binaries
 * Bump the [version in install.sh](https://github.com/thoughtworks/talisman/blob/d4b1b1d11137dbb173bf681a03f16183a9d82255/install.sh#L10) according to [semver](https://semver.org/) conventions
