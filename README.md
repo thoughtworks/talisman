@@ -12,7 +12,7 @@
 - [What is Talisman?](#what-is-talisman)
 - [Installation](#installation)
 	- [As a global hook template (Recommended)](#installation-as-a-global-hook-template)
-	- [To a single repository](#installation-to-a-single-project) 
+	- [To a single repository](#installation-to-a-single-project)
 	- [As a CLI to find file types](#installation-as-a-cli)
 - [Talisman in action](#talisman-in-action)
 	- [Validations](#validations) 
@@ -45,8 +45,9 @@ Talisman can be set up as either a pre-commit or pre-push hook on the git reposi
 
 Find the instructions below.
 
-## Installation as a global hook template 
 ## [Recommended approach]
+## Installation as a global hook template 
+
 We recommend installing Talisman as a git hook template, as that will cause
 Talisman to be present, not only in your existing git repositories, but also in any new repository that you 'init' or
 'clone'.
@@ -79,13 +80,14 @@ If you choose to set the `$PATH` later, please export TALISMAN\_HOME=$HOME/.tali
 
 
 ### Handling existing hooks
-Installation of Talisman globally does not clobber pre-existing hooks on repositories. 
-If the installation script finds any existing hooks, it will only indicate so on the console.
-To achieve running multiple hooks we suggest the following two tools
+Installation of Talisman globally does not clobber pre-existing hooks on repositories. <br>
+If the installation script finds any existing hooks, it will only indicate so on the console. <br>
+To achieve running multiple hooks we suggest (but not limited to) the following two tools
 
 #### 1. Pre-commit (Linux/Unix)
 Use [pre-commit](https://pre-commit.com) tool to manage all the existing hooks along with Talisman.
 In the suggestion, it will prompt the following code to be included in .pre-commit-config.yaml
+
 ```
     -   repo: local
         hooks:
@@ -100,23 +102,29 @@ In the suggestion, it will prompt the following code to be included in .pre-comm
 
 #### 2. Husky (Linux/Unix/Windows)
 [husky](https://github.com/typicode/husky/blob/master/DOCS.md) is an npm module for managing git hooks.
-In order to use husky, make sure you set TALISMAN_HOME.
+In order to use husky, make sure you have already set TALISMAN_HOME to `$PATH`.
  
-##### Existing Users
++ **Existing Users**
+ 
  If you already are using husky, add the following lines to husky pre-commit in package.json
-###### Windows
-``` 
+ 
+ ###### Windows
+ 
+ ``` 
     "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" -githook pre-commit'" 
 ```
-###### Linux/Unix
-```
+ 
+ ###### Linux/Unix
+ 
+ ```
     $TALISMAN_HOME/talisman_hook_script pre-commit
 ```
-##### New Users
-If you want to use husky with multiple hooks along with talisman, add the following snippet to you package json.
-    
++ **New Users**
+
+ If you want to use husky with multiple hooks along with talisman, add the following snippet to you package json.
 ###### Windows
-```
+
+ ```
      {
         "husky": {
           "hooks": {
@@ -125,8 +133,10 @@ If you want to use husky with multiple hooks along with talisman, add the follow
         }
     }
 ```
-###### Linux/Unix
-```
+
+ ###### Linux/Unix
+
+ ```
     {
       "husky": {
        "hooks": {
@@ -135,6 +145,7 @@ If you want to use husky with multiple hooks along with talisman, add the follow
         }
       }
 ```
+
 
 
 ## Installation to a single project
@@ -151,7 +162,8 @@ cd my-git-project
 ~/install-talisman.sh
 ```
 
-### Usage with the [pre-commit](https://pre-commit.com) git hooks framework
+### Handling existing hooks
+Talisman will need to be chained with any existing git hooks.You can use [pre-commit](https://pre-commit.com) git hooks framework to handle this.
 
 Add this to your `.pre-commit-config.yaml` (be sure to update `rev` to point to
 a real git revision!)
@@ -249,10 +261,12 @@ To uninstall talisman globally from your machine, run:
 curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/uninstall.bash > /tmp/uninstall_talisman.bash && /bin/bash /tmp/uninstall_talisman.bash 
 ```
 This will
+
 1. ask you for the base dir of all your repos, find all git repos inside it and remove talisman hooks
 2. remove talisman hook from .git-template 
-3. remove talisman from the central install location ($HOME/.talisman/bin)
-You will have to manually remove TALISMAN_HOME from your environment variables
+3. remove talisman from the central install location ($HOME/.talisman/bin).<br>
+
+<i>You will have to manually remove TALISMAN_HOME from your environment variables</i>
 
 ## Uninstallation from a single repository
 When you installed Talisman, it must have created a pre-commit or pre-push hook (as selected) in your repository during installation. 
