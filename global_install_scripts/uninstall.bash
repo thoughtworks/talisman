@@ -4,7 +4,11 @@ shopt -s extglob
 
 DEBUG=${DEBUG:-''}
 
-declare HOOK_SCRIPT='pre-commit' # TODO: need ability to uninstall pre-push hook as well. 
+declare HOOK_SCRIPT='pre-commit' # TODO: need ability to uninstall pre-push hook as well.
+if [[ $# -gt 0 && $1 =~ pre-push.* ]] ; then
+   HOOK_SCRIPT='pre-push'
+fi 
+
 function run() {
     # Arguments: $1 = 'pre-commit' or 'pre-push'. whether to set talisman up as pre-commit or pre-push hook : TODO: not implemented yet
     # Environment variables:
