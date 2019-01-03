@@ -189,15 +189,27 @@ talisman --pattern="./**/*.{go,md}"
 
 # Talisman in action
 
-After the installation is successful, Talisman will run checks for obvious secrets automatically before each commit or push (as chosen during installation):
+After the installation is successful, Talisman will run checks for obvious secrets automatically before each commit or push (as chosen during installation). In case there are any security breaches detected, talisman will display a detailed report of the errors:
 
 ```bash
 $ git push
-The following errors were detected in danger.pem
-         The file name "danger.pem" failed checks against the pattern ^.+\.pem$
-
-error: failed to push some refs to 'git@github.com:jacksingleton/talisman-demo.git'
+Talisman Report:
++-----------------+-------------------------------------------------------------------------------+
+|     PATTERN     |                                    ERRORS                                     |
++-----------------+-------------------------------------------------------------------------------+
+| danger.pem      | The file name "danger.pem"                                                    |
+|                 | failed checks against the                                                     |
+|                 | pattern ^.+\.pem$                                                             |
++-----------------+-------------------------------------------------------------------------------+
+| danger.pem      | Expected file to not to contain hex encoded texts such as:                    |
+|                 | awsSecretKey=c64e8c79aacf5ddb02f1274db2d973f363f4f553ab1692d8d203b4cc09692f79 |
++-----------------+-------------------------------------------------------------------------------+
 ```
+
+In the above example, the file *danger.pem* has been flagged as a security breach due to the following reasons:
+
+* The filename matches one of the pre-configured patterns.
+* The file contains an awsSecretKey which is scanned and flagged by Talisman
 
 ## Validations
 The following detectors execute against the changesets to detect secrets/sensitive information:
@@ -212,33 +224,33 @@ The following detectors execute against the changesets to detect secrets/sensiti
 
 ## Ignoring Files
 
-If you're *really* sure you want to push that file, you can add it to
-a `.talismanignore` file in the project root:
+If you're *really* sure you want to push that file, you can configure it into the `.talismanrc` file in the project root. The contents required for ignoring your failed files will be printed by Talisman on the console immediately after the Talisman Error report:
+
 
 ```bash
-echo 'danger.pem' >> .talismanignore
+If you are absolutely sure that you want to ignore the above files from talisman detectors, consider pasting the following format in .talismanrc
+fileignoreconfig:
+- filename: danger.pem
+  checksum: cf97abd34cebe895417eb4d97fbd7374aa138dcb65b1fe7f6b6cc1238aaf4d48
+  ignore_detectors: []
 ```
+Entering this in the `.talismanrc` file will ensure that Talisman will ignore the `danger.pem` file as long as the checksum matches the value mentioned in the `checksum` field.  
 
-Note that we can ignore files in a few different ways:
+Below is a detailed description of the various fields that can be configured into the `.talismanrc` file:
 
-* If the pattern ends in a path separator, then all files inside a
-  directory with that name are matched. However, files with that name
-  itself will not be matched.
-
-* If a pattern contains the path separator in any other location, the
-  match works according to the pattern logic of the default golang
-  glob mechanism.
-
-* If there is no path separator anywhere in the pattern, the pattern
-  is matched against the base name of the file. Thus, the pattern will
-  match files with that name anywhere in the repository.
-
-You can also disable only specific detectors.
+* `filename` : This field should mention the fully qualified filename.
+* `checksum` : This field should always have the value specified by Talisman in the message displayed above. If at any point, a new change is made to the file, it will result in a new checksum and Talisman will scan the file again for any potential security threats.
+* `ignore_detectors` : This field will disable specific detectors for a particular file.
 For example, if your `init-env.sh` filename triggers a warning, you can only disable
 this warning while still being alerted if other things go wrong (e.g. file content):
+
 ```bash
-echo 'init-env.sh # ignore:filename,filesize' >> .talismanignore
+fileignoreconfig:
+- filename: init-env.sh
+  checksum: cf97abd34cebe895417eb4d97fbd7374aa138dcb65b1fe7f6b6cc1238aaf4d48
+  ignore_detectors: [filename, filesize]
 ```
+
 Note: Here both filename and filesize detectors are ignored for init-env.sh, but
 filecontent detector will still activate on `init-env.sh`
 
