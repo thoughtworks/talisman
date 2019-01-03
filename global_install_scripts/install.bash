@@ -297,8 +297,8 @@ function run() {
 
 	CMD_STRING="${SUDO_PREFIX} ${SEARCH_CMD} ${SEARCH_ROOT} ${EXTRA_SEARCH_OPTS} -name .git -type d -exec ${REPO_HOOK_SETUP_SCRIPT_PATH} ${TALISMAN_HOOK_SCRIPT_PATH} ${EXCEPTIONS_FILE} {} \;"
 	echo_debug "EXECUTING: ${CMD_STRING}"
-	eval "${CMD_STRING}"
-	
+	eval "${CMD_STRING}" || true
+
 	NUMBER_OF_EXCEPTION_REPOS=`cat ${EXCEPTIONS_FILE} | wc -l`
 
 	OS=$(uname -s)

@@ -82,8 +82,8 @@ function run() {
 	TALISMAN_PATH=${TALISMAN_SETUP_DIR}/talisman_hook_script
 	CMD_STRING="${SUDO_PREFIX} ${SEARCH_CMD} ${SEARCH_ROOT} ${EXTRA_SEARCH_OPTS} -name .git -type d -exec ${DELETE_REPO_HOOK_SCRIPT} ${TALISMAN_PATH} ${EXCEPTIONS_FILE} {} ${HOOK_SCRIPT} \;"
 	echo_debug "EXECUTING: ${CMD_STRING}"
-	eval "${CMD_STRING}"
-		
+	eval "${CMD_STRING}" || true
+
 	NUMBER_OF_EXCEPTION_REPOS=`cat ${EXCEPTIONS_FILE} | wc -l`
 
 	if [ ${NUMBER_OF_EXCEPTION_REPOS} -gt 0 ]; then
@@ -105,7 +105,7 @@ function run() {
     if [[ -n $TEMPLATE_DIR && -e ${TEMPLATE_DIR}/hooks/${HOOK_SCRIPT} && \
 	      ${TALISMAN_SETUP_DIR}/talisman_hook_script -ef ${TEMPLATE_DIR}/hooks/${HOOK_SCRIPT} ]]; then
 	rm -f "${TEMPLATE_DIR}/hooks/${HOOK_SCRIPT}" && \
-	    echo_success "Removed ${HOOK_SCRIPT} from ${TEMPLATE_DIR}"  
+	    echo_success "Removed ${HOOK_SCRIPT} from ${TEMPLATE_DIR}"
     fi
 
     echo_debug "Removing talisman from $TALISMAN_SETUP_DIR"
