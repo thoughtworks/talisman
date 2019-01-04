@@ -1,12 +1,13 @@
 package detector
 
 import (
-	"github.com/stretchr/testify/assert"
 	"talisman/git_repo"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-var talismanRCContents =  `
+var talismanRCContents = `
 fileignoreconfig:
   - filename    : filename
 `
@@ -27,7 +28,7 @@ func TestShouldIgnoreFileIfNeeded(t *testing.T) {
 	filename := "filename"
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 
-	NewFileContentDetector().Test(additions, NewTalismanRCIgnore([]byte (talismanRCContents)), results)
+	NewFileContentDetector().Test(additions, NewTalismanRCIgnore([]byte(talismanRCContents)), results)
 	assert.True(t, results.Successful(), "Expected file %s to be ignored by pattern", filename)
 }
 
@@ -120,7 +121,7 @@ func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 	filePath := additions[0].Path
 
-	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	expectedMsg := "Expected file to not to contain hex encoded texts such as: " + hex
 	assert.Equal(t, expectedMsg, results.Failures(filePath)[0])
 }
@@ -135,7 +136,7 @@ func TestResultsShouldContainHexTextsIfHexAndBase64ExistInFile(t *testing.T) {
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 	filePath := additions[0].Path
 
-	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	expectedMsg := "Expected file to not to contain hex encoded texts such as: " + hex
 	assert.Equal(t, expectedMsg, results.Failures(filePath)[1])
 }
@@ -150,7 +151,7 @@ func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) 
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 	filePath := additions[0].Path
 
-	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	expectedMsg := "Expected file to not to contain base64 encoded texts such as: " + base64
 	assert.Equal(t, expectedMsg, results.Failures(filePath)[0])
 }
@@ -163,7 +164,7 @@ func TestResultsShouldContainCreditCardNumberIfCreditCardNumberExistInFile(t *te
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 	filePath := additions[0].Path
 
-	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	expectedMsg := "Expected file to not to contain credit card numbers such as: " +
 		creditCardNumber
 	assert.Equal(t, expectedMsg, results.Failures(filePath)[0])

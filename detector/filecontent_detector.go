@@ -50,7 +50,6 @@ func (fc *FileContentDetector) Test(additions []git_repo.Addition, ignoreConfig 
 	}
 }
 
-
 func fillResults(results []string, addition git_repo.Addition, result *DetectionResults, info string, output string) {
 	for _, res := range results {
 		if res != "" {
