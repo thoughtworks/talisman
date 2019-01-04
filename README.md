@@ -195,7 +195,7 @@ After the installation is successful, Talisman will run checks for obvious secre
 $ git push
 Talisman Report:
 +-----------------+-------------------------------------------------------------------------------+
-|     PATTERN     |                                    ERRORS                                     |
+|     FILE        |                                    ERRORS                                     |
 +-----------------+-------------------------------------------------------------------------------+
 | danger.pem      | The file name "danger.pem"                                                    |
 |                 | failed checks against the                                                     |
@@ -228,7 +228,7 @@ If you're *really* sure you want to push that file, you can configure it into th
 
 
 ```bash
-If you are absolutely sure that you want to ignore the above files from talisman detectors, consider pasting the following format in .talismanrc
+If you are absolutely sure that you want to ignore the above files from talisman detectors, consider pasting the following format in .talismanrc file in the project root
 fileignoreconfig:
 - filename: danger.pem
   checksum: cf97abd34cebe895417eb4d97fbd7374aa138dcb65b1fe7f6b6cc1238aaf4d48
