@@ -1,12 +1,16 @@
 package detector
 
 import (
-	"testing"
-
 	"talisman/git_repo"
+	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+var talismanRCContents = `
+fileignoreconfig:
+  - filename    : filename
+`
 
 func TestShouldNotFlagSafeText(t *testing.T) {
 	results := NewDetectionResults()
@@ -14,7 +18,7 @@ func TestShouldNotFlagSafeText(t *testing.T) {
 	filename := "filename"
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 
-	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
 
@@ -23,9 +27,8 @@ func TestShouldIgnoreFileIfNeeded(t *testing.T) {
 	content := []byte("prettySafe")
 	filename := "filename"
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
-	ignores := NewIgnores(filename)
 
-	NewFileContentDetector().Test(additions, ignores, results)
+	NewFileContentDetector().Test(additions, NewTalismanRCIgnore([]byte(talismanRCContents)), results)
 	assert.True(t, results.Successful(), "Expected file %s to be ignored by pattern", filename)
 }
 
@@ -39,7 +42,7 @@ func TestShouldNotFlag4CharSafeText(t *testing.T) {
 	filename := "filename"
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 
-	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
 
@@ -50,7 +53,7 @@ func TestShouldNotFlagLowEntropyBase64Text(t *testing.T) {
 	filename := "filename"
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 
-	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
 
@@ -61,7 +64,7 @@ func TestShouldFlagPotentialAWSSecretKeys(t *testing.T) {
 	filename := "filename"
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 
-	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 
 }
@@ -73,7 +76,7 @@ func TestShouldFlagPotentialJWT(t *testing.T) {
 	filename := "filename"
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 
-	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
 
@@ -84,7 +87,7 @@ func TestShouldFlagPotentialSecretsWithinJavaCode(t *testing.T) {
 	filename := "filename"
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 
-	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
 
@@ -95,7 +98,7 @@ func TestShouldNotFlagPotentialSecretsWithinSafeJavaCode(t *testing.T) {
 	filename := "filename"
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 
-	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
 
@@ -106,7 +109,7 @@ func TestShouldNotFlagPotentialSecretsWithinSafeLongMethodName(t *testing.T) {
 	filename := "filename"
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 
-	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
 
@@ -118,7 +121,7 @@ func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 	filePath := additions[0].Path
 
-	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	expectedMsg := "Expected file to not to contain hex encoded texts such as: " + hex
 	assert.Equal(t, expectedMsg, results.Failures(filePath)[0])
 }
@@ -133,7 +136,7 @@ func TestResultsShouldContainHexTextsIfHexAndBase64ExistInFile(t *testing.T) {
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 	filePath := additions[0].Path
 
-	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	expectedMsg := "Expected file to not to contain hex encoded texts such as: " + hex
 	assert.Equal(t, expectedMsg, results.Failures(filePath)[1])
 }
@@ -148,7 +151,7 @@ func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) 
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 	filePath := additions[0].Path
 
-	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	expectedMsg := "Expected file to not to contain base64 encoded texts such as: " + base64
 	assert.Equal(t, expectedMsg, results.Failures(filePath)[0])
 }
@@ -161,7 +164,7 @@ func TestResultsShouldContainCreditCardNumberIfCreditCardNumberExistInFile(t *te
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 	filePath := additions[0].Path
 
-	NewFileContentDetector().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	expectedMsg := "Expected file to not to contain credit card numbers such as: " +
 		creditCardNumber
 	assert.Equal(t, expectedMsg, results.Failures(filePath)[0])

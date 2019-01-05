@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-
 	"talisman/detector"
 	"talisman/git_repo"
 )
@@ -34,9 +33,11 @@ func (r *Runner) RunWithoutErrors() int {
 	return r.exitStatus()
 }
 
+
+
 func (r *Runner) doRun() {
-	ignores := detector.ReadIgnoresFromFile(readRepoFile())
-	detector.DefaultChain().Test(r.additions, ignores, r.results)
+	ignoresNew := detector.ReadConfigFromRCFile(readRepoFile())
+	detector.DefaultChain().Test(r.additions, ignoresNew, r.results)
 }
 
 func (r *Runner) printReport() {

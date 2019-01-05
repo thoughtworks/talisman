@@ -77,9 +77,9 @@ func NewFileNameDetector(patternStrings ...string) Detector {
 }
 
 //Test tests the fileNames of the Additions to ensure that they don't look suspicious
-func (fd FileNameDetector) Test(additions []git_repo.Addition, ignores Ignores, result *DetectionResults) {
+func (fd FileNameDetector) Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
 	for _, addition := range additions {
-		if ignores.Deny(addition, "filename") {
+		if ignoreConfig.Deny(addition, "filename") {
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
 			}).Info("Ignoring addition as it was specified to be ignored.")

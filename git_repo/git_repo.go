@@ -98,6 +98,18 @@ func (repo GitRepo) ReadRepoFileOrNothing(fileName string) ([]byte, error) {
 	return make([]byte, 0), nil
 }
 
+//CheckIfFileExists checks if the file exists on the file system. Does not look into the file contents
+//Returns TRUE if file exists
+//Returns FALSE if the file is not found
+func (repo GitRepo) CheckIfFileExists(fileName string) bool {
+	filepath := path.Join(repo.root, fileName)
+	if _, err := os.Stat(filepath); os.IsNotExist(err) {
+		return false
+	} else {
+		return true
+	}
+}
+
 //Matches states whether the addition matches the given pattern.
 //If the pattern ends in a path separator, then all files inside a directory with that name are matched. However, files with that name itself will not be matched.
 //If a pattern contains the path separator in any other location, the match works according to the pattern logic of the default golang glob mechanism
@@ -109,7 +121,7 @@ func (a Addition) Matches(pattern string) bool {
 	} else if strings.ContainsRune(pattern, os.PathSeparator) {
 		result, _ = path.Match(pattern, string(a.Path))
 	} else {
-		result, _ = path.Match(pattern, string(a.Name))
+		result, _ = path.Match(pattern, string(a.Path))
 	}
 	log.WithFields(log.Fields{
 		"pattern":  pattern,

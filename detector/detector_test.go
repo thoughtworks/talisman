@@ -11,7 +11,7 @@ import (
 func TestEmptyValidationChainPassesAllValidations(t *testing.T) {
 	v := NewChain()
 	results := NewDetectionResults()
-	v.Test(nil, NewIgnores(), results)
+	v.Test(nil, TalismanRCIgnore{}, results)
 	assert.False(t, results.HasFailures(), "Empty validation chain is expected to always pass")
 }
 
@@ -20,18 +20,18 @@ func TestValidationChainWithFailingValidationAlwaysFails(t *testing.T) {
 	v.AddDetector(PassingDetection{})
 	v.AddDetector(FailingDetection{})
 	results := NewDetectionResults()
-	v.Test(nil, NewIgnores(), results)
+	v.Test(nil, TalismanRCIgnore{}, results)
 
 	assert.False(t, results.Successful(), "Expected validation chain with a failure to fail.")
 }
 
 type FailingDetection struct{}
 
-func (v FailingDetection) Test(additions []git_repo.Addition, ignores Ignores, result *DetectionResults) {
+func (v FailingDetection) Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
 	result.Fail("some_file", "FAILED BY DESIGN")
 }
 
 type PassingDetection struct{}
 
-func (p PassingDetection) Test(additions []git_repo.Addition, ignores Ignores, result *DetectionResults) {
+func (p PassingDetection) Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
 }

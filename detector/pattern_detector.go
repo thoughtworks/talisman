@@ -2,21 +2,23 @@ package detector
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
 	"talisman/git_repo"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 type PatternDetector struct {
-	secretsPattern    *PatternMatcher
+	secretsPattern *PatternMatcher
 }
 
-func (detector PatternDetector) Test(additions []git_repo.Addition, ignores Ignores, result *DetectionResults) {
+//Test tests the contents of the Additions to ensure that they don't look suspicious
+func (detector PatternDetector) Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
 	for _, addition := range additions {
-		if ignores.Deny(addition, "filecontent") {
+		if ignoreConfig.Deny(addition, "filecontent") {
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
 			}).Info("Ignoring addition as it was specified to be ignored.")
-			result.Ignore(addition.Path, "filename")
+			result.Ignore(addition.Path, "filecontent")
 			continue
 		}
 		detections := detector.secretsPattern.check(string(addition.Data))
@@ -32,6 +34,7 @@ func (detector PatternDetector) Test(additions []git_repo.Addition, ignores Igno
 	}
 }
 
+//NewPatternDetector returns a PatternDetector that tests Additions against the pre-configured patterns
 func NewPatternDetector() *PatternDetector {
 	patternStrings := []string{
 

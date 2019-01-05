@@ -6,7 +6,7 @@ import "talisman/git_repo"
 //Detectors are expected to honor the ignores that are passed in and log them in the results
 //Detectors are expected to signal any errors to the results
 type Detector interface {
-	Test(additions []git_repo.Addition, ignores Ignores, result *DetectionResults)
+	Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults)
 }
 
 //Chain represents a chain of Detectors.
@@ -39,8 +39,10 @@ func (dc *Chain) AddDetector(d Detector) *Chain {
 
 //Test validates the additions against each detector in the chain.
 //The results are passed in from detector to detector and thus collect all errors from all detectors
-func (dc *Chain) Test(additions []git_repo.Addition, ignores Ignores, result *DetectionResults) {
+func (dc *Chain) Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
+	cs := NewChecksumCalculator()
+	ignoreConfigModified := cs.FilterIgnoresBasedOnChecksums(additions, ignoreConfig)
 	for _, v := range dc.detectors {
-		v.Test(additions, ignores, result)
+		v.Test(additions, ignoreConfigModified, result)
 	}
 }

@@ -16,6 +16,27 @@ import (
 
 const awsAccessKeyIDExample string = "accessKey=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 
+const talismanRCDataWithIgnoreDetectorWithFilename = `
+fileignoreconfig:
+- filename: private.pem
+  checksum: 05db785bf1e1712f69b81eeb9956bd797b956e7179ebe3cb7bb2cd9be037a24c
+  ignore_detectors: [filename]
+`
+
+const talismanRCDataWithIgnoreDetectorWithFilecontent = `
+fileignoreconfig:
+- filename: private.pem
+  checksum: 05db785bf1e1712f69b81eeb9956bd797b956e7179ebe3cb7bb2cd9be037a24c
+  ignore_detectors: [filecontent]
+`
+
+const talismanRCDataWithFileNameAndCorrectChecksum = `
+fileignoreconfig:
+- filename: private.pem
+  checksum: 1db800b79e6e9695adc451f77be974dc47bcd84d42873560d7767bfca30db8b1
+  ignore_detectors: []
+`
+
 func init() {
 	git_testing.Logger = logrus.WithField("Environment", "Debug")
 	git_testing.Logger.Debug("Accetpance test started")
@@ -56,36 +77,48 @@ func TestAddingSecretKeyAsFileContentShouldExitOne(t *testing.T) {
 	})
 }
 
-func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnored(t *testing.T) {
+func TestAddingSecretKeyShouldExitZeroIfPEMFileIsIgnored(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
-		git.CreateFileWithContents(".talismanignore", "*.pem")
-		git.AddAndcommit("*", "add private key")
+		git.CreateFileWithContents(".talismanrc", talismanRCDataWithFileNameAndCorrectChecksum)
+		git.AddAndcommit("private.pem", "add private key")
 
 		assert.Equal(t, 0, runTalisman(git), "Expected run() to return 0 and pass as pem file was ignored")
 	})
 }
 
-func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnoredAndCommented(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
-		git.SetupBaselineFiles("simple-file")
-		git.CreateFileWithContents("private.pem", "secret")
-		git.CreateFileWithContents(".talismanignore", "*.pem # I know what I'm doing")
-		git.AddAndcommit("*", "add private key")
+// Need to work on this test case as talismanrc does  not yet support comments
+// func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnoredAndCommented(t *testing.T) {
+// 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+// 		git.SetupBaselineFiles("simple-file")
+// 		git.CreateFileWithContents("private.pem", "secret")
+// 		git.CreateFileWithContents(".talismanrc", talismanRCDataWithIgnoreDetector)
+// 		git.AddAndcommit("*", "add private key")
 
-		assert.Equal(t, 0, runTalisman(git), "Expected run() to return 0 and pass as pem file was ignored")
-	})
-}
+// 		assert.Equal(t, 0, runTalisman(git), "Expected run() to return 0 and pass as pem file was ignored")
+// 	})
+// }
 
 func TestAddingSecretKeyShouldExitOneIfTheyContainBadContentButOnlyFilenameDetectorWasIgnored(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", awsAccessKeyIDExample)
-		git.CreateFileWithContents(".talismanignore", "*.pem # ignore:filename")
-		git.AddAndcommit("*", "add private key")
+		git.CreateFileWithContents(".talismanrc", talismanRCDataWithIgnoreDetectorWithFilename)
+		git.AddAndcommit("private.pem", "add private key")
 
-		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 0 and pass as pem file was ignored")
+		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 1 and fail as only filename was ignored")
+	})
+}
+
+func TestAddingSecretKeyShouldExitOneIfFileNameIsSensitiveButOnlyFilecontentDetectorWasIgnored(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents("private.pem", awsAccessKeyIDExample)
+		git.CreateFileWithContents(".talismanrc", talismanRCDataWithIgnoreDetectorWithFilecontent)
+		git.AddAndcommit("private.pem", "add private key")
+
+		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 1 and fail as only filename was ignored")
 	})
 }
 

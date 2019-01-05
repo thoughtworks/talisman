@@ -2,9 +2,11 @@ package detector
 
 import (
 	"fmt"
-	"strings"
-
+	"os"
 	"talisman/git_repo"
+
+	"github.com/olekukonko/tablewriter"
+	yaml "gopkg.in/yaml.v2"
 )
 
 //DetectionResults represents all interesting information collected during a detection run.
@@ -68,30 +70,57 @@ func (r *DetectionResults) Failures(fileName git_repo.FilePath) []string {
 //Report returns a string documenting the various failures and ignored files for the current run
 func (r *DetectionResults) Report() string {
 	var result string
-	for filePath := range r.failures {
-		result = result + r.ReportFileFailures(filePath)
-	}
+	var filePathsForIgnoresAndFailures []string
+	var data [][]string
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"File", "Errors"})
+	table.SetRowLine(true)
 
-	if len(r.ignores) > 0 {
-		result = result + fmt.Sprintf("The following files were ignored:\n")
+	for filePath := range r.failures {
+		filePathsForIgnoresAndFailures = append(filePathsForIgnoresAndFailures, string(filePath))
+		failureData := r.ReportFileFailures(filePath)
+		data = append(data, failureData...)
 	}
 	for filePath := range r.ignores {
-		result = result + fmt.Sprintf("\t%s was ignored by .talismanignore for the following detectors: %s\n", filePath, strings.Join(r.ignores[filePath], ", "))
+		filePathsForIgnoresAndFailures = append(filePathsForIgnoresAndFailures, string(filePath))
+		// ignoreData := r.ReportFileIgnores(filePath)
+		// data = append(data, ignoreData...)
+	}
+	filePathsForIgnoresAndFailures = unique(filePathsForIgnoresAndFailures)
+	if len(r.failures) > 0 {
+		fmt.Printf("\n\x1b[1m\x1b[31mTalisman Report:\x1b[0m\x1b[0m\n")
+		table.AppendBulk(data)
+		table.Render()
+		result = result + fmt.Sprintf("\n\x1b[33mIf you are absolutely sure that you want to ignore the above files from talisman detectors, consider pasting the following format in .talismanrc file in the project root\x1b[0m\n")
+		result = result + r.suggestTalismanRC(filePathsForIgnoresAndFailures)
+		result = result + fmt.Sprintf("\n\n")
 	}
 	return result
 }
 
-//ReportFileFailures returns a string documenting the various failures detected on the supplied FilePath by all detectors in the current run
-func (r *DetectionResults) ReportFileFailures(filePath git_repo.FilePath) string {
-	failures := r.failures[filePath]
-	if len(failures) > 0 {
-		result := fmt.Sprintf("The following errors were detected in %s\n", filePath)
-		for _, failure := range failures {
-			result = result + fmt.Sprintf("\t %s\n", failure)
-		}
-		return result
+func (r *DetectionResults) suggestTalismanRC(filePaths []string) string {
+	var fileIgnoreConfigs []FileIgnoreConfig
+	for _, filePath := range filePaths {
+		currentChecksum := CalculateCollectiveHash([]string{filePath})
+		fileIgnoreConfig := FileIgnoreConfig{filePath, currentChecksum, []string{}}
+		fileIgnoreConfigs = append(fileIgnoreConfigs, fileIgnoreConfig)
 	}
-	return ""
+
+	talismanRcIgnoreConfig := TalismanRCIgnore{fileIgnoreConfigs}
+	m, _ := yaml.Marshal(&talismanRcIgnoreConfig)
+	return string(m)
+}
+
+//ReportFileFailures adds a string to table documenting the various failures detected on the supplied FilePath by all detectors in the current run
+func (r *DetectionResults) ReportFileFailures(filePath git_repo.FilePath) [][]string {
+	failures := r.failures[filePath]
+	var data [][]string
+	if len(failures) > 0 {
+		for _, failure := range failures {
+			data = append(data, []string{string(filePath), failure})
+		}
+	}
+	return data
 }
 
 func (r *DetectionResults) failurePaths() []git_repo.FilePath {
@@ -108,4 +137,16 @@ func keys(aMap map[git_repo.FilePath][]string) []git_repo.FilePath {
 		result = append(result, filePath)
 	}
 	return result
+}
+
+func unique(stringSlice []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range stringSlice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }
