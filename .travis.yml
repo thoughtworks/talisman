@@ -1,0 +1,16 @@
+sudo: false
+
+language: go
+
+env:
+    global: 
+        - GO111MODULE=on
+
+go:
+  - 1.11.x
+
+install: true 
+
+script: 
+  - go mod vendor
+  - go test -v ./...
