@@ -35,9 +35,11 @@ func TestResultsReportsFailures(t *testing.T) {
 	results.Fail("another_filename", "Complete & utter failure")
 
 	actualErrorReport := results.ReportFileFailures("some_filename")
-	assert.Regexp(t, "The following errors were detected in some_filename", actualErrorReport, "Error report does not contain expected output")
-	assert.Regexp(t, "Bomb", actualErrorReport, "Error report does not contain expected output")
-	assert.Regexp(t, "Complete & utter failure", actualErrorReport, "Error report does not contain expected output")
+
+	assert.Regexp(t, "some_filename", actualErrorReport[0][0], "Error report does not contain expected output")
+	assert.Regexp(t, "Bomb", actualErrorReport[0][1], "Error report does not contain expected output")
+	assert.Regexp(t, "some_filename", actualErrorReport[1][0], "Error report does not contain expected output")
+	assert.Regexp(t, "Complete & utter failure", actualErrorReport[1][1], "Error report does not contain expected output")
 }
 
 // Presently not showing the ignored files in the log

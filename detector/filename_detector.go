@@ -41,7 +41,6 @@ func DefaultFileNameDetector() Detector {
 		"^credentials\\.xml$",
 		"^.*\\.pubxml(\\.user)?$",
 		"^\\.?s3cfg$",
-		"^.*\\.ovpn$",
 		"^\\.gitrobrc$",
 		"^\\.?(bash|zsh)rc$",
 		"^\\.?(bash_|zsh_)?profile$",
