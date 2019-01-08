@@ -14,6 +14,7 @@
 	- [As a global hook template (Recommended)](#installation-as-a-global-hook-template)
 	- [To a single repository](#installation-to-a-single-project)
 	- [As a CLI to find file types](#installation-as-a-cli)
+- [Upgrading Talisman](#Upgrading)
 - [Talisman in action](#talisman-in-action)
 	- [Validations](#validations) 
 	- [Ignoring files](#ignoring-files)
@@ -30,7 +31,11 @@ Talisman is a tool that installs a hook to your repository to ensure that potent
 It validates the outgoing changeset for things that look suspicious - such as potential SSH
 keys, authorization tokens, private keys etc.
 
-
+#Upgrading
+To update Talisman to the latest release, run the following curl command:
+```bash
+curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/update_talisman.bash > /tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash
+```
 # Installation
 
 Talisman supports MAC OSX, Linux and Windows.
