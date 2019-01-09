@@ -272,11 +272,20 @@ You could have chosen to install as a global hook template or at a single reposi
 Please follow the steps below based on which option you had chosen at installation.
 
 ## Uninstallation from a global hook template
-To uninstall talisman globally from your machine, run:
+Run the following command on your terminal to uninstall talisman globally from your machine.
+
+For pre-commit hook:
 
 ```
 curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/uninstall.bash > /tmp/uninstall_talisman.bash && /bin/bash /tmp/uninstall_talisman.bash 
 ```
+
+For pre-push hook:
+
+```
+curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/uninstall.bash > /tmp/uninstall_talisman.bash && /bin/bash /tmp/uninstall_talisman.bash pre-push
+```
+
 This will
 
 1. ask you for the base dir of all your repos, find all git repos inside it and remove talisman hooks

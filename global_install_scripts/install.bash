@@ -295,7 +295,7 @@ function run() {
 	EXCEPTIONS_FILE=${TEMP_DIR}/pre-existing-hooks.paths
 	touch ${EXCEPTIONS_FILE}
 
-	CMD_STRING="${SUDO_PREFIX} ${SEARCH_CMD} ${SEARCH_ROOT} ${EXTRA_SEARCH_OPTS} -name .git -type d -exec ${REPO_HOOK_SETUP_SCRIPT_PATH} ${TALISMAN_HOOK_SCRIPT_PATH} ${EXCEPTIONS_FILE} {} \;"
+	CMD_STRING="${SUDO_PREFIX} ${SEARCH_CMD} ${SEARCH_ROOT} ${EXTRA_SEARCH_OPTS} -name .git -type d -exec ${REPO_HOOK_SETUP_SCRIPT_PATH} ${TALISMAN_HOOK_SCRIPT_PATH} ${EXCEPTIONS_FILE} {} ${HOOK_SCRIPT} \;"
 	echo_debug "EXECUTING: ${CMD_STRING}"
 	eval "${CMD_STRING}" || true
 
@@ -351,7 +351,7 @@ END_OF_SCRIPT
 	    setup_talisman
 	fi
 	
-	echo "Setting up pre-commit hook in git template directory"
+	echo "Setting up ${HOOK_SCRIPT} hook in git template directory"
 	setup_git_template_talisman_hook
 	echo
 	echo "Setting up talisman hook recursively in git repos"
