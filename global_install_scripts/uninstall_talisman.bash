@@ -4,7 +4,7 @@ shopt -s extglob
 
 DEBUG=${DEBUG:-''}
 
-declare HOOK_SCRIPT='pre-commit'
+declare HOOK_SCRIPT='pre-commit' # TODO: need ability to uninstall pre-push hook as well. 
 if [[ $# -gt 0 && $1 =~ pre-push.* ]] ; then
    HOOK_SCRIPT='pre-push'
 fi 
@@ -46,7 +46,8 @@ function run() {
     }
     export -f echo_success
 
-    TALISMAN_SETUP_DIR=${HOME}/.talisman/bin
+    TALISMAN_SETUP_DIR="/usr/local/Cellar/talisman"
+    TALISMAN_HOOK_SCRIPT_DIR=${HOME}/".talisman"
     TEMPLATE_DIR=$(git config --global init.templatedir) || true
     INSTALL_ORG_REPO=${INSTALL_ORG_REPO:-'thoughtworks/talisman'}
     SCRIPT_BASE="https://raw.githubusercontent.com/${INSTALL_ORG_REPO}/master/global_install_scripts"
@@ -83,8 +84,8 @@ function run() {
 	EXCEPTIONS_FILE=${TEMP_DIR}/repos_with_multiple_hooks.paths
 	touch ${EXCEPTIONS_FILE}
 
-	TALISMAN_PATH=${TALISMAN_SETUP_DIR}/talisman_hook_script
-	CMD_STRING="${SUDO_PREFIX} ${SEARCH_CMD} ${SEARCH_ROOT} ${EXTRA_SEARCH_OPTS} -name .git -type d -exec ${DELETE_REPO_HOOK_SCRIPT} ${TALISMAN_PATH} ${EXCEPTIONS_FILE} {} ${HOOK_SCRIPT} \;"
+	TALISMAN_HOOK_SCRIPT_PATH=${TALISMAN_HOOK_SCRIPT_DIR}/talisman_hook_script
+	CMD_STRING="${SUDO_PREFIX} ${SEARCH_CMD} ${SEARCH_ROOT} ${EXTRA_SEARCH_OPTS} -name .git -type d -exec ${DELETE_REPO_HOOK_SCRIPT} ${TALISMAN_HOOK_SCRIPT_PATH} ${EXCEPTIONS_FILE} {} ${HOOK_SCRIPT} \;"
 	echo_debug "EXECUTING: ${CMD_STRING}"
 	eval "${CMD_STRING}" || true
 
@@ -107,7 +108,7 @@ function run() {
     echo_debug "Removing talisman hooks from .git-template"
     echo_debug "${TEMPLATE_DIR}/hooks/${HOOK_SCRIPT}"
     if [[ -n $TEMPLATE_DIR && -e ${TEMPLATE_DIR}/hooks/${HOOK_SCRIPT} && \
-	      ${TALISMAN_SETUP_DIR}/talisman_hook_script -ef ${TEMPLATE_DIR}/hooks/${HOOK_SCRIPT} ]]; then
+	      ${TALISMAN_HOOK_SCRIPT_DIR}/talisman_hook_script -ef ${TEMPLATE_DIR}/hooks/${HOOK_SCRIPT} ]]; then
 	rm -f "${TEMPLATE_DIR}/hooks/${HOOK_SCRIPT}" && \
 	    echo_success "Removed ${HOOK_SCRIPT} from ${TEMPLATE_DIR}"
     fi
@@ -116,10 +117,13 @@ function run() {
     rm -rf $TALISMAN_SETUP_DIR && \
 	echo_success "Removed global talisman install from ${TALISMAN_SETUP_DIR}"
 
+	echo_debug "Removing talisman hook script from ${TALISMAN_HOOK_SCRIPT_DIR}"
+    rm -rf $TALISMAN_HOOK_SCRIPT_DIR && \
+	echo_success "Removed talisman hook script from ${TALISMAN_HOOK_SCRIPT_DIR}"
+
 	if [ -n "${TALISMAN_HOME:-}" ]; then
         echo "Please remember to remove TALISMAN_HOME from your environment variables"
     fi
-
 }
 
 run $0 $@

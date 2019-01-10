@@ -5,7 +5,7 @@
 </div>
 <p align="center">A tool to detect and prevent secrets from getting checked in</p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Go Report Card](https://goreportcard.com/badge/thoughtworks/talisman)](https://goreportcard.com/report/thoughtworks/talisman) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/thoughtworks/talisman/issues)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Go Report Card](https://goreportcard.com/badge/thoughtworks/talisman)](https://goreportcard.com/report/thoughtworks/talisman) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/thoughtworks/talisman/issues) [![Build Status](https://travis-ci.org/thoughtworks/talisman.svg?branch=master)](https://travis-ci.org/thoughtworks/talisman)
 
 
 ## Table of Contents
@@ -272,11 +272,20 @@ You could have chosen to install as a global hook template or at a single reposi
 Please follow the steps below based on which option you had chosen at installation.
 
 ## Uninstallation from a global hook template
-To uninstall talisman globally from your machine, run:
+Run the following command on your terminal to uninstall talisman globally from your machine.
+
+For pre-commit hook:
 
 ```
 curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/uninstall.bash > /tmp/uninstall_talisman.bash && /bin/bash /tmp/uninstall_talisman.bash 
 ```
+
+For pre-push hook:
+
+```
+curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/uninstall.bash > /tmp/uninstall_talisman.bash && /bin/bash /tmp/uninstall_talisman.bash pre-push
+```
+
 This will
 
 1. ask you for the base dir of all your repos, find all git repos inside it and remove talisman hooks
