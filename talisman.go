@@ -69,6 +69,10 @@ func main() {
 }
 
 func run(stdin io.Reader, _options options) (returnCode int) {
+	if _options.blob_details != "" {
+		var additions []git_repo.Addition
+		return NewRunner(additions).Scan(_options.blob_details)
+	}
 	if _options.debug {
 		log.SetLevel(log.DebugLevel)
 	} else {

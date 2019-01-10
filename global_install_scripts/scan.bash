@@ -14,6 +14,10 @@ if [ ${COMMAND_PASSED} = "scan" ]; then
 		"MINGW64_NT-10.0")
 		ARCHITECTURE="windows" ;;
 	esac
+<<<<<<< HEAD
+=======
+    echo ${ARCHITECTURE}
+>>>>>>> Added repo level scanner
     CMD="git rev-list --objects --all | git cat-file --batch-check='%(objectname) %(objecttype) %(rest)' | grep \"^[^ ]* blob\" | cut -d\" \" -f1,3-"
     BINARY_PATH=${HOME}/".talisman/bin/talisman_"
     eval BLOB_DETAILS=\`${CMD}\`
