@@ -3,6 +3,7 @@ package detector
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"talisman/git_repo"
 
 	"github.com/olekukonko/tablewriter"
@@ -98,6 +99,29 @@ func (r *DetectionResults) Report() string {
 	return result
 }
 
+func (r *DetectionResults) ScannerReport() string {
+	var result string
+	var filePathsForFailures []string
+	var data [][]string
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"File", "Errors", "Number of commits"})
+	table.SetRowLine(true)
+
+	for filePath := range r.failures {
+		filePathsForFailures = append(filePathsForFailures, string(filePath))
+		failureData := r.ReportFileFailuresForScanner(filePath)
+		data = append(data, failureData...)
+	}
+
+	filePathsForFailures = unique(filePathsForFailures)
+	if len(r.failures) > 0 {
+		fmt.Printf("\n\x1b[1m\x1b[31mTalisman Report:\x1b[0m\x1b[0m\n")
+		table.AppendBulk(data)
+		table.Render()
+	}
+	return result
+}
+
 func (r *DetectionResults) suggestTalismanRC(filePaths []string) string {
 	var fileIgnoreConfigs []FileIgnoreConfig
 	for _, filePath := range filePaths {
@@ -117,7 +141,37 @@ func (r *DetectionResults) ReportFileFailures(filePath git_repo.FilePath) [][]st
 	var data [][]string
 	if len(failures) > 0 {
 		for _, failure := range failures {
+			if len(failure) > 150 {
+				failure = failure[:150] + "\n" + failure[150:]
+			}
 			data = append(data, []string{string(filePath), failure})
+		}
+	}
+	return data
+}
+
+func (r *DetectionResults) ReportFileFailuresForScanner(filePath git_repo.FilePath) [][]string {
+	failures := r.failures[filePath]
+	var data [][]string
+	var failuresWithoutDuplicates []string
+	if len(failures) > 0 {
+		duplicate_frequency := make(map[string]int)
+		for _, failure := range failures {
+			_, exist := duplicate_frequency[failure]
+			if exist {
+				duplicate_frequency[failure] += 1
+			} else {
+				if len(failure) > 150 {
+					failure = failure[:150] + "\n" + failure[150:]
+				}
+				duplicate_frequency[failure] = 1
+				failuresWithoutDuplicates = append(failuresWithoutDuplicates, failure)
+			}
+		}
+		for _, failure := range failuresWithoutDuplicates {
+			numberOfCommits := strconv.Itoa(duplicate_frequency[failure]) + "        "
+			failureData := []string{string(filePath), failure, numberOfCommits}
+			data = append(data, failureData)
 		}
 	}
 	return data
