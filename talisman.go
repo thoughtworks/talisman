@@ -8,7 +8,6 @@ import (
 	"os"
 	"strings"
 	"talisman/git_repo"
-	"talisman/scanner"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -77,8 +76,8 @@ func run(stdin io.Reader, _options options) (returnCode int) {
 	}
 
 	if _options.blob_details != "" {
-		scanner.Scan(_options.blob_details)
-		os.Exit(0)
+		var additions []git_repo.Addition
+		return NewRunner(additions).Scan(_options.blob_details)
 	}
 
 	if _options.githook == "" {
