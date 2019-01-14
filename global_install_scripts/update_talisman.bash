@@ -122,6 +122,10 @@ function run() {
 	verify_checksum ${TALISMAN_BINARY_NAME}
     }
 
+
+	SCRIPT_ORG_REPO=${SCRIPT_ORG_REPO:-$INSTALL_ORG_REPO}
+    SCRIPT_BASE="https://raw.githubusercontent.com/${SCRIPT_ORG_REPO}/master/global_install_scripts"
+	
 	function get_dependent_scripts() {
 		echo_debug "Downloading dependent scripts"
 		curl --silent "${SCRIPT_BASE}/scan.bash" > ${TEMP_DIR}/scan.bash
