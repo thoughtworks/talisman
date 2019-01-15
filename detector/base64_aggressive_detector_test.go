@@ -15,7 +15,7 @@ func TestShouldFlagPotentialAWSAccessKeysInAggressiveMode(t *testing.T) {
 	filename := "filename"
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 
-	NewFileContentDetector().AggressiveMode().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().AggressiveMode().Test(additions, TalismanRCIgnore{}, results)
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
 
@@ -26,7 +26,7 @@ func TestShouldFlagPotentialAWSAccessKeysAtPropertyDefinitionInAggressiveMode(t 
 	filename := "filename"
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 
-	NewFileContentDetector().AggressiveMode().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().AggressiveMode().Test(additions, TalismanRCIgnore{}, results)
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
 
@@ -37,7 +37,7 @@ func TestShouldNotFlagPotentialSecretsWithinSafeJavaCodeEvenInAggressiveMode(t *
 	filename := "filename"
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 
-	NewFileContentDetector().AggressiveMode().Test(additions, NewIgnores(), results)
+	NewFileContentDetector().AggressiveMode().Test(additions, TalismanRCIgnore{}, results)
 	if results == nil {
 		additions = nil
 	}

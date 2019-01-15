@@ -35,22 +35,47 @@ func TestResultsReportsFailures(t *testing.T) {
 	results.Fail("another_filename", "Complete & utter failure")
 
 	actualErrorReport := results.ReportFileFailures("some_filename")
-	assert.Regexp(t, "The following errors were detected in some_filename", actualErrorReport, "Error report does not contain expected output")
-	assert.Regexp(t, "Bomb", actualErrorReport, "Error report does not contain expected output")
-	assert.Regexp(t, "Complete & utter failure", actualErrorReport, "Error report does not contain expected output")
+
+	assert.Regexp(t, "some_filename", actualErrorReport[0][0], "Error report does not contain expected output")
+	assert.Regexp(t, "Bomb", actualErrorReport[0][1], "Error report does not contain expected output")
+	assert.Regexp(t, "some_filename", actualErrorReport[1][0], "Error report does not contain expected output")
+	assert.Regexp(t, "Complete & utter failure", actualErrorReport[1][1], "Error report does not contain expected output")
 }
 
-func TestLoggingIgnoredFilesDoesNotCauseFailure(t *testing.T) {
-	results := NewDetectionResults()
-	results.Ignore("some_file", "some-detector")
-	results.Ignore("some/other_file", "some-other-detector")
-	results.Ignore("some_file_ignored_for_multiple_things", "some-detector")
-	results.Ignore("some_file_ignored_for_multiple_things", "some-other-detector")
-	assert.True(t, results.Successful(), "Calling ignore should keep the result successful.")
-	assert.True(t, results.HasIgnores(), "Calling ignore should be logged.")
-	assert.False(t, results.HasFailures(), "Calling ignore should not cause a result to fail.")
+// Presently not showing the ignored files in the log
+// func TestLoggingIgnoredFilesDoesNotCauseFailure(t *testing.T) {
+// 	results := NewDetectionResults()
+// 	results.Ignore("some_file", "some-detector")
+// 	results.Ignore("some/other_file", "some-other-detector")
+// 	results.Ignore("some_file_ignored_for_multiple_things", "some-detector")
+// 	results.Ignore("some_file_ignored_for_multiple_things", "some-other-detector")
+// 	assert.True(t, results.Successful(), "Calling ignore should keep the result successful.")
+// 	assert.True(t, results.HasIgnores(), "Calling ignore should be logged.")
+// 	assert.False(t, results.HasFailures(), "Calling ignore should not cause a result to fail.")
 
-	assert.Regexp(t, "some_file was ignored by .talismanignore for the following detectors: some-detector", results.Report(), "foo")
-	assert.Regexp(t, "some/other_file was ignored by .talismanignore for the following detectors: some-other-detector", results.Report(), "foo")
-	assert.Regexp(t, "some_file_ignored_for_multiple_things was ignored by .talismanignore for the following detectors: some-detector, some-other-detector", results.Report(), "foo")
+// 	assert.Regexp(t, "some_file was ignored by .talismanrc for the following detectors: some-detector", results.Report(), "foo")
+// 	assert.Regexp(t, "some/other_file was ignored by .talismanrc for the following detectors: some-other-detector", results.Report(), "foo")
+// 	assert.Regexp(t, "some_file_ignored_for_multiple_things was ignored by .talismanrc for the following detectors: some-detector, some-other-detector", results.Report(), "foo")
+// }
+
+func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
+	results := NewDetectionResults()
+	results.Fail("some_file.pem", "Bomb")
+
+	actualErrorReport := results.Report()
+
+	assert.Regexp(t, "fileignoreconfig:", actualErrorReport, "Error report does not contain expected output")
+	assert.Regexp(t, "- filename: some_file.pem", actualErrorReport, "Error report does not contain expected output")
+	assert.Regexp(t, "checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac", actualErrorReport, "Error report does not contain expected output")
+	assert.Regexp(t, "ignore_detectors: \\[\\]", actualErrorReport, "Error report does not contain expected output")
+
+}
+
+func TestTalismanRCSuggestionWhenNoFailures(t *testing.T) {
+	results := NewDetectionResults()
+
+	actualErrorReport := results.Report()
+
+	assert.NotRegexp(t, "fileignoreconfig:", actualErrorReport, "Error report should not contain this output")
+
 }

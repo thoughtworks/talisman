@@ -20,9 +20,9 @@ func NewFileSizeDetector(size int) Detector {
 	return FileSizeDetector{size}
 }
 
-func (fd FileSizeDetector) Test(additions []git_repo.Addition, ignores Ignores, result *DetectionResults) {
+func (fd FileSizeDetector) Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
 	for _, addition := range additions {
-		if ignores.Deny(addition, "filesize") {
+		if ignoreConfig.Deny(addition, "filesize") {
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
 			}).Info("Ignoring addition as it was specified to be ignored.")
@@ -40,3 +40,4 @@ func (fd FileSizeDetector) Test(additions []git_repo.Addition, ignores Ignores, 
 		}
 	}
 }
+
