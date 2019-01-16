@@ -56,7 +56,7 @@ func fillResults(results []string, addition git_repo.Addition, result *Detection
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
 			}).Info(info)
-			result.Fail(addition.Path, fmt.Sprintf(output, res))
+			result.Fail(addition.Path, fmt.Sprintf(output, res), addition.Commits)
 		}
 	}
 }

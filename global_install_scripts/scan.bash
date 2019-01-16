@@ -14,14 +14,17 @@ if [ ${COMMAND_PASSED} = "scan" ]; then
 		"MINGW64_NT-10.0")
 		ARCHITECTURE="windows" ;;
 	esac
-<<<<<<< HEAD
-=======
-    echo ${ARCHITECTURE}
->>>>>>> Added repo level scanner
-    CMD="git rev-list --objects --all | git cat-file --batch-check='%(objectname) %(objecttype) %(rest)' | grep \"^[^ ]* blob\" | cut -d\" \" -f1,3-"
+	COMMITS_COMMAND="git log --reflog --pretty=oneline | cut -d \" \" -f1"
+	eval COMMITS=\`${COMMITS_COMMAND}\`
+	BLOBS=""
+	for COMMIT in ${COMMITS}
+	do
+		BLOBS_CMD="git ls-tree -r ${COMMIT} | cut -d \" \" -f3,4"
+		eval CURRENT_BLOBS=\`${BLOBS_CMD}\`
+		BLOBS="${BLOBS}commit ${COMMIT} ${CURRENT_BLOBS}"
+	done
     BINARY_PATH=${HOME}/".talisman/bin/talisman_"
-    eval BLOB_DETAILS=\`${CMD}\`
-    ${BINARY_PATH}${ARCHITECTURE}* -blob="${BLOB_DETAILS}"
+    ${BINARY_PATH}${ARCHITECTURE}* -blob="${BLOBS}"
 else
     echo "Usage: talisman scan"
 fi

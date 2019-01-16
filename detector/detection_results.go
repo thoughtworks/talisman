@@ -3,37 +3,43 @@ package detector
 import (
 	"fmt"
 	"os"
-	"strconv"
+	"strings"
 	"talisman/git_repo"
 
 	"github.com/olekukonko/tablewriter"
 	yaml "gopkg.in/yaml.v2"
 )
 
+type FailureData struct {
+	message []string
+	commits []string
+}
+
 //DetectionResults represents all interesting information collected during a detection run.
 //It serves as a collecting parameter for the tests performed by the various Detectors in the DetectorChain
 //Currently, it keeps track of failures and ignored files.
 //The results are grouped by FilePath for easy reporting of all detected problems with individual files.
 type DetectionResults struct {
-	failures map[git_repo.FilePath][]string
+	failures map[git_repo.FilePath][]FailureData
 	ignores  map[git_repo.FilePath][]string
 }
 
 //NewDetectionResults is a new DetectionResults struct. It represents the pre-run state of a Detection run.
 func NewDetectionResults() *DetectionResults {
-	result := DetectionResults{make(map[git_repo.FilePath][]string), make(map[git_repo.FilePath][]string)}
+	result := DetectionResults{make(map[git_repo.FilePath][]FailureData), make(map[git_repo.FilePath][]string)}
 	return &result
 }
 
 //Fail is used to mark the supplied FilePath as failing a detection for a supplied reason.
 //Detectors are encouraged to provide context sensitive messages so that fixing the errors is made simple for the end user
 //Fail may be called multiple times for each FilePath and the calls accumulate the provided reasons
-func (r *DetectionResults) Fail(filePath git_repo.FilePath, message string) {
+func (r *DetectionResults) Fail(filePath git_repo.FilePath, message string, commits []string) {
 	errors, ok := r.failures[filePath]
+	failureData := NewFaulureData([]string{message}, commits)
 	if !ok {
-		r.failures[filePath] = []string{message}
+		r.failures[filePath] = []FailureData{failureData}
 	} else {
-		r.failures[filePath] = append(errors, message)
+		r.failures[filePath] = append(errors, failureData)
 	}
 }
 
@@ -64,7 +70,7 @@ func (r *DetectionResults) Successful() bool {
 }
 
 //Failures returns the various reasons that a given FilePath was marked as failing by all the detectors in the current run
-func (r *DetectionResults) Failures(fileName git_repo.FilePath) []string {
+func (r *DetectionResults) Failures(fileName git_repo.FilePath) []FailureData {
 	return r.failures[fileName]
 }
 
@@ -79,7 +85,8 @@ func (r *DetectionResults) Report() string {
 
 	for filePath := range r.failures {
 		filePathsForIgnoresAndFailures = append(filePathsForIgnoresAndFailures, string(filePath))
-		failureData := r.ReportFileFailures(filePath)
+		toBeScanned := false
+		failureData := r.ReportFileFailures(filePath, toBeScanned)
 		data = append(data, failureData...)
 	}
 	for filePath := range r.ignores {
@@ -104,12 +111,13 @@ func (r *DetectionResults) ScannerReport() string {
 	var filePathsForFailures []string
 	var data [][]string
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"File", "Errors", "Number of commits"})
+	table.SetHeader([]string{"File", "Errors", "Commit Hashes"})
 	table.SetRowLine(true)
 
 	for filePath := range r.failures {
 		filePathsForFailures = append(filePathsForFailures, string(filePath))
-		failureData := r.ReportFileFailuresForScanner(filePath)
+		toBeScanned := true
+		failureData := r.ReportFileFailures(filePath, toBeScanned)
 		data = append(data, failureData...)
 	}
 
@@ -136,50 +144,29 @@ func (r *DetectionResults) suggestTalismanRC(filePaths []string) string {
 }
 
 //ReportFileFailures adds a string to table documenting the various failures detected on the supplied FilePath by all detectors in the current run
-func (r *DetectionResults) ReportFileFailures(filePath git_repo.FilePath) [][]string {
+func (r *DetectionResults) ReportFileFailures(filePath git_repo.FilePath, toBeScanned bool) [][]string {
 	failures := r.failures[filePath]
 	var data [][]string
 	if len(failures) > 0 {
-		for _, failure := range failures {
-			if len(failure) > 150 {
-				failure = failure[:150] + "\n" + failure[150:]
-			}
-			data = append(data, []string{string(filePath), failure})
-		}
-	}
-	return data
-}
-
-func (r *DetectionResults) ReportFileFailuresForScanner(filePath git_repo.FilePath) [][]string {
-	failures := r.failures[filePath]
-	var data [][]string
-	var failuresWithoutDuplicates []string
-	if len(failures) > 0 {
-		duplicate_frequency := make(map[string]int)
-		for _, failure := range failures {
-			_, exist := duplicate_frequency[failure]
-			if exist {
-				duplicate_frequency[failure] += 1
-			} else {
-				if len(failure) > 150 {
-					failure = failure[:150] + "\n" + failure[150:]
+		for _, failureData := range failures {
+			for _, failureMessage := range failureData.message {
+				if len(failureMessage) > 150 {
+					failureMessage = failureMessage[:150] + "\n" + failureMessage[150:]
 				}
-				duplicate_frequency[failure] = 1
-				failuresWithoutDuplicates = append(failuresWithoutDuplicates, failure)
+				if toBeScanned {
+					data = append(data, []string{string(filePath), failureMessage, strings.Join(failureData.commits, "\n")})
+				} else {
+					data = append(data, []string{string(filePath), failureMessage})
+				}
 			}
-		}
-		for _, failure := range failuresWithoutDuplicates {
-			numberOfCommits := strconv.Itoa(duplicate_frequency[failure]) + "        "
-			failureData := []string{string(filePath), failure, numberOfCommits}
-			data = append(data, failureData)
 		}
 	}
 	return data
 }
 
-func (r *DetectionResults) failurePaths() []git_repo.FilePath {
-	return keys(r.failures)
-}
+// func (r *DetectionResults) failurePaths() []git_repo.FilePath {
+// 	return keys(r.failures)
+// }
 
 func (r *DetectionResults) ignorePaths() []git_repo.FilePath {
 	return keys(r.ignores)
@@ -203,4 +190,11 @@ func unique(stringSlice []string) []string {
 		}
 	}
 	return list
+}
+
+func NewFaulureData(message []string, commits []string) FailureData {
+	return FailureData{
+		message: message,
+		commits: commits,
+	}
 }
