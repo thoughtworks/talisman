@@ -18,8 +18,8 @@ var (
 	showVersion bool
 	pattern     string
 	//Version : Version of talisman
-	Version      = "Development Build"
-	blob_details string
+	Version = "Development Build"
+	scan    bool
 )
 
 const (
@@ -34,10 +34,10 @@ func init() {
 }
 
 type options struct {
-	debug        bool
-	githook      string
-	pattern      string
-	blob_details string
+	debug   bool
+	githook string
+	pattern string
+	scan    bool
 }
 
 //Logger is the default log device, set to emit at the Error level by default
@@ -49,7 +49,7 @@ func main() {
 	flag.StringVar(&pattern, "p", "", "short form of pattern")
 	flag.StringVar(&pattern, "pattern", "", "pattern (glob-like) of files to scan (ignores githooks)")
 	flag.StringVar(&githook, "githook", PrePush, "either pre-push or pre-commit")
-	flag.StringVar(&blob_details, "blob", "", "blob details for scanner")
+	flag.BoolVar(&scan, "scan", false, "scanning of history")
 
 	flag.Parse()
 
@@ -59,10 +59,10 @@ func main() {
 	}
 
 	_options := options{
-		debug:        fdebug,
-		githook:      githook,
-		pattern:      pattern,
-		blob_details: blob_details,
+		debug:   fdebug,
+		githook: githook,
+		pattern: pattern,
+		scan:    scan,
 	}
 
 	os.Exit(run(os.Stdin, _options))
@@ -75,14 +75,9 @@ func run(stdin io.Reader, _options options) (returnCode int) {
 		log.SetLevel(log.ErrorLevel)
 	}
 
-	if _options.blob_details != "" {
+	if _options.scan {
 		var additions []git_repo.Addition
-		return NewRunner(additions).Scan(_options.blob_details)
-	}
-
-	if _options.blob_details != "" {
-		var additions []git_repo.Addition
-		return NewRunner(additions).Scan(_options.blob_details)
+		return NewRunner(additions).Scan()
 	}
 
 	if _options.githook == "" {

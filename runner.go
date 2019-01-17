@@ -34,9 +34,9 @@ func (r *Runner) RunWithoutErrors() int {
 	return r.exitStatus()
 }
 
-func (r *Runner) Scan(blobDetails string) int {
+func (r *Runner) Scan() int {
 	fmt.Println("Please wait while talisman scans entire repository including the git history...")
-	additions := scanner.GetAdditions(blobDetails)
+	additions := scanner.GetAdditions()
 	ignores := detector.TalismanRCIgnore{}
 	detector.DefaultChain().Test(additions, ignores, r.results)
 	fmt.Println(r.results.ScannerReport())
