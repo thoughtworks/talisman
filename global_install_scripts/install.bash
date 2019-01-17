@@ -72,8 +72,7 @@ function run() {
     export -f echo_success
     
     function collect_version_artifact_download_urls() {
-	curl --silent "https://api.github.com/repos/${INSTALL_ORG_REPO}/releases/${VERSION}" | 
-	    grep -e browser_download_url | grep -o 'https.*' | tr -d '"' > ${TEMP_DIR}/download_urls
+	curl -Ls -w %{url_effective} "https://github.com/${INSTALL_ORG_REPO}/releases/latest" | grep -Eo '/'${INSTALL_ORG_REPO}'/releases/download/.*/[^/"]+' | sed 's/^/https:\/\/github.com/' > ${TEMP_DIR}/download_urls
 	echo_debug "All release artifact download urls can be found at ${TEMP_DIR}/download_urls:"
 	[[ -z "${DEBUG}" ]] && return
 	cat ${TEMP_DIR}/download_urls
