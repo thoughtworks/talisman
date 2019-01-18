@@ -1,6 +1,7 @@
 package detector
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,27 +15,28 @@ func TestNewDetectionResultsAreSuccessful(t *testing.T) {
 
 func TestCallingFailOnDetectionResultsFails(t *testing.T) {
 	results := NewDetectionResults()
-	results.Fail("some_filename", "Bomb")
+	results.Fail("some_filename", "Bomb", []string{})
 	assert.False(t, results.Successful(), "Calling fail on a result should not make it succeed")
 	assert.True(t, results.HasFailures(), "Calling fail on a result should make it fail")
 }
 
 func TestCanRecordMultipleErrorsAgainstASingleFile(t *testing.T) {
 	results := NewDetectionResults()
-	results.Fail("some_filename", "Bomb")
-	results.Fail("some_filename", "Complete & utter failure")
-	results.Fail("another_filename", "Complete & utter failure")
+	results.Fail("some_filename", "Bomb", []string{})
+	results.Fail("some_filename", "Complete & utter failure", []string{})
+	results.Fail("another_filename", "Complete & utter failure", []string{})
 	assert.Len(t, results.Failures("some_filename"), 2, "Expected two errors against some_filename.")
 	assert.Len(t, results.Failures("another_filename"), 1, "Expected one error against another_filename")
 }
 
 func TestResultsReportsFailures(t *testing.T) {
 	results := NewDetectionResults()
-	results.Fail("some_filename", "Bomb")
-	results.Fail("some_filename", "Complete & utter failure")
-	results.Fail("another_filename", "Complete & utter failure")
+	results.Fail("some_filename", "Bomb", []string{})
+	results.Fail("some_filename", "Complete & utter failure", []string{})
+	results.Fail("another_filename", "Complete & utter failure", []string{})
 
-	actualErrorReport := results.ReportFileFailures("some_filename")
+	actualErrorReport := results.ReportFileFailures("some_filename", false)
+	fmt.Println(actualErrorReport)
 
 	assert.Regexp(t, "some_filename", actualErrorReport[0][0], "Error report does not contain expected output")
 	assert.Regexp(t, "Bomb", actualErrorReport[0][1], "Error report does not contain expected output")
@@ -60,7 +62,7 @@ func TestResultsReportsFailures(t *testing.T) {
 
 func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 	results := NewDetectionResults()
-	results.Fail("some_file.pem", "Bomb")
+	results.Fail("some_file.pem", "Bomb", []string{})
 
 	actualErrorReport := results.Report()
 
