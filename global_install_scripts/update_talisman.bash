@@ -122,26 +122,12 @@ function run() {
 	verify_checksum ${TALISMAN_BINARY_NAME}
     }
 
-	function get_dependent_scripts() {
-		echo_debug "Downloading dependent scripts"
-		curl --silent "${SCRIPT_BASE}/scan.bash" > ${TEMP_DIR}/scan.bash
-	}
-
-	SCRIPT_ORG_REPO=${SCRIPT_ORG_REPO:-$INSTALL_ORG_REPO}
-    SCRIPT_BASE="https://raw.githubusercontent.com/${SCRIPT_ORG_REPO}/master/global_install_scripts"
-	
-	function get_dependent_scripts() {
-		echo_debug "Downloading dependent scripts"
-		curl --silent "${SCRIPT_BASE}/scan.bash" > ${TEMP_DIR}/scan.bash
-	}
 
     function setup_talisman() {
 	# copy talisman binary from TEMP folder to the central location
 	rm -f ${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME}
 	cp ${TEMP_DIR}/${TALISMAN_BINARY_NAME} ${TALISMAN_SETUP_DIR}
-	cp ${TEMP_DIR}/scan.bash ${TALISMAN_SETUP_DIR}/scan.bash
 	chmod +x ${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME}
-	chmod +x ${TALISMAN_SETUP_DIR}/scan.bash
     }
 
 	set_talisman_binary_name
@@ -150,7 +136,7 @@ function run() {
 	download_talisman_binary
 	echo "Replacing talisman binary"
     setup_talisman
-	echo "Please add this to your path alias talisman =${TALISMAN_SETUP_DIR}/scan.bash\n"
+	echo "Please add this to your path alias talisman =${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME}\n"
 	}
 
 run $0 $@

@@ -164,10 +164,6 @@ func (r *DetectionResults) ReportFileFailures(filePath git_repo.FilePath, toBeSc
 	return data
 }
 
-// func (r *DetectionResults) failurePaths() []git_repo.FilePath {
-// 	return keys(r.failures)
-// }
-
 func (r *DetectionResults) ignorePaths() []git_repo.FilePath {
 	return keys(r.ignores)
 }
