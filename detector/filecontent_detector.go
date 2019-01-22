@@ -9,6 +9,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+const talismanrcfilename string = "talismanrc"
+
 type fn func(fc *FileContentDetector, word string) string
 
 type FileContentDetector struct {
@@ -56,7 +58,11 @@ func fillResults(results []string, addition git_repo.Addition, result *Detection
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
 			}).Info(info)
-			result.Fail(addition.Path, fmt.Sprintf(output, res))
+			if strings.Contains(string(addition.Name), talismanrcfilename) {
+				result.Warn(addition.Path, fmt.Sprintf(output, res))
+			} else {
+				result.Fail(addition.Path, fmt.Sprintf(output, res))
+			}
 		}
 	}
 }
