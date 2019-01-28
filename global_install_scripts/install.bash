@@ -146,6 +146,7 @@ function run() {
 
     function get_dependent_scripts() {
 	echo_debug "Downloading dependent scripts"
+	curl --silent "${SCRIPT_BASE}/talisman_hook_script.bash" > ${TEMP_DIR}/talisman_hook_script.bash
 	curl --silent "${SCRIPT_BASE}/setup_talisman_hook_in_repo.bash" > ${REPO_HOOK_SETUP_SCRIPT_PATH}
 	chmod +x ${REPO_HOOK_SETUP_SCRIPT_PATH}
 	echo_debug "Contents of temp_dir: `ls ${TEMP_DIR}`" 
@@ -234,36 +235,37 @@ function run() {
     SELFSETUP_OPT="I will set it later"
     TALISMAN_HOME=""
 
-    echo -e "\n\nPLEASE CHOOSE WHERE YOU WISH TO SET TALISMAN_HOME VARIABLE (Enter option number): "
+	echo -e "\n\nPLEASE CHOOSE WHERE YOU WISH TO SET TALISMAN_HOME VARIABLE AND talisman binary PATH (Enter option number): "
     options=(${BASHRC_OPT} ${BASHPROFILE_OPT} ${PROFILE_OPT} ${SELFSETUP_OPT})
     select opt in "${options[@]}"
     do
      case $opt in
         ${BASHRC_OPT})
-            set_talisman_home_in ~/.bashrc
+            set_talisman_home_and_binary_path ~/.bashrc
             break
             ;;
         ${BASHPROFILE_OPT})
-            set_talisman_home_in ~/.bash_profile
+            set_talisman_home_and_binary_path ~/.bash_profile
             break
             ;;
         ${PROFILE_OPT})
-            set_talisman_home_in ~/.profile
+            set_talisman_home_and_binary_path ~/.profile
             break
             ;;
         ${SELFSETUP_OPT})
-            echo "You chose to set TALISMAN_HOME by yourself. Remember to set TALISMAN_HOME=${TALISMAN_SETUP_DIR}\n\n"
-            break
+            echo "You chose to set TALISMAN_HOME and binary path by yourself. Remember to set TALISMAN_HOME=${TALISMAN_SETUP_DIR} and alias talisman =${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME}\n\n"
+			break
             ;;
         *) echo "invalid option $REPLY";;
      esac
     done
     }
 
-    function set_talisman_home_in() {
+    function set_talisman_home_and_binary_path() {
       ENV_FILE="$1"
       echo -e "Setting up TALISMAN_HOME in ${ENV_FILE}"
       echo "export TALISMAN_HOME=${TALISMAN_SETUP_DIR}" >> ${ENV_FILE}
+	  echo "alias talisman=${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME} " >> ${ENV_FILE}
       printf '\e[1;34m%-6s\e[m' "After the installation is complete, you will need to manually restart the terminal or source ${ENV_FILE} file"
       echo
       read -n 1 -s -r -p "Press any key to continue ..."

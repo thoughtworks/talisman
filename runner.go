@@ -5,6 +5,7 @@ import (
 	"os"
 	"talisman/detector"
 	"talisman/git_repo"
+	"talisman/report"
 	"talisman/scanner"
 )
 
@@ -39,7 +40,7 @@ func (r *Runner) Scan() int {
 	additions := scanner.GetAdditions()
 	ignores := detector.TalismanRCIgnore{}
 	detector.DefaultChain().Test(additions, ignores, r.results)
-	fmt.Println(r.results.ScannerReport())
+	report.GenerateReport(r.results)
 	return r.exitStatus()
 }
 
