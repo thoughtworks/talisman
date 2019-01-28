@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"strings"
-
 	"talisman/git_repo"
 
 	log "github.com/Sirupsen/logrus"
@@ -20,6 +19,7 @@ var (
 	pattern     string
 	//Version : Version of talisman
 	Version = "Development Build"
+	scan    bool
 )
 
 const (
@@ -37,6 +37,7 @@ type options struct {
 	debug   bool
 	githook string
 	pattern string
+	scan    bool
 }
 
 //Logger is the default log device, set to emit at the Error level by default
@@ -48,6 +49,7 @@ func main() {
 	flag.StringVar(&pattern, "p", "", "short form of pattern")
 	flag.StringVar(&pattern, "pattern", "", "pattern (glob-like) of files to scan (ignores githooks)")
 	flag.StringVar(&githook, "githook", PrePush, "either pre-push or pre-commit")
+	flag.BoolVar(&scan, "scan", false, "scanning of history")
 
 	flag.Parse()
 
@@ -60,6 +62,7 @@ func main() {
 		debug:   fdebug,
 		githook: githook,
 		pattern: pattern,
+		scan:    scan,
 	}
 
 	os.Exit(run(os.Stdin, _options))
@@ -70,6 +73,11 @@ func run(stdin io.Reader, _options options) (returnCode int) {
 		log.SetLevel(log.DebugLevel)
 	} else {
 		log.SetLevel(log.ErrorLevel)
+	}
+
+	if _options.scan {
+		var additions []git_repo.Addition
+		return NewRunner(additions).Scan()
 	}
 
 	if _options.githook == "" {

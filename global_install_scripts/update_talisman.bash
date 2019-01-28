@@ -134,7 +134,7 @@ function run() {
 	download_talisman_binary
 	echo "Replacing talisman binary"
     setup_talisman
-
+	echo "Please add this to your path alias talisman =${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME}\n"
 	}
 
 run $0 $@

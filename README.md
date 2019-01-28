@@ -18,6 +18,7 @@
 - [Talisman in action](#talisman-in-action)
 	- [Validations](#validations) 
 	- [Ignoring files](#ignoring-files)
+  - [Scanning Git hisotry](#scanning-git-history)
 - [Uninstallation](#uninstallation)
 	- [From a global hook template](#uninstallation-from-a-global-hook-template)
 	- [From a single repository](#uninstallation-from-a-single-repository)   
@@ -264,6 +265,17 @@ At the moment, you can ignore
 * `filecontent`
 * `filename`
 * `filesize`
+
+
+## Scanning Git history
+
+Talisman also scans the content present in the git history of the repository, this includes scanning of the files listed in the .talismanrc file as well.
+
+To run the scanner please "cd" into the directory to be scanned and run the following command
+
+* `talisman scan`
+
+<i>Talisman currently does not support ignoring of files for scanning.</i>
 
 # Uninstallation
 The uninstallation process depends on how you had installed Talisman.

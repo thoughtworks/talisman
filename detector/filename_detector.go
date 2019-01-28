@@ -91,7 +91,7 @@ func (fd FileNameDetector) Test(additions []git_repo.Addition, ignoreConfig Tali
 					"filePath": addition.Path,
 					"pattern":  pattern,
 				}).Info("Failing file as it matched pattern.")
-				result.Fail(addition.Path, fmt.Sprintf("The file name %q failed checks against the pattern %s", addition.Path, pattern))
+				result.Fail(addition.Path, fmt.Sprintf("The file name %q failed checks against the pattern %s", addition.Path, pattern), addition.Commits)
 			}
 		}
 	}
