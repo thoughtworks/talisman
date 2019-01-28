@@ -5,6 +5,8 @@ import (
 	"os"
 	"talisman/detector"
 	"talisman/git_repo"
+	"talisman/report"
+	"talisman/scanner"
 )
 
 const (
@@ -33,7 +35,15 @@ func (r *Runner) RunWithoutErrors() int {
 	return r.exitStatus()
 }
 
-
+func (r *Runner) Scan() int {
+	fmt.Println("Please wait while talisman scans entire repository including the git history...")
+	additions := scanner.GetAdditions()
+	ignores := detector.TalismanRCIgnore{}
+	detector.DefaultChain().Test(additions, ignores, r.results)
+	report.GenerateReport(r.results)
+	fmt.Println("Please check report.html in your current directory for the talisman scan report")
+	return r.exitStatus()
+}
 
 func (r *Runner) doRun() {
 	ignoresNew := detector.ReadConfigFromRCFile(readRepoFile())

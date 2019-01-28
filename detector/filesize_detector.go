@@ -36,8 +36,7 @@ func (fd FileSizeDetector) Test(additions []git_repo.Addition, ignoreConfig Tali
 				"fileSize": size,
 				"maxSize":  fd.size,
 			}).Info("Failing file as it is larger than max allowed file size.")
-			result.Fail(addition.Path, fmt.Sprintf("The file name %q with file size %d is larger than max allowed file size(%d)", addition.Path, size, fd.size))
+			result.Fail(addition.Path, fmt.Sprintf("The file name %q with file size %d is larger than max allowed file size(%d)", addition.Path, size, fd.size), addition.Commits)
 		}
 	}
 }
-

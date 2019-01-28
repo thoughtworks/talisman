@@ -88,6 +88,23 @@ func TestAddingSecretKeyShouldExitZeroIfPEMFileIsIgnored(t *testing.T) {
 	})
 }
 
+func TestAddingSecretKeyShouldExitOneIfPEMFileIsPresentInTheGitHistory(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents("private.pem", "secret")
+		git.CreateFileWithContents(".talismanrc", talismanRCDataWithFileNameAndCorrectChecksum)
+		git.AddAndcommit("private.pem", "add private key")
+		assert.Equal(t, 1, runTalismanScanner(git), "Expected run() to return 0 and pass as pem file was ignored")
+	})
+}
+
+func TestScanningSimpleFileShouldExitZero(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		git.SetupBaselineFiles("simple-file")
+		assert.Equal(t, 0, runTalismanScanner(git), "Expected run() to return 0 and pass as pem file was ignored")
+	})
+}
+
 // Need to work on this test case as talismanrc does  not yet support comments
 // func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnoredAndCommented(t *testing.T) {
 // 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
@@ -183,6 +200,15 @@ func runTalisman(git *git_testing.GitTesting) int {
 	_options := options{
 		debug:   false,
 		githook: PrePush,
+	}
+	return runTalismanWithOptions(git, _options)
+}
+
+func runTalismanScanner(git *git_testing.GitTesting) int {
+	_options := options{
+		debug:   false,
+		githook: PrePush,
+		scan:    true,
 	}
 	return runTalismanWithOptions(git, _options)
 }

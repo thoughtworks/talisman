@@ -20,9 +20,10 @@ type FileName string
 
 //Addition represents the end state of a file
 type Addition struct {
-	Path FilePath
-	Name FileName
-	Data []byte
+	Path    FilePath
+	Name    FileName
+	Commits []string
+	Data    []byte
 }
 
 //GitRepo represents a Git repository located at the absolute path represented by root
@@ -78,6 +79,15 @@ func NewAddition(filePath string, content []byte) Addition {
 		Path: FilePath(filePath),
 		Name: FileName(path.Base(filePath)),
 		Data: content,
+	}
+}
+
+func NewScannerAddition(filePath string, commits []string, content []byte) Addition {
+	return Addition{
+		Path:    FilePath(filePath),
+		Name:    FileName(path.Base(filePath)),
+		Commits: commits,
+		Data:    content,
 	}
 }
 
