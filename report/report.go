@@ -28,7 +28,7 @@ func getReportHTML() string {
 			<style>
 				body {
 					background-image: radial-gradient(at center center, rgb(69, 72, 77) 0%, rgb(17, 17, 17) 100%);
-					font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+					font-family: "Helvetica Neue",Helvetica,sans-serif;
 				}
 				svg.banner {
 					width: 5%;
@@ -124,7 +124,7 @@ func getReportHTML() string {
 					border-top: 0px;
 					border-left: 0px;
 				}
-				
+
 			</style>
 			<title>Talisman Report</title>
 		</head>
