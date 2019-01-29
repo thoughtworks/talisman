@@ -137,7 +137,7 @@ function run() {
 		FILE_PATH="$1"
 		if [ -f $FILE_PATH ] && grep -q "TALISMAN_HOME" $FILE_PATH; then
 			if ! grep -q ">>> talisman >>>" $FILE_PATH; then
-				sed -i -e '/TALISMAN_HOME/d' $FILE_PATH
+				sed -i '-talisman.bak' '/TALISMAN_HOME/d' $FILE_PATH
 				echo "# >>> talisman >>>" >>$FILE_PATH
 				echo "# Below environment variables should not be modified unless you know what you are doing" >>$FILE_PATH
 				echo "export TALISMAN_HOME=${TALISMAN_SETUP_DIR}" >>$FILE_PATH
