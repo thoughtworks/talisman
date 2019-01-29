@@ -90,18 +90,43 @@ func TestAddingSecretKeyShouldExitZeroIfPEMFileIsIgnored(t *testing.T) {
 
 func TestAddingSecretKeyShouldExitOneIfPEMFileIsPresentInTheGitHistory(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		_options := options{
+			debug:   false,
+			githook: PrePush,
+			scan:    true,
+		}
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
 		git.CreateFileWithContents(".talismanrc", talismanRCDataWithFileNameAndCorrectChecksum)
 		git.AddAndcommit("private.pem", "add private key")
-		assert.Equal(t, 1, runTalismanScanner(git), "Expected run() to return 0 and pass as pem file was ignored")
+		assert.Equal(t, 1, runTalismanWithOptions(git, _options), "Expected run() to return 0 and pass as pem file was ignored")
 	})
 }
 
 func TestScanningSimpleFileShouldExitZero(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		_options := options{
+			debug:   false,
+			githook: PrePush,
+			scan:    true,
+		}
 		git.SetupBaselineFiles("simple-file")
-		assert.Equal(t, 0, runTalismanScanner(git), "Expected run() to return 0 and pass as pem file was ignored")
+		assert.Equal(t, 0, runTalismanWithOptions(git, _options), "Expected run() to return 0 and pass as pem file was ignored")
+	})
+}
+
+func TestChecksumCalculatorShouldExitOne(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		_options := options{
+			debug:    false,
+			githook:  PrePush,
+			checksum: "*txt1",
+		}
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents("private.pem", "secret")
+		git.CreateFileWithContents("another/private.pem", "secret")
+		git.CreateFileWithContents("sample.txt", "password")
+		assert.Equal(t, 1, runTalismanWithOptions(git, _options), "Expected run() to return 0 as given patterns are found and .talsimanrc is suggested")
 	})
 }
 
@@ -200,15 +225,6 @@ func runTalisman(git *git_testing.GitTesting) int {
 	_options := options{
 		debug:   false,
 		githook: PrePush,
-	}
-	return runTalismanWithOptions(git, _options)
-}
-
-func runTalismanScanner(git *git_testing.GitTesting) int {
-	_options := options{
-		debug:   false,
-		githook: PrePush,
-		scan:    true,
 	}
 	return runTalismanWithOptions(git, _options)
 }
