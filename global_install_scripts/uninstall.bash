@@ -103,7 +103,7 @@ function run() {
 
 	function remove_talisman_env_variables() {
 		FILE_PATH="$1"
-		if [ -f $FILE_PATH ]; then
+		if [ -f $FILE_PATH ] && grep -q "TALISMAN_HOME" $FILE_PATH; then
 			sed -i '-talisman.bak' '/# >>> talisman >>>/,/# <<< talisman <<</d' $FILE_PATH
 		fi
 	}
