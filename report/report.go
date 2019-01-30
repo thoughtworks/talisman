@@ -279,18 +279,16 @@ func getReportHTML() string {
 							<td>{{$filePath}}</td>
 							<td>
 								<table class="details">
-									{{range $failure := $FailureData}}
+									{{range $failureMessage, $commits := $FailureData.FailuresInCommits}}
 										<tr>
 											<td class="failure-message">
-												{{range $failureMsg := $failure.Message}}
-													{{$failureMsg}}
-												{{end}}
+												{{$failureMessage}}
 											</td>
 											<td>
 												<table>
-													{{range $commit := $failure.Commits}}
-														<tr><td>{{$commit}}</td></tr>
-													{{end}}
+												{{range $commit := $commits}}
+													<tr><td>{{$commit}}</td></tr>
+												{{end}}
 												</table>
 											</td>
 										</tr>
