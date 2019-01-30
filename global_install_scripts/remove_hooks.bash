@@ -113,15 +113,12 @@ function run() {
 	    echo_success "Removed ${HOOK_SCRIPT} from ${TEMPLATE_DIR}"
     fi
 
-    echo_debug "Removing talisman from $TALISMAN_SETUP_DIR"
-    rm -rf $TALISMAN_SETUP_DIR && \
-	echo_success "Removed global talisman install from ${TALISMAN_SETUP_DIR}"
-
 	echo_debug "Removing talisman hook script from ${TALISMAN_HOOK_SCRIPT_DIR}"
     rm -rf $TALISMAN_HOOK_SCRIPT_DIR && \
 	echo_success "Removed talisman hook script from ${TALISMAN_HOOK_SCRIPT_DIR}"
 
 	if [ -n "${TALISMAN_HOME:-}" ]; then
+		echo_error "Pleasee run \"brew uninstall talisman\" to remove the talisman binary"
         echo "Please remember to remove TALISMAN_HOME from your environment variables"
     fi
 }
