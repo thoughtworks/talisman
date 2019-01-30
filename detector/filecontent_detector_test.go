@@ -122,8 +122,9 @@ func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
 	filePath := additions[0].Path
 
 	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
-	expectedMsg := "Expected file to not to contain hex encoded texts such as: " + hex
-	assert.Equal(t, expectedMsg, results.GetFailures(filePath)[0].Message[0])
+	expectedMsg := make(map[string][]string)
+	expectedMsg["Expected file to not to contain hex encoded texts such as: "+hex] = nil
+	assert.Equal(t, expectedMsg, results.GetFailures(filePath).FailuresInCommits)
 }
 
 func TestResultsShouldContainHexTextsIfHexAndBase64ExistInFile(t *testing.T) {
@@ -137,8 +138,11 @@ func TestResultsShouldContainHexTextsIfHexAndBase64ExistInFile(t *testing.T) {
 	filePath := additions[0].Path
 
 	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
-	expectedMsg := "Expected file to not to contain hex encoded texts such as: " + hex
-	assert.Equal(t, expectedMsg, results.GetFailures(filePath)[1].Message[0])
+	expectedMsg := make(map[string][]string)
+	expectedMsg["Expected file to not to contain hex encoded texts such as: "+hex] = nil
+	expectedMsg["Expected file to not to contain base64 encoded texts such as: "+base64] = nil
+	expectedMsg["Expected file to not to contain hex encoded texts such as: "+hex] = nil
+	assert.Equal(t, expectedMsg, results.GetFailures(filePath).FailuresInCommits)
 }
 
 func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) {
@@ -152,8 +156,10 @@ func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) 
 	filePath := additions[0].Path
 
 	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
-	expectedMsg := "Expected file to not to contain base64 encoded texts such as: " + base64
-	assert.Equal(t, expectedMsg, results.GetFailures(filePath)[0].Message[0])
+	expectedMsg := make(map[string][]string)
+	expectedMsg["Expected file to not to contain hex encoded texts such as: "+hex] = nil
+	expectedMsg["Expected file to not to contain base64 encoded texts such as: "+base64] = nil
+	assert.Equal(t, expectedMsg, results.GetFailures(filePath).FailuresInCommits)
 }
 
 func TestResultsShouldContainCreditCardNumberIfCreditCardNumberExistInFile(t *testing.T) {
@@ -165,7 +171,7 @@ func TestResultsShouldContainCreditCardNumberIfCreditCardNumberExistInFile(t *te
 	filePath := additions[0].Path
 
 	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
-	expectedMsg := "Expected file to not to contain credit card numbers such as: " +
-		creditCardNumber
-	assert.Equal(t, expectedMsg, results.GetFailures(filePath)[0].Message[0])
+	expectedMsg := make(map[string][]string)
+	expectedMsg["Expected file to not to contain credit card numbers such as: "+creditCardNumber] = nil
+	assert.Equal(t, expectedMsg, results.GetFailures(filePath).FailuresInCommits)
 }
