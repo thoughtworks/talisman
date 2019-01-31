@@ -10,12 +10,12 @@ import (
 func TestShouldDetectPasswordPatterns(t *testing.T) {
 	filename := "secret.txt"
 
-	shouldPassDetectionOfSecretPattern(filename, []byte("Potential secret pattern : \"password\" : UnsafePassword"), t)
-	shouldPassDetectionOfSecretPattern(filename, []byte("Potential secret pattern : <password data=123> jdghfakjkdha</password>"), t)
-	shouldPassDetectionOfSecretPattern(filename, []byte("Potential secret pattern : <passphrase data=123> AasdfYlLKHKLasdKHAFKHSKmlahsdfLK</passphrase>"), t)
-	shouldPassDetectionOfSecretPattern(filename, []byte("Potential secret pattern : <ConsumerKey>alksjdhfkjaklsdhflk12345adskjf</ConsumerKey>"), t)
-	shouldPassDetectionOfSecretPattern(filename, []byte("Potential secret pattern : AWS key :"), t)
-	shouldPassDetectionOfSecretPattern(filename, []byte(`Potential secret pattern : BEGIN RSA PRIVATE KEY-----
+	shouldPassDetectionOfSecretPattern(filename, []byte("\"password\" : UnsafePassword"), t)
+	shouldPassDetectionOfSecretPattern(filename, []byte("<password data=123> jdghfakjkdha</password>"), t)
+	shouldPassDetectionOfSecretPattern(filename, []byte("<passphrase data=123> AasdfYlLKHKLasdKHAFKHSKmlahsdfLK</passphrase>"), t)
+	shouldPassDetectionOfSecretPattern(filename, []byte("<ConsumerKey>alksjdhfkjaklsdhflk12345adskjf</ConsumerKey>"), t)
+	shouldPassDetectionOfSecretPattern(filename, []byte("AWS key :"), t)
+	shouldPassDetectionOfSecretPattern(filename, []byte(`BEGIN RSA PRIVATE KEY-----
 aghjdjadslgjagsfjlsgjalsgjaghjldasja
 -----END RSA PRIVATE KEY`), t)
 }
@@ -36,12 +36,14 @@ func shouldPassDetectionOfSecretPattern(filename string, content []byte, t *test
 	results := NewDetectionResults()
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 	NewPatternDetector().Test(additions, TalismanRCIgnore{}, results)
-	expected := getMapOfEmptyCommits(content)
-	assert.Equal(t, expected, results.GetFailures(additions[0].Path).FailuresInCommits)
+	expected := "Potential secret pattern : " + string(content)
+	assert.Equal(t, expected, getFailureMessage(results, additions))
 }
 
-func getMapOfEmptyCommits(content []byte) map[string][]string {
-	failuresInCommits := make(map[string][]string)
-	failuresInCommits[string(content)] = nil
-	return failuresInCommits
+func getFailureMessage(results *DetectionResults, additions []git_repo.Addition) string {
+	failureMessages := []string{}
+	for failureMessage := range results.GetFailures(additions[0].Path).FailuresInCommits {
+		failureMessages = append(failureMessages, failureMessage)
+	}
+	return failureMessages[0]
 }
