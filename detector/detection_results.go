@@ -3,7 +3,6 @@ package detector
 import (
 	"fmt"
 	"os"
-	"strings"
 	"talisman/git_repo"
 
 	"github.com/olekukonko/tablewriter"
@@ -11,8 +10,7 @@ import (
 )
 
 type FailureData struct {
-	Message []string
-	Commits []string
+	FailuresInCommits map[string][]string
 }
 
 //DetectionResults represents all interesting information collected during a detection run.
@@ -20,13 +18,13 @@ type FailureData struct {
 //Currently, it keeps track of failures and ignored files.
 //The results are grouped by FilePath for easy reporting of all detected problems with individual files.
 type DetectionResults struct {
-	Failures map[git_repo.FilePath][]FailureData
+	Failures map[git_repo.FilePath]*FailureData
 	ignores  map[git_repo.FilePath][]string
 }
 
 //NewDetectionResults is a new DetectionResults struct. It represents the pre-run state of a Detection run.
 func NewDetectionResults() *DetectionResults {
-	result := DetectionResults{make(map[git_repo.FilePath][]FailureData), make(map[git_repo.FilePath][]string)}
+	result := DetectionResults{make(map[git_repo.FilePath]*FailureData), make(map[git_repo.FilePath][]string)}
 	return &result
 }
 
@@ -34,12 +32,17 @@ func NewDetectionResults() *DetectionResults {
 //Detectors are encouraged to provide context sensitive messages so that fixing the errors is made simple for the end user
 //Fail may be called multiple times for each FilePath and the calls accumulate the provided reasons
 func (r *DetectionResults) Fail(filePath git_repo.FilePath, message string, commits []string) {
-	errors, ok := r.Failures[filePath]
-	failureData := NewFailureData([]string{message}, commits)
-	if !ok {
-		r.Failures[filePath] = []FailureData{failureData}
+	if r.Failures[filePath] == nil {
+		r.Failures[filePath] = &FailureData{make(map[string][]string)}
+	}
+	if r.Failures[filePath].FailuresInCommits == nil {
+		r.Failures[filePath].FailuresInCommits = make(map[string][]string)
+	}
+	existingCommits := r.Failures[filePath].FailuresInCommits[message]
+	if len(existingCommits) == 0 {
+		r.Failures[filePath].FailuresInCommits[message] = commits
 	} else {
-		r.Failures[filePath] = append(errors, failureData)
+		r.Failures[filePath].FailuresInCommits[message] = append(r.Failures[filePath].FailuresInCommits[message], commits...)
 	}
 }
 
@@ -70,7 +73,7 @@ func (r *DetectionResults) Successful() bool {
 }
 
 //GetFailures returns the various reasons that a given FilePath was marked as failing by all the detectors in the current run
-func (r *DetectionResults) GetFailures(fileName git_repo.FilePath) []FailureData {
+func (r *DetectionResults) GetFailures(fileName git_repo.FilePath) *FailureData {
 	return r.Failures[fileName]
 }
 
@@ -85,8 +88,7 @@ func (r *DetectionResults) Report() string {
 
 	for filePath := range r.Failures {
 		filePathsForIgnoresAndFailures = append(filePathsForIgnoresAndFailures, string(filePath))
-		toBeScanned := false
-		failureData := r.ReportFileFailures(filePath, toBeScanned)
+		failureData := r.ReportFileFailures(filePath)
 		data = append(data, failureData...)
 	}
 	for filePath := range r.ignores {
@@ -120,21 +122,15 @@ func (r *DetectionResults) suggestTalismanRC(filePaths []string) string {
 }
 
 //ReportFileFailures adds a string to table documenting the various failures detected on the supplied FilePath by all detectors in the current run
-func (r *DetectionResults) ReportFileFailures(filePath git_repo.FilePath, toBeScanned bool) [][]string {
+func (r *DetectionResults) ReportFileFailures(filePath git_repo.FilePath) [][]string {
 	failures := r.Failures[filePath]
 	var data [][]string
-	if len(failures) > 0 {
-		for _, failureData := range failures {
-			for _, failureMessage := range failureData.Message {
-				if len(failureMessage) > 150 {
-					failureMessage = failureMessage[:150] + "\n" + failureMessage[150:]
-				}
-				if toBeScanned {
-					data = append(data, []string{string(filePath), failureMessage, strings.Join(failureData.Commits, "\n")})
-				} else {
-					data = append(data, []string{string(filePath), failureMessage})
-				}
+	if len(failures.FailuresInCommits) > 0 {
+		for failureMessage := range failures.FailuresInCommits {
+			if len(failureMessage) > 150 {
+				failureMessage = failureMessage[:150] + "\n" + failureMessage[150:]
 			}
+			data = append(data, []string{string(filePath), failureMessage})
 		}
 	}
 	return data
@@ -164,9 +160,6 @@ func unique(stringSlice []string) []string {
 	return list
 }
 
-func NewFailureData(message []string, commits []string) FailureData {
-	return FailureData{
-		Message: message,
-		Commits: commits,
-	}
+func NewFailureData() FailureData {
+	return FailureData{make(map[string][]string)}
 }
