@@ -112,6 +112,7 @@ func (r *DetectionResults) ReportWarnings() string {
 	}
 	filePathsForWarnings = utility.UniqueItems(filePathsForWarnings)
 	if len(r.warnings) > 0 {
+		fmt.Printf("\n\x1b[1m\x1b[31mTalisman Warnings:\x1b[0m\x1b[0m\n")
 		table.AppendBulk(data)
 		table.Render()
 		result = result + fmt.Sprintf("\n\x1b[33mPlease review the above file(s) to make sure that no sensitive content is being pushed\x1b[0m\n")
