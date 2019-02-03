@@ -25,8 +25,8 @@ func TestCanRecordMultipleErrorsAgainstASingleFile(t *testing.T) {
 	results.Fail("some_filename", "Bomb", []string{})
 	results.Fail("some_filename", "Complete & utter failure", []string{})
 	results.Fail("another_filename", "Complete & utter failure", []string{})
-	assert.Len(t, results.GetFailures("some_filename"), 2, "Expected two errors against some_filename.")
-	assert.Len(t, results.GetFailures("another_filename"), 1, "Expected one error against another_filename")
+	assert.Len(t, results.GetFailures("some_filename").FailuresInCommits, 2, "Expected two errors against some_filename.")
+	assert.Len(t, results.GetFailures("another_filename").FailuresInCommits, 1, "Expected one error against another_filename")
 }
 
 func TestResultsReportsFailures(t *testing.T) {
@@ -35,7 +35,7 @@ func TestResultsReportsFailures(t *testing.T) {
 	results.Fail("some_filename", "Complete & utter failure", []string{})
 	results.Fail("another_filename", "Complete & utter failure", []string{})
 
-	actualErrorReport := results.ReportFileFailures("some_filename", false)
+	actualErrorReport := results.ReportFileFailures("some_filename")
 	fmt.Println(actualErrorReport)
 
 	assert.Regexp(t, "some_filename", actualErrorReport[0][0], "Error report does not contain expected output")
