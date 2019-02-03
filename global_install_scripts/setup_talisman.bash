@@ -164,7 +164,7 @@ function run() {
             ;;
         ${SELFSETUP_OPT})
             echo "You chose to set TALISMAN_HOME and binary path by yourself. Remember to set TALISMAN_HOME=${TALISMAN_SETUP_DIR} and alias talisman =${TALISMAN_SETUP_DIR}/talisman\n\n"
-			break
+	    break
             ;;
         *) echo "invalid option $REPLY";;
      esac
