@@ -138,7 +138,8 @@ func TestResultsShouldContainHexTextsIfHexAndBase64ExistInFile(t *testing.T) {
 
 	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	expectedMessage := "Expected file to not to contain hex encoded texts such as: " + hex
-	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[1])
+	messageReceived := getFailureMessages(results, filePath)[1]
+	assert.Equal(t, expectedMessage, messageReceived)
 }
 
 func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) {
@@ -153,7 +154,8 @@ func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) 
 
 	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	expectedMessage := "Expected file to not to contain base64 encoded texts such as: " + base64
-	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
+	messageReceived := getFailureMessages(results, filePath)[0]
+	assert.Equal(t, expectedMessage, messageReceived)
 }
 
 func TestResultsShouldContainCreditCardNumberIfCreditCardNumberExistInFile(t *testing.T) {
