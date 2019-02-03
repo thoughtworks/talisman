@@ -35,7 +35,7 @@ func (detector PatternDetector) Test(additions []git_repo.Addition, ignoreConfig
 						"filePath": addition.Path,
 						"pattern":  detection,
 					}).Info("Failing file as it matched pattern.")
-					result.Fail(addition.Path, fmt.Sprintf("Potential secret pattern : %s", detection))
+					result.Fail(addition.Path, fmt.Sprintf("Potential secret pattern : %s", detection), addition.Commits)
 				}
 			}
 		}
