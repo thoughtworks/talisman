@@ -2,6 +2,7 @@ package detector
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"talisman/git_repo"
@@ -39,6 +40,14 @@ func (fc *FileContentDetector) Test(additions []git_repo.Addition, ignoreConfig 
 			result.Ignore(addition.Path, "filecontent")
 			continue
 		}
+
+		if string(addition.Name) == DefaultRCFileName {
+			re := regexp.MustCompile(`(?i)checksum[ \t]*:[ \t]*[0-9a-fA-F]+`)
+			content := re.ReplaceAllString(string(addition.Data), "")
+			data := []byte(content)
+			addition.Data = data
+		}
+
 		base64Results := fc.detectFile(addition.Data, checkBase64)
 		fillBase46DetectionResults(base64Results, addition, result)
 
@@ -56,7 +65,11 @@ func fillResults(results []string, addition git_repo.Addition, result *Detection
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
 			}).Info(info)
-			result.Fail(addition.Path, fmt.Sprintf(output, res), addition.Commits)
+			if string(addition.Name) == DefaultRCFileName {
+				result.Warn(addition.Path, fmt.Sprintf(output, res))
+			} else {
+				result.Fail(addition.Path, fmt.Sprintf(output, res), []string{})
+			}
 		}
 	}
 }
@@ -73,10 +86,10 @@ func fillCreditCardDetectionResults(creditCardResults []string, addition git_rep
 	fillResults(creditCardResults, addition, result, info, output)
 }
 
-func fillHexDetectionResults(creditCardResults []string, addition git_repo.Addition, result *DetectionResults) {
+func fillHexDetectionResults(hexResults []string, addition git_repo.Addition, result *DetectionResults) {
 	const info = "Failing file as it contains a hex encoded text."
 	const output = "Expected file to not to contain hex encoded texts such as: %s"
-	fillResults(creditCardResults, addition, result, info, output)
+	fillResults(hexResults, addition, result, info, output)
 }
 
 func (fc *FileContentDetector) detectFile(data []byte, getResult fn) []string {

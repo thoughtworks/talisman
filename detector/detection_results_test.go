@@ -1,7 +1,6 @@
 package detector
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -36,7 +35,6 @@ func TestResultsReportsFailures(t *testing.T) {
 	results.Fail("another_filename", "Complete & utter failure", []string{})
 
 	actualErrorReport := results.ReportFileFailures("some_filename")
-	fmt.Println(actualErrorReport)
 
 	assert.Regexp(t, "some_filename", actualErrorReport[0][0], "Error report does not contain expected output")
 	assert.Regexp(t, "Bomb", actualErrorReport[0][1], "Error report does not contain expected output")
