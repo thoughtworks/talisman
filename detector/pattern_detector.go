@@ -24,11 +24,19 @@ func (detector PatternDetector) Test(additions []git_repo.Addition, ignoreConfig
 		detections := detector.secretsPattern.check(string(addition.Data))
 		for _, detection := range detections {
 			if detection != "" {
-				log.WithFields(log.Fields{
-					"filePath": addition.Path,
-					"pattern":  detection,
-				}).Info("Failing file as it matched pattern.")
-				result.Fail(addition.Path, fmt.Sprintf("Potential secret pattern : %s", detection))
+				if string(addition.Name) == DefaultRCFileName {
+					log.WithFields(log.Fields{
+						"filePath": addition.Path,
+						"pattern":  detection,
+					}).Warn("Warning file as it matched pattern.")
+					result.Warn(addition.Path, fmt.Sprintf("Potential secret pattern : %s", detection))
+				} else {
+					log.WithFields(log.Fields{
+						"filePath": addition.Path,
+						"pattern":  detection,
+					}).Info("Failing file as it matched pattern.")
+					result.Fail(addition.Path, fmt.Sprintf("Potential secret pattern : %s", detection))
+				}
 			}
 		}
 	}

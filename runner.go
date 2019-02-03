@@ -33,14 +33,15 @@ func (r *Runner) RunWithoutErrors() int {
 	return r.exitStatus()
 }
 
-
-
 func (r *Runner) doRun() {
 	ignoresNew := detector.ReadConfigFromRCFile(readRepoFile())
 	detector.DefaultChain().Test(r.additions, ignoresNew, r.results)
 }
 
 func (r *Runner) printReport() {
+	if r.results.HasWarnings() {
+		fmt.Println(r.results.ReportWarnings())
+	}
 	if r.results.HasIgnores() || r.results.HasFailures() {
 		fmt.Println(r.results.Report())
 	}
