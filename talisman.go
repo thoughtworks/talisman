@@ -18,8 +18,9 @@ var (
 	showVersion bool
 	pattern     string
 	//Version : Version of talisman
-	Version = "Development Build"
-	scan    bool
+	Version  = "Development Build"
+	scan     bool
+	checksum string
 )
 
 const (
@@ -34,10 +35,11 @@ func init() {
 }
 
 type options struct {
-	debug   bool
-	githook string
-	pattern string
-	scan    bool
+	debug    bool
+	githook  string
+	pattern  string
+	scan     bool
+	checksum string
 }
 
 //Logger is the default log device, set to emit at the Error level by default
@@ -49,7 +51,10 @@ func main() {
 	flag.StringVar(&pattern, "p", "", "short form of pattern")
 	flag.StringVar(&pattern, "pattern", "", "pattern (glob-like) of files to scan (ignores githooks)")
 	flag.StringVar(&githook, "githook", PrePush, "either pre-push or pre-commit")
-	flag.BoolVar(&scan, "scan", false, "scanning of history")
+	flag.BoolVar(&scan, "s", false, "short form of scanner")
+	flag.BoolVar(&scan, "scan", false, "scanner scans the git commit history for potential secrets")
+	flag.StringVar(&checksum, "c", "", "short form of checksum calculator")
+	flag.StringVar(&checksum, "checksum", "", "checksum calculator calculates checksum and suggests .talsimarc format")
 
 	flag.Parse()
 
@@ -59,10 +64,11 @@ func main() {
 	}
 
 	_options := options{
-		debug:   fdebug,
-		githook: githook,
-		pattern: pattern,
-		scan:    scan,
+		debug:    fdebug,
+		githook:  githook,
+		pattern:  pattern,
+		scan:     scan,
+		checksum: checksum,
 	}
 
 	os.Exit(run(os.Stdin, _options))
@@ -75,17 +81,18 @@ func run(stdin io.Reader, _options options) (returnCode int) {
 		log.SetLevel(log.ErrorLevel)
 	}
 
-	if _options.scan {
-		var additions []git_repo.Addition
-		return NewRunner(additions).Scan()
-	}
-
 	if _options.githook == "" {
 		_options.githook = PrePush
 	}
 
 	var additions []git_repo.Addition
-	if _options.pattern != "" {
+	if _options.checksum != "" {
+		log.Infof("Running %s patterns against checksum calculator", _options.checksum)
+		return NewRunner(make([]git_repo.Addition, 0)).RunChecksumCalculator(strings.Fields(_options.checksum))
+	} else if _options.scan {
+		log.Infof("Running scanner")
+		return NewRunner(make([]git_repo.Addition, 0)).Scan()
+	} else if _options.pattern != "" {
 		log.Infof("Running %s pattern", _options.pattern)
 		directoryHook := NewDirectoryHook()
 		additions = directoryHook.GetFilesFromDirectory(_options.pattern)

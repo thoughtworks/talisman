@@ -131,7 +131,7 @@ func (a Addition) Matches(pattern string) bool {
 	} else if strings.ContainsRune(pattern, os.PathSeparator) {
 		result, _ = path.Match(pattern, string(a.Path))
 	} else {
-		result, _ = path.Match(pattern, string(a.Path))
+		result, _ = path.Match(pattern, string(a.Name))
 	}
 	log.WithFields(log.Fields{
 		"pattern":  pattern,
@@ -139,6 +139,25 @@ func (a Addition) Matches(pattern string) bool {
 		"match":    result,
 	}).Debug("Checking addition for match.")
 	return result
+}
+
+func (repo GitRepo) TrackedFilesAsAdditions() []Addition {
+	trackedFilePaths := repo.trackedFilePaths()
+	var additions []Addition
+	for _, path := range trackedFilePaths {
+		additions = append(additions, NewAddition(path, make([]byte, 0)))
+	}
+	return additions
+}
+
+func (repo GitRepo) trackedFilePaths() []string {
+	branchName := repo.currentBranch()
+	if len(branchName) == 0 {
+		return make([]string, 0)
+	}
+	byteArray := repo.executeRepoCommand("git", "ls-tree", branchName, "--name-only", "-r")
+	trackedFilePaths := strings.Split(string(byteArray), "\n")
+	return trackedFilePaths
 }
 
 func (repo GitRepo) stagedFiles() []string {
@@ -151,6 +170,23 @@ func (repo GitRepo) stagedFiles() []string {
 		}
 	}
 	return result
+}
+
+func (repo GitRepo) currentBranch() string {
+	if !repo.hasBranch() {
+		return ""
+	}
+	byteArray := repo.executeRepoCommand("git", "rev-parse", "--abbrev-ref", "HEAD")
+	branchName := strings.TrimSpace(string(byteArray))
+	return branchName
+}
+
+func (repo GitRepo) hasBranch() bool {
+	byteArray := repo.executeRepoCommand("git", "branch")
+	if len(string(byteArray)) != 0 {
+		return true
+	}
+	return false
 }
 
 func (repo GitRepo) stagedVersionOfFile(file string) []byte {

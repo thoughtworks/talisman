@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"talisman/git_repo"
+	"talisman/utility"
 
 	"github.com/olekukonko/tablewriter"
 	yaml "gopkg.in/yaml.v2"
@@ -111,7 +112,7 @@ func (r *DetectionResults) Report() string {
 func (r *DetectionResults) suggestTalismanRC(filePaths []string) string {
 	var fileIgnoreConfigs []FileIgnoreConfig
 	for _, filePath := range filePaths {
-		currentChecksum := CalculateCollectiveHash([]string{filePath})
+		currentChecksum := utility.CollectiveSHA256Hash([]string{filePath})
 		fileIgnoreConfig := FileIgnoreConfig{filePath, currentChecksum, []string{}}
 		fileIgnoreConfigs = append(fileIgnoreConfigs, fileIgnoreConfig)
 	}
