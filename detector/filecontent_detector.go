@@ -68,7 +68,7 @@ func fillResults(results []string, addition git_repo.Addition, result *Detection
 			if string(addition.Name) == DefaultRCFileName {
 				result.Warn(addition.Path, fmt.Sprintf(output, res))
 			} else {
-				result.Fail(addition.Path, fmt.Sprintf(output, res))
+				result.Fail(addition.Path, fmt.Sprintf(output, res), []string{})
 			}
 		}
 	}

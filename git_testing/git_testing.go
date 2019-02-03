@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/drhodes/golorem"
+	lorem "github.com/drhodes/golorem"
 )
 
 var Logger *logrus.Entry
@@ -113,6 +113,25 @@ func (git *GitTesting) AddAndcommit(fileName string, message string) {
 
 func (git *GitTesting) Add(fileName string) {
 	git.ExecCommand("git", "add", fileName)
+}
+
+func (git *GitTesting) GetBlobDetails(fileName string) string {
+	var output []byte
+	object_hash_and_filename := ""
+	git.doInGitRoot(func() {
+		fmt.Println("hello")
+		result := exec.Command("git", "rev-list", "--objects", "--all")
+		output, _ = result.Output()
+		objects := strings.Split(string(output), "\n")
+		for _, object := range objects {
+			object_details := strings.Split(object, " ")
+			if len(object_details) == 2 && object_details[1] == fileName {
+				object_hash_and_filename = object
+				return
+			}
+		}
+	})
+	return object_hash_and_filename
 }
 
 func (git *GitTesting) ExecCommand(commandName string, args ...string) string {
