@@ -1,5 +1,6 @@
 #!/bin/bash
 VERSION=$(git describe --tags HEAD)
 export GO111MODULE=on
+go get github.com/mitchellh/gox
 gox -os="linux darwin windows" -arch="386 amd64" -ldflags="-X main.Version=${VERSION}"
 shasum -b -a256 talisman_{l,d,w}* > checksums
