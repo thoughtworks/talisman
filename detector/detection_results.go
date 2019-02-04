@@ -7,7 +7,7 @@ import (
 	"talisman/utility"
 
 	"github.com/olekukonko/tablewriter"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 type FailureData struct {
@@ -21,11 +21,12 @@ type FailureData struct {
 type DetectionResults struct {
 	Failures map[git_repo.FilePath]*FailureData
 	ignores  map[git_repo.FilePath][]string
+	warnings map[git_repo.FilePath][]string
 }
 
 //NewDetectionResults is a new DetectionResults struct. It represents the pre-run state of a Detection run.
 func NewDetectionResults() *DetectionResults {
-	result := DetectionResults{make(map[git_repo.FilePath]*FailureData), make(map[git_repo.FilePath][]string)}
+	result := DetectionResults{make(map[git_repo.FilePath]*FailureData), make(map[git_repo.FilePath][]string), make(map[git_repo.FilePath][]string)}
 	return &result
 }
 
@@ -44,6 +45,15 @@ func (r *DetectionResults) Fail(filePath git_repo.FilePath, message string, comm
 		r.Failures[filePath].FailuresInCommits[message] = commits
 	} else {
 		r.Failures[filePath].FailuresInCommits[message] = append(r.Failures[filePath].FailuresInCommits[message], commits...)
+	}
+}
+
+func (r *DetectionResults) Warn(filePath git_repo.FilePath, message string) {
+	warnings, ok := r.warnings[filePath]
+	if !ok {
+		r.warnings[filePath] = []string{message}
+	} else {
+		r.warnings[filePath] = append(warnings, message)
 	}
 }
 
@@ -68,6 +78,14 @@ func (r *DetectionResults) HasIgnores() bool {
 	return len(r.ignores) > 0
 }
 
+func (r *DetectionResults) HasWarnings() bool {
+	return len(r.warnings) > 0
+}
+
+func (r *DetectionResults) HasDetectionMessages() bool {
+	return r.HasWarnings() || r.HasFailures() || r.HasIgnores()
+}
+
 //Successful answers if no detector was able to find any possible result to fail the run
 func (r *DetectionResults) Successful() bool {
 	return !r.HasFailures()
@@ -78,11 +96,37 @@ func (r *DetectionResults) GetFailures(fileName git_repo.FilePath) *FailureData 
 	return r.Failures[fileName]
 }
 
+func (r *DetectionResults) ReportWarnings() string {
+	var result string
+	var filePathsForWarnings []string
+	var data [][]string
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"File", "Warnings"})
+	table.SetRowLine(true)
+
+	for filePath := range r.warnings {
+		filePathsForWarnings = append(filePathsForWarnings, string(filePath))
+		warningData := r.ReportFileWarnings(filePath)
+		data = append(data, warningData...)
+	}
+	filePathsForWarnings = utility.UniqueItems(filePathsForWarnings)
+	if len(r.warnings) > 0 {
+		fmt.Printf("\n\x1b[1m\x1b[31mTalisman Warnings:\x1b[0m\x1b[0m\n")
+		table.AppendBulk(data)
+		table.Render()
+		result = result + fmt.Sprintf("\n\x1b[33mPlease review the above file(s) to make sure that no sensitive content is being pushed\x1b[0m\n")
+		result = result + fmt.Sprintf("\n")
+	}
+	return result
+}
+
 //Report returns a string documenting the various failures and ignored files for the current run
 func (r *DetectionResults) Report() string {
 	var result string
 	var filePathsForIgnoresAndFailures []string
 	var data [][]string
+
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"File", "Errors"})
 	table.SetRowLine(true)
@@ -92,12 +136,13 @@ func (r *DetectionResults) Report() string {
 		failureData := r.ReportFileFailures(filePath)
 		data = append(data, failureData...)
 	}
+
 	for filePath := range r.ignores {
 		filePathsForIgnoresAndFailures = append(filePathsForIgnoresAndFailures, string(filePath))
 		// ignoreData := r.ReportFileIgnores(filePath)
 		// data = append(data, ignoreData...)
 	}
-	filePathsForIgnoresAndFailures = unique(filePathsForIgnoresAndFailures)
+	filePathsForIgnoresAndFailures = utility.UniqueItems(filePathsForIgnoresAndFailures)
 	if len(r.Failures) > 0 {
 		fmt.Printf("\n\x1b[1m\x1b[31mTalisman Report:\x1b[0m\x1b[0m\n")
 		table.AppendBulk(data)
@@ -137,6 +182,17 @@ func (r *DetectionResults) ReportFileFailures(filePath git_repo.FilePath) [][]st
 	return data
 }
 
+func (r *DetectionResults) ReportFileWarnings(filePath git_repo.FilePath) [][]string {
+	warnings := r.warnings[filePath]
+	var data [][]string
+	if len(warnings) > 0 {
+		for _, warning := range warnings {
+			data = append(data, []string{string(filePath), warning})
+		}
+	}
+	return data
+}
+
 func (r *DetectionResults) ignorePaths() []git_repo.FilePath {
 	return keys(r.ignores)
 }
@@ -147,18 +203,6 @@ func keys(aMap map[git_repo.FilePath][]string) []git_repo.FilePath {
 		result = append(result, filePath)
 	}
 	return result
-}
-
-func unique(stringSlice []string) []string {
-	keys := make(map[string]bool)
-	list := []string{}
-	for _, entry := range stringSlice {
-		if _, value := keys[entry]; !value {
-			keys[entry] = true
-			list = append(list, entry)
-		}
-	}
-	return list
 }
 
 func NewFailureData() FailureData {
