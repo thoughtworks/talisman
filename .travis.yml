@@ -13,25 +13,22 @@ jobs:
       script:
         - go mod vendor
         - go test -v ./...
-    - stage: release
-      if: branch = master
-      script: skip
-      before_deploy: ./build
-      deploy:
-        provider: releases
-        draft: true
-        skip_cleanup: true
-        api_key:
-          secure: tf9N5ekIuYAEnoQAKMnhjOQ6KHTwDIk/WK8kNDS+Ol2g80/2MPPLTWQBZs/g+KPqL63vbkqgZ4kDti3i5GRARN7ypQ+IqbtYVEfB9L6sNlfkz+fmJFaWjTqSiBDN4lC6zixRmQjlD4h3axIi7TxfeVGR3yct/bbwAQf/8yy6fH16EHk1LRO/Lx1crBIYc9bPu86Qt0BMqomaeUjxrQKq/1+MC2JkLzv29Ixk0Nlgab0HwcLlayFCOgI96r98RFXdkCmMrLgLNhHtfY8VtCkV5HqXdygZUSCwSPL/v/ZxPfBqYHAeoHmr83oV5l7xxhKldIp792bYWNtkE7qlSTj3CRvanYXGZiuG8hzvL+XYt2vnLNJuMfYPW3SkcSBCLOjSzOHPan9I6LBWLjwNUEOmbOALAuUD0DE0zYgZfmNv6/q8e3Z02+sp5hYPoSlu8aHL/vxd5GsuDV0ChP+C/mWjOm5Hlq2r+LGRuJ3oq31lQoENKqychEVw5m0HS5PQvWwf4NDjzgNMTFxCUwfQ+NikXDPo6LCcL4eRcyhuqnhmjnNbiaKSuyrYhzrCC64Agf7seSCaW/+ASDryac8M28P5g0TYZxIfy4Pmcqoj7kHj9uAb6dNGGTcgsZKcUY2Vqo30tQ6mh800YhXgYe/aF7lmBN1YcxgQbSRpqxvtw9iQgvw=
-        file:
-          - checksums
-          - talisman_darwin_amd64
-          - talisman_darwin_386
-          - talisman_linux_amd64
-          - talisman_linux_386
-          - talisman_windows_386
-          - talisman_windows_amd64
-        on:
-          repo: thoughtworks/talisman
-          branch: master
-          tags: true
+before_deploy: ./build
+deploy:
+  provider: releases
+  draft: true
+  skip_cleanup: true
+  api_key:
+    secure: tf9N5ekIuYAEnoQAKMnhjOQ6KHTwDIk/WK8kNDS+Ol2g80/2MPPLTWQBZs/g+KPqL63vbkqgZ4kDti3i5GRARN7ypQ+IqbtYVEfB9L6sNlfkz+fmJFaWjTqSiBDN4lC6zixRmQjlD4h3axIi7TxfeVGR3yct/bbwAQf/8yy6fH16EHk1LRO/Lx1crBIYc9bPu86Qt0BMqomaeUjxrQKq/1+MC2JkLzv29Ixk0Nlgab0HwcLlayFCOgI96r98RFXdkCmMrLgLNhHtfY8VtCkV5HqXdygZUSCwSPL/v/ZxPfBqYHAeoHmr83oV5l7xxhKldIp792bYWNtkE7qlSTj3CRvanYXGZiuG8hzvL+XYt2vnLNJuMfYPW3SkcSBCLOjSzOHPan9I6LBWLjwNUEOmbOALAuUD0DE0zYgZfmNv6/q8e3Z02+sp5hYPoSlu8aHL/vxd5GsuDV0ChP+C/mWjOm5Hlq2r+LGRuJ3oq31lQoENKqychEVw5m0HS5PQvWwf4NDjzgNMTFxCUwfQ+NikXDPo6LCcL4eRcyhuqnhmjnNbiaKSuyrYhzrCC64Agf7seSCaW/+ASDryac8M28P5g0TYZxIfy4Pmcqoj7kHj9uAb6dNGGTcgsZKcUY2Vqo30tQ6mh800YhXgYe/aF7lmBN1YcxgQbSRpqxvtw9iQgvw=
+  file:
+    - checksums
+    - talisman_darwin_amd64
+    - talisman_darwin_386
+    - talisman_linux_amd64
+    - talisman_linux_386
+    - talisman_windows_386.exe
+    - talisman_windows_amd64.exe
+  on:
+    repo: thoughtworks/talisman
+    branch: master
+    tags: true
