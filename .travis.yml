@@ -13,11 +13,10 @@ jobs:
       script:
         - go mod vendor
         - go test -v ./...
-    - stage: build
-      script: ./build
     - stage: release
       if: branch = master
       script: skip
+      before_deploy: ./build
       deploy:
         provider: releases
         draft: true
