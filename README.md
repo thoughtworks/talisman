@@ -300,7 +300,7 @@ Talisman also scans the content present in the git history of the repository, th
 
 To run the scanner please "cd" into the directory to be scanned and run the following command
 
-* `talisman scan`
+* `talisman --scan`
 
 <i>Talisman currently does not support ignoring of files for scanning.</i>
 
