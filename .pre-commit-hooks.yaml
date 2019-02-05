@@ -1,6 +1,6 @@
 -   id: talisman-commit
     name: talisman
-    entry: talisman -githook pre-commit
+    entry: talisman --githook pre-commit
     stages: [commit]
     # talisman currently discovers files by itself and does not take them on the cli
     pass_filenames: false
@@ -9,7 +9,7 @@
 
 -   id: talisman-push
     name: talisman
-    entry: talisman -githook pre-push
+    entry: talisman --githook pre-push
     stages: [push]
     # talisman currently discovers files by itself and does not take them on the cli
     pass_filenames: false
