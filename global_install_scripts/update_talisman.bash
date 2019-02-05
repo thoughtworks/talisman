@@ -4,6 +4,10 @@ shopt -s extglob
 
 DEBUG=${DEBUG:-''}
 FORCE_DOWNLOAD=${FORCE_DOWNLOAD:-''}
+declare UPDATE_TYPE=""
+if [[ $# -gt 0 && $1 =~ talisman-binary.* ]]; then
+	UPDATE_TYPE='talisman-binary'
+fi
 
 function run() {
 
@@ -126,11 +130,25 @@ function run() {
 		verify_checksum ${TALISMAN_BINARY_NAME}
 	}
 
+	function download_talisman_hook_script() {
+		echo_debug "Running download_talisman_hook_script"
+		curl --silent https://raw.githubusercontent.com/${INSTALL_ORG_REPO}/master/global_install_scripts/talisman_hook_script.bash >${TEMP_DIR}/talisman_hook_script
+	}
+
 	function setup_talisman() {
 		# copy talisman binary from TEMP folder to the central location
 		rm -f ${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME}
 		cp ${TEMP_DIR}/${TALISMAN_BINARY_NAME} ${TALISMAN_SETUP_DIR}
 		chmod +x ${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME}
+		echo_success "Talisman binary updated successfully!!!"
+	}
+
+	function setup_talisman_hook_script() {
+		BINARY_PATH=${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME}
+		rm -f ${TALISMAN_SETUP_DIR}/talisman_hook_script
+		sed "s@\${TALISMAN_BINARY}@$BINARY_PATH@g" ${TEMP_DIR}/talisman_hook_script >${TALISMAN_SETUP_DIR}/talisman_hook_script
+		chmod +x ${TALISMAN_SETUP_DIR}/talisman_hook_script
+		echo_success "Talisman hook script updated successfully!!!"
 	}
 
 	function set_talisman_env_variables_properly() {
@@ -148,11 +166,15 @@ function run() {
 	}
 
 	set_talisman_binary_name
-	echo "Downloading latest talisman binary"
+	echo "Downloading latest talisman binary..."
 	collect_version_artifact_download_urls
 	download_talisman_binary
-	echo "Replacing talisman binary"
 	setup_talisman
+	if [ -z "$UPDATE_TYPE" ]; then
+		echo "Downloading latest talisman hook script..."
+		download_talisman_hook_script
+		setup_talisman_hook_script
+	fi
 	# Correcting talisman env variables if they are not in proper format
 	if [ -n "${TALISMAN_HOME:-}" ]; then
 		set_talisman_env_variables_properly ~/.bashrc
