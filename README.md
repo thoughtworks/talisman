@@ -113,7 +113,7 @@ In order to use husky, make sure you have already set TALISMAN_HOME to `$PATH`.
  ###### Windows
  
  ``` 
-    "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" -githook pre-commit'" 
+    "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" --githook pre-commit'" 
 ```
  
  ###### Linux/Unix
@@ -130,7 +130,7 @@ In order to use husky, make sure you have already set TALISMAN_HOME to `$PATH`.
      {
         "husky": {
           "hooks": {
-            "pre-commit": "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" -githook pre-commit'" && "other-scripts"
+            "pre-commit": "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" --githook pre-commit'" && "other-scripts"
             }
         }
     }
