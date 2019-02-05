@@ -36,7 +36,7 @@ fi
 
 DEBUG_OPTS=""
 [[ -n "${TALISMAN_DEBUG}" ]] && DEBUG_OPTS="-d"
-CMD="${TALISMAN_BINARY} ${DEBUG_OPTS} -githook ${HOOKNAME}"
+CMD="${TALISMAN_BINARY} ${DEBUG_OPTS} --githook ${HOOKNAME}"
 echo_debug "ARGS are $@"
 echo_debug "Executing: ${CMD}"
 ${CMD}

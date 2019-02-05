@@ -338,7 +338,7 @@ function run() {
 				echo_error "that couldn't automatically be hooked up with talisman as ${HOOK_SCRIPT}"
 				echo_error "If you are already using husky for git hooks (https://github.com/typicode/husky)"
 				echo_error "Add the following script to husky pre-commit in your package.json for the repositories listed ${EXCEPTIONS_FILE_HOME_PATH}"
-				echo "\"bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" -githook pre-commit'\""
+				echo "\"bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" --githook pre-commit'\""
 
 			else
 				EXCEPTIONS_FILE_HOME_PATH="${HOME}/talisman_missed_repositories.paths"
