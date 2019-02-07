@@ -140,7 +140,7 @@ function run() {
 		rm -f ${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME}
 		cp ${TEMP_DIR}/${TALISMAN_BINARY_NAME} ${TALISMAN_SETUP_DIR}
 		chmod +x ${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME}
-		echo_success "Talisman binary updated successfully!!!"
+		echo_success "Talisman binary updated successfully!"
 	}
 
 	function setup_talisman_hook_script() {
@@ -148,7 +148,7 @@ function run() {
 		rm -f ${TALISMAN_SETUP_DIR}/talisman_hook_script
 		sed "s@\${TALISMAN_BINARY}@$BINARY_PATH@g" ${TEMP_DIR}/talisman_hook_script >${TALISMAN_SETUP_DIR}/talisman_hook_script
 		chmod +x ${TALISMAN_SETUP_DIR}/talisman_hook_script
-		echo_success "Talisman hook script updated successfully!!!"
+		echo_success "Talisman hook script updated successfully!"
 	}
 
 	function set_talisman_env_variables_properly() {
