@@ -189,13 +189,14 @@ a real git revision!)
 talisman --pattern="./**/*.{go,md}"
 ```
 # Upgrading
-We recommend using the below curl command to update Talisman Binary and Talisman Hook Script to the latest release
+[Recommended] Update Talisman binary and hook scripts to the latest release:
 
 ```bash
 curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/update_talisman.bash > /tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash
 ```
 
-If you need to update only Talisman Binary then you can run the below curl command
+
+Update only Talisman binary by executing:
 
 ```bash
 curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/update_talisman.bash > /tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash talisman-binary
