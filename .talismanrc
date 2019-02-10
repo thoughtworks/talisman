@@ -1,7 +1,0 @@
-fileignoreconfig:
-- filename    : private.pem
-  checksum    : 
-  ignore_detectors : [filename,filecontent]
-- filename: README.md
-  checksum: bbf738b07f4d436b618b596c96d96c55e67b05c7d8110a532ae2b3e47991e92f
-  ignore_detectors: []
