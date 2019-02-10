@@ -1,6 +1,7 @@
 package detector
 
 import (
+	"strings"
 	"talisman/git_repo"
 	"testing"
 
@@ -138,8 +139,8 @@ func TestResultsShouldContainHexTextsIfHexAndBase64ExistInFile(t *testing.T) {
 
 	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	expectedMessage := "Expected file to not to contain hex encoded texts such as: " + hex
-	messageReceived := getFailureMessages(results, filePath)[1]
-	assert.Equal(t, expectedMessage, messageReceived)
+	messageReceived := strings.Join(getFailureMessages(results, filePath), " ")
+	assert.Regexp(t, expectedMessage, messageReceived, "Should contain hex detection message")
 }
 
 func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) {
@@ -154,8 +155,8 @@ func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) 
 
 	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	expectedMessage := "Expected file to not to contain base64 encoded texts such as: " + base64
-	messageReceived := getFailureMessages(results, filePath)[0]
-	assert.Equal(t, expectedMessage, messageReceived)
+	messageReceived := strings.Join(getFailureMessages(results, filePath), " ")
+	assert.Regexp(t, expectedMessage, messageReceived, "Should contain base64 detection message")
 }
 
 func TestResultsShouldContainCreditCardNumberIfCreditCardNumberExistInFile(t *testing.T) {
