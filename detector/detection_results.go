@@ -21,12 +21,12 @@ type FailureData struct {
 type DetectionResults struct {
 	Failures map[git_repo.FilePath]*FailureData
 	ignores  map[git_repo.FilePath][]string
-	warnings map[git_repo.FilePath][]string
+	warnings map[git_repo.FilePath]*FailureData
 }
 
 //NewDetectionResults is a new DetectionResults struct. It represents the pre-run state of a Detection run.
 func NewDetectionResults() *DetectionResults {
-	result := DetectionResults{make(map[git_repo.FilePath]*FailureData), make(map[git_repo.FilePath][]string), make(map[git_repo.FilePath][]string)}
+	result := DetectionResults{make(map[git_repo.FilePath]*FailureData), make(map[git_repo.FilePath][]string), make(map[git_repo.FilePath]*FailureData)}
 	return &result
 }
 
@@ -48,12 +48,18 @@ func (r *DetectionResults) Fail(filePath git_repo.FilePath, message string, comm
 	}
 }
 
-func (r *DetectionResults) Warn(filePath git_repo.FilePath, message string) {
-	warnings, ok := r.warnings[filePath]
-	if !ok {
-		r.warnings[filePath] = []string{message}
+func (r *DetectionResults) Warn(filePath git_repo.FilePath, message string, commits []string) {
+	if r.warnings[filePath] == nil {
+		r.warnings[filePath] = &FailureData{make(map[string][]string)}
+	}
+	if r.warnings[filePath].FailuresInCommits == nil {
+		r.warnings[filePath].FailuresInCommits = make(map[string][]string)
+	}
+	existingCommits := r.warnings[filePath].FailuresInCommits[message]
+	if len(existingCommits) == 0 {
+		r.warnings[filePath].FailuresInCommits[message] = commits
 	} else {
-		r.warnings[filePath] = append(warnings, message)
+		r.warnings[filePath].FailuresInCommits[message] = append(r.warnings[filePath].FailuresInCommits[message], commits...)
 	}
 }
 
@@ -185,9 +191,12 @@ func (r *DetectionResults) ReportFileFailures(filePath git_repo.FilePath) [][]st
 func (r *DetectionResults) ReportFileWarnings(filePath git_repo.FilePath) [][]string {
 	warnings := r.warnings[filePath]
 	var data [][]string
-	if len(warnings) > 0 {
-		for _, warning := range warnings {
-			data = append(data, []string{string(filePath), warning})
+	if len(warnings.FailuresInCommits) > 0 {
+		for warningMessage := range warnings.FailuresInCommits {
+			if len(warningMessage) > 150 {
+				warningMessage = warningMessage[:150] + "\n" + warningMessage[150:]
+			}
+			data = append(data, []string{string(filePath), warningMessage})
 		}
 	}
 	return data

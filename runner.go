@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
+	"strings"
 	"talisman/checksumcalculator"
 	"talisman/detector"
 	"talisman/git_repo"
@@ -38,12 +40,18 @@ func (r *Runner) RunWithoutErrors() int {
 
 //Scan scans git commit history for potential secrets and returns 0 or 1 as exit code
 func (r *Runner) Scan() int {
+
+	fmt.Println("Please enter the directory where you want to save the scan results (Press enter if you want to save the scan results in the current directory) : ")
+	reader := bufio.NewReader(os.Stdin)
+	directory, _ := reader.ReadString('\n')
+	directory = strings.Replace(directory, "\n", "", -1)
+
 	fmt.Println("Please wait while talisman scans entire repository including the git history...")
 	additions := scanner.GetAdditions()
 	ignores := detector.TalismanRCIgnore{}
 	detector.DefaultChain().Test(additions, ignores, r.results)
-	report.GenerateReport(r.results)
-	fmt.Println("Please check report.html in your current directory for the talisman scan report")
+	report.GenerateReport(r.results, directory)
+	fmt.Println("Please check 'Reports' in the directory you selected for the talisman scan report")
 	return r.exitStatus()
 }
 
