@@ -1,6 +1,7 @@
 package detector
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -35,11 +36,13 @@ func TestResultsReportsFailures(t *testing.T) {
 	results.Fail("another_filename", "Complete & utter failure", []string{})
 
 	actualErrorReport := results.ReportFileFailures("some_filename")
+	firstErrorMessage := strings.Join(actualErrorReport[0], " ")
+	secondErrorMessage := strings.Join(actualErrorReport[1], " ")
+	finalStringMessage := firstErrorMessage + " " + secondErrorMessage
 
-	assert.Regexp(t, "some_filename", actualErrorReport[0][0], "Error report does not contain expected output")
-	assert.Regexp(t, "Bomb", actualErrorReport[0][1], "Error report does not contain expected output")
-	assert.Regexp(t, "some_filename", actualErrorReport[1][0], "Error report does not contain expected output")
-	assert.Regexp(t, "Complete & utter failure", actualErrorReport[1][1], "Error report does not contain expected output")
+	assert.Regexp(t, "some_filename", finalStringMessage, "Error report does not contain expected output")
+	assert.Regexp(t, "Bomb", finalStringMessage, "Error report does not contain expected output")
+	assert.Regexp(t, "Complete & utter failure", finalStringMessage, "Error report does not contain expected output")
 }
 
 // Presently not showing the ignored files in the log

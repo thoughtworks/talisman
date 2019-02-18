@@ -113,7 +113,7 @@ In order to use husky, make sure you have already set TALISMAN_HOME to `$PATH`.
  ###### Windows
  
  ``` 
-    "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" -githook pre-commit'" 
+    "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" --githook pre-commit'" 
 ```
  
  ###### Linux/Unix
@@ -130,7 +130,7 @@ In order to use husky, make sure you have already set TALISMAN_HOME to `$PATH`.
      {
         "husky": {
           "hooks": {
-            "pre-commit": "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" -githook pre-commit'" && "other-scripts"
+            "pre-commit": "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" --githook pre-commit'" && "other-scripts"
             }
         }
     }
@@ -189,9 +189,17 @@ a real git revision!)
 talisman --pattern="./**/*.{go,md}"
 ```
 # Upgrading
-To update Talisman to the latest release, run the following curl command:
+[Recommended] Update Talisman binary and hook scripts to the latest release:
+
 ```bash
 curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/update_talisman.bash > /tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash
+```
+
+
+Update only Talisman binary by executing:
+
+```bash
+curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/update_talisman.bash > /tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash talisman-binary
 ```
 
 # Talisman in action
@@ -300,7 +308,7 @@ Talisman also scans the content present in the git history of the repository, th
 
 To run the scanner please "cd" into the directory to be scanned and run the following command
 
-* `talisman scan`
+* `talisman --scan`
 
 <i>Talisman currently does not support ignoring of files for scanning.</i>
 
