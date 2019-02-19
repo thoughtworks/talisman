@@ -51,7 +51,7 @@ func (r *Runner) Scan() int {
 	ignores := detector.TalismanRCIgnore{}
 	detector.DefaultChain().Test(additions, ignores, r.results)
 	report.GenerateReport(r.results, directory)
-	fmt.Println("Please check 'Reports' in the directory you selected for the talisman scan report")
+	fmt.Println("Please check 'talisman_reports' folder in the directory you selected for the talisman scan report")
 	return r.exitStatus()
 }
 
