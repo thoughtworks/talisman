@@ -22,6 +22,7 @@ var (
 	Version  = "Development Build"
 	scan     bool
 	checksum string
+	reportdirectory string
 )
 
 const (
@@ -41,6 +42,7 @@ type options struct {
 	pattern  string
 	scan     bool
 	checksum string
+	reportdirectory string
 }
 
 //Logger is the default log device, set to emit at the Error level by default
@@ -56,6 +58,8 @@ func main() {
 	flag.BoolVar(&scan, "scan", false, "scanner scans the git commit history for potential secrets")
 	flag.StringVar(&checksum, "c", "", "short form of checksum calculator")
 	flag.StringVar(&checksum, "checksum", "", "checksum calculator calculates checksum and suggests .talsimarc format")
+	flag.StringVar(&reportdirectory, "reportdirectory", "", "directory where the scan reports will be stored")
+	flag.StringVar(&reportdirectory, "rd", "", "short form of report directory")
 
 	flag.Parse()
 
@@ -75,6 +79,7 @@ func main() {
 		pattern:  pattern,
 		scan:     scan,
 		checksum: checksum,
+		reportdirectory: reportdirectory,
 	}
 
 	os.Exit(run(os.Stdin, _options))
@@ -97,7 +102,7 @@ func run(stdin io.Reader, _options options) (returnCode int) {
 		return NewRunner(make([]git_repo.Addition, 0)).RunChecksumCalculator(strings.Fields(_options.checksum))
 	} else if _options.scan {
 		log.Infof("Running scanner")
-		return NewRunner(make([]git_repo.Addition, 0)).Scan()
+		return NewRunner(make([]git_repo.Addition, 0)).Scan(_options.reportdirectory)
 	} else if _options.pattern != "" {
 		log.Infof("Running %s pattern", _options.pattern)
 		directoryHook := NewDirectoryHook()

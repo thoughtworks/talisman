@@ -2,7 +2,6 @@ package report
 
 import (
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"log"
 	"os"
@@ -14,7 +13,7 @@ import (
 const htmlFileName string = "talisman_reports/report.html"
 const jsonFileName string = "talisman_reports/report.json"
 // GenerateReport generates a talisman scan report in html format
-func GenerateReport(r *detector.DetectionResults, directory string) {
+func GenerateReport(r *detector.DetectionResults, directory string) string {
 
 	var path string
 	var htmlFilePath strings.Builder
@@ -32,7 +31,7 @@ func GenerateReport(r *detector.DetectionResults, directory string) {
 		jsonFilePath.WriteString("/")
 		jsonFilePath.WriteString(jsonFileName)
 	}
-	fmt.Println(os.MkdirAll(path, 0755))
+	os.MkdirAll(path, 0755)
 
 	reportHTML := getReportHTML()
 	reportTemplate := template.New("report")
@@ -56,6 +55,7 @@ func GenerateReport(r *detector.DetectionResults, directory string) {
 	}
 	jsonFile.Write(jsonString)
 	jsonFile.Close()
+	return path
 }
 
 func getReportHTML() string {
