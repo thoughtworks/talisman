@@ -2,7 +2,7 @@ package detector
 
 import "talisman/git_repo"
 
-type FailureDetails struct {
+type Details struct {
 	Category string `json:"type"`
 	Message string `json:"message"`
 	Commits []string `json:"commits"`
@@ -10,8 +10,8 @@ type FailureDetails struct {
 
 type ResultsDetails struct {
 	Filename git_repo.FilePath `json:"filename"`
-	FailureList []FailureDetails `json:"failure_list"`
-	WarningList []FailureDetails `json:"warning_list"`
+	FailureList []Details      `json:"failure_list"`
+	WarningList []Details      `json:"warning_list"`
 }
 
 type FailureTypes struct  {
@@ -36,7 +36,7 @@ func (result JsonDetectionResults) getResultObjectForFileName(filename git_repo.
 			return resultDetails
 		}
 	}
-	return ResultsDetails{"", make([]FailureDetails, 0), make([]FailureDetails, 0)}
+	return ResultsDetails{"", make([]Details, 0), make([]Details, 0)}
 }
 
 func GetJsonSchema(r *DetectionResults) JsonDetectionResults {
@@ -48,7 +48,7 @@ func GetJsonSchema(r *DetectionResults) JsonDetectionResults {
 		resultDetails.Filename = path
 
 		for message, commits := range data.FailuresInCommits {
-			failureDetails := FailureDetails{}
+			failureDetails := Details{}
 			failureDetails.Message = message
 			failureDetails.Commits = commits
 			resultDetails.FailureList = append(resultDetails.FailureList, failureDetails)
@@ -61,7 +61,7 @@ func GetJsonSchema(r *DetectionResults) JsonDetectionResults {
 		resultDetails.Filename = path
 
 		for message, commits := range data.FailuresInCommits {
-			failureDetails := FailureDetails{}
+			failureDetails := Details{}
 			failureDetails.Message = message
 			failureDetails.Commits = commits
 			resultDetails.WarningList = append(resultDetails.WarningList, failureDetails)

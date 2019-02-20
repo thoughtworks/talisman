@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 	"talisman/detector"
 )
 
@@ -16,22 +15,14 @@ const jsonFileName string = "talisman_reports/report.json"
 func GenerateReport(r *detector.DetectionResults, directory string) string {
 
 	var path string
-	var htmlFilePath strings.Builder
-	var jsonFilePath strings.Builder
-	if directory == "" {
-		path = "talisman_reports"
-		htmlFilePath.WriteString(htmlFileName)
-		jsonFilePath.WriteString(jsonFileName)
-	} else  {
-		path = filepath.Join(directory, "/talisman_reports")
-		htmlFilePath.WriteString(directory)
-		htmlFilePath.WriteString("/")
-		htmlFilePath.WriteString(htmlFileName)
-		jsonFilePath.WriteString(directory)
-		jsonFilePath.WriteString("/")
-		jsonFilePath.WriteString(jsonFileName)
-	}
+	var htmlFilePath string
+	var jsonFilePath string
+
+	path = filepath.Join(directory, "talisman_reports")
+	htmlFilePath = filepath.Join(directory, htmlFileName)
+	jsonFilePath = filepath.Join(directory, jsonFileName)
 	os.MkdirAll(path, 0755)
+
 
 	reportHTML := getReportHTML()
 	reportTemplate := template.New("report")
