@@ -1,24 +1,53 @@
 package report
 
 import (
+	"encoding/json"
 	"html/template"
 	"log"
 	"os"
+	"path/filepath"
 	"talisman/detector"
 )
 
+const reportsFolder = "talisman_reports"
+const htmlFileName string = "report.html"
+const jsonFileName string = "report.json"
 // GenerateReport generates a talisman scan report in html format
-func GenerateReport(r *detector.DetectionResults) {
+func GenerateReport(r *detector.DetectionResults, directory string) string {
+
+	var path string
+	var htmlFilePath string
+	var jsonFilePath string
+
+	path = filepath.Join(directory, "talisman_reports")
+	htmlFilePath = filepath.Join(directory, reportsFolder, htmlFileName)
+	jsonFilePath = filepath.Join(directory, reportsFolder, jsonFileName)
+	os.MkdirAll(path, 0755)
+
+
 	reportHTML := getReportHTML()
 	reportTemplate := template.New("report")
 	reportTemplate, _ = reportTemplate.Parse(reportHTML)
-
-	file, err := os.Create("report.html")
+	htmlFile, err := os.Create(htmlFilePath)
 	if err != nil {
-		log.Fatal("Cannot create file", err)
+		log.Fatal("Cannot create report.html file", err)
 	}
-	reportTemplate.ExecuteTemplate(file, "report", r)
-	file.Close()
+	reportTemplate.ExecuteTemplate(htmlFile, "report", r)
+	htmlFile.Close()
+
+	jsonFile, err := os.Create(jsonFilePath)
+	if err != nil {
+		log.Fatal("Cannot create report.json file", err)
+
+	}
+	jsonResultSchema := detector.GetJsonSchema(r)
+	jsonString, err := json.Marshal(jsonResultSchema)
+	if err != nil {
+		log.Fatal("Unable to marshal JSON")
+	}
+	jsonFile.Write(jsonString)
+	jsonFile.Close()
+	return path
 }
 
 func getReportHTML() string {

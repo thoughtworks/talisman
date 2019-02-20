@@ -37,13 +37,14 @@ func (r *Runner) RunWithoutErrors() int {
 }
 
 //Scan scans git commit history for potential secrets and returns 0 or 1 as exit code
-func (r *Runner) Scan() int {
+func (r *Runner) Scan(reportDirectory string) int {
+
 	fmt.Println("Please wait while talisman scans entire repository including the git history...")
 	additions := scanner.GetAdditions()
 	ignores := detector.TalismanRCIgnore{}
 	detector.DefaultChain().Test(additions, ignores, r.results)
-	report.GenerateReport(r.results)
-	fmt.Println("Please check report.html in your current directory for the talisman scan report")
+	reportsPath := report.GenerateReport(r.results, reportDirectory)
+	fmt.Printf("Please check %s folder for the talisman scan report", reportsPath)
 	return r.exitStatus()
 }
 

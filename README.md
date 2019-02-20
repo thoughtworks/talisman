@@ -310,6 +310,16 @@ To run the scanner please "cd" into the directory to be scanned and run the foll
 
 * `talisman --scan`
 
+Running this command will create a folder named <i>talisman_reports</i> in the root of the current directory and store the report files there.
+
+In case you want to store the reports in some other location, it can be provided as an option with the command:
+
+* `talisman --scan --reportdirectory=/Users/username/Desktop`
+
+   OR
+
+* `talisman --scan --rd=/Users/username/Desktop`
+
 <i>Talisman currently does not support ignoring of files for scanning.</i>
 
 # Uninstallation
