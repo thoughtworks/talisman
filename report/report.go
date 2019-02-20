@@ -9,8 +9,9 @@ import (
 	"talisman/detector"
 )
 
-const htmlFileName string = "talisman_reports/report.html"
-const jsonFileName string = "talisman_reports/report.json"
+const reportsFolder = "talisman_reports"
+const htmlFileName string = "report.html"
+const jsonFileName string = "report.json"
 // GenerateReport generates a talisman scan report in html format
 func GenerateReport(r *detector.DetectionResults, directory string) string {
 
@@ -19,8 +20,8 @@ func GenerateReport(r *detector.DetectionResults, directory string) string {
 	var jsonFilePath string
 
 	path = filepath.Join(directory, "talisman_reports")
-	htmlFilePath = filepath.Join(directory, htmlFileName)
-	jsonFilePath = filepath.Join(directory, jsonFileName)
+	htmlFilePath = filepath.Join(directory, reportsFolder, htmlFileName)
+	jsonFilePath = filepath.Join(directory, reportsFolder, jsonFileName)
 	os.MkdirAll(path, 0755)
 
 
