@@ -27,14 +27,14 @@ func GenerateReport(r *detector.DetectionResults, directory string) string {
 	reportHTML := getReportHTML()
 	reportTemplate := template.New("report")
 	reportTemplate, _ = reportTemplate.Parse(reportHTML)
-	htmlFile, err := os.Create(htmlFilePath.String())
+	htmlFile, err := os.Create(htmlFilePath)
 	if err != nil {
 		log.Fatal("Cannot create report.html file", err)
 	}
 	reportTemplate.ExecuteTemplate(htmlFile, "report", r)
 	htmlFile.Close()
 
-	jsonFile, err := os.Create(jsonFilePath.String())
+	jsonFile, err := os.Create(jsonFilePath)
 	if err != nil {
 		log.Fatal("Cannot create report.json file", err)
 
