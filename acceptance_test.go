@@ -56,15 +56,6 @@ func TestAddingSimpleFileShouldExitZero(t *testing.T) {
 	})
 }
 
-func TestShouldExitZeroIfFileNameIsIgnoredAndNoOtherSensitiveContentIsFound(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
-		git.SetupBaselineFiles("danger.pem")
-		git.AddAndcommit("*", "add private key")
-
-		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 1 and fail as pem file was present in the repo")
-	})
-}
-
 func TestAddingSecretKeyShouldExitOne(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
