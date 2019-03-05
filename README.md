@@ -48,7 +48,7 @@ Find the instructions below.
 ## [Recommended approach]
 ## Installation as a global hook template 
 
-We recommend installing Talisman as a git hook template, as that will cause
+We recommend installing Talisman as a **pre-commit git hook template**, as that will cause
 Talisman to be present, not only in your existing git repositories, but also in any new repository that you 'init' or
 'clone'.
 
@@ -216,6 +216,10 @@ In the above example, the file *danger.pem* has been flagged as a security breac
 * The filename matches one of the pre-configured patterns.
 * The file contains an awsSecretKey which is scanned and flagged by Talisman
 
+If you have installed Talisman as a pre-commit hook, it will scan only the _diff_ within each commit. This means that it would only report errors for parts of the file that were changed.
+
+In case you have installed Talisman as a pre-push hook, it will scan the complete file in which changes are made. As mentioned above, it is recommended that you use Talisman as a **pre-commit hook**.
+
 ## Validations
 The following detectors execute against the changesets to detect secrets/sensitive information:
 
@@ -265,6 +269,52 @@ At the moment, you can ignore
 * `filename`
 * `filesize`
 
+
+## Checksum Calculator
+
+Talisman Checksum calculator gives out yaml format which you can directly copy and paste in .talismanrc file in order to ignore particular file formats from talisman detectors.
+
+To run the checksum please "cd" into the root of your repository and run the following command
+
+For Example:
+`talisman --checksum="*.pem *.txt"`
+
+1. This command finds all the .pem files in the respository and calculates collective checksum of all those files and outputs a yaml format for .talismanrc. In the same way it deals with the .txt files.
+2. Multiple file names / patterns can be given with space seperation.
+
+Example output:
+```
+.talismanrc format for given file names / patterns
+fileignoreconfig:
+- filename: '*.pem'
+  checksum: f731b26be086fd2647c40801630e2219ef207cb1aacc02f9bf0559a75c0855a4
+  ignore_detectors: []
+- filename: '*.txt'
+  checksum: d9e9e94868d7de5b2a0706b8d38d0f79730839e0eb4de4e9a2a5a014c7c43f35
+  ignore_detectors: []
+```
+
+Note: Checksum calculator considers the staged files while calculating the collective checksum of the files.
+
+## Scanning Git history
+
+Talisman also scans the content present in the git history of the repository, this includes scanning of the files listed in the .talismanrc file as well.
+
+To run the scanner please "cd" into the directory to be scanned and run the following command
+
+* `talisman --scan`
+
+Running this command will create a folder named <i>talisman_reports</i> in the root of the current directory and store the report files there.
+
+In case you want to store the reports in some other location, it can be provided as an option with the command:
+
+* `talisman --scan --reportdirectory=/Users/username/Desktop`
+
+   OR
+
+* `talisman --scan --rd=/Users/username/Desktop`
+
+<i>Talisman currently does not support ignoring of files for scanning.</i>
 # Uninstallation
 The uninstallation process depends on how you had installed Talisman.
 You could have chosen to install as a global hook template or at a single repository.

@@ -88,6 +88,79 @@ func TestAddingSecretKeyShouldExitZeroIfPEMFileIsIgnored(t *testing.T) {
 	})
 }
 
+func TestAddingSecretKeyShouldExitOneIfPEMFileIsPresentInTheGitHistory(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		_options := options{
+			debug:   false,
+			githook: PrePush,
+			scan:    false,
+		}
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents("private.pem", "secret")
+		git.CreateFileWithContents(".talismanrc", talismanRCDataWithFileNameAndCorrectChecksum)
+		git.AddAndcommit("private.pem", "add private key")
+		assert.Equal(t, 0, runTalismanWithOptions(git, _options), "Expected run() to return 0 and pass as pem file was ignored")
+	})
+}
+
+func TestScanningSimpleFileShouldExitZero(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		_options := options{
+			debug:   false,
+			githook: PrePush,
+			scan:    false,
+		}
+		git.SetupBaselineFiles("simple-file")
+		assert.Equal(t, 0, runTalismanWithOptions(git, _options), "Expected run() to return 0 and pass as pem file was ignored")
+	})
+}
+
+func TestChecksumCalculatorShouldExitOne(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		_options := options{
+			debug:    false,
+			githook:  PrePush,
+			checksum: "*txt1",
+		}
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents("private.pem", "secret")
+		git.CreateFileWithContents("another/private.pem", "secret")
+		git.CreateFileWithContents("sample.txt", "password")
+		assert.Equal(t, 1, runTalismanWithOptions(git, _options), "Expected run() to return 0 as given patterns are found and .talsimanrc is suggested")
+	})
+}
+
+func TestShouldExitOneWhenSecretIsCommitted(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		_options := options{
+			debug:   false,
+			githook: PreCommit,
+			scan:    false,
+		}
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents("sample.txt", "password=somepassword \n")
+		git.Add("*")
+		assert.Equal(t, 1, runTalismanWithOptions(git, _options), "Expected run() to return 1 as given patterns are found")
+	})
+}
+
+func TestShouldExitZeroWhenNonSecretIsCommittedButFileContainsSecretPreviously(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		_options := options{
+			debug:   false,
+			githook: PreCommit,
+			scan:    false,
+		}
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents("sample.txt", "password=somepassword \n")
+		git.AddAndcommit("*", "Initial Commit With Secret")
+
+		git.AppendFileContent("sample.txt", "some text \n")
+		git.Add("*")
+		assert.Equal(t, 0, runTalismanWithOptions(git, _options), "Expected run() to return 1 as given patterns are found")
+	})
+}
+
 // Need to work on this test case as talismanrc does  not yet support comments
 // func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnoredAndCommented(t *testing.T) {
 // 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
