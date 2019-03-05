@@ -47,9 +47,7 @@ func (dc *Chain) Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgno
 	repo := git_repo.RepoLocatedAt(wd)
 	gitTrackedFilesAsAdditions := repo.TrackedFilesAsAdditions()
 	gitTrackedFilesAsAdditions = append(gitTrackedFilesAsAdditions, additions...)
-	cc := NewChecksumCompare(gitTrackedFilesAsAdditions, ignoreConfig)
-	ignoreConfigFiltered := cc.FilterIgnoresBasedOnChecksums()
 	for _, v := range dc.detectors {
-		v.Test(additions, ignoreConfigFiltered, result)
+		v.Test(additions, ignoreConfig, result)
 	}
 }

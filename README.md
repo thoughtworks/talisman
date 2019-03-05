@@ -50,7 +50,7 @@ Find the instructions below.
 ## [Recommended approach]
 ## Installation as a global hook template 
 
-We recommend installing Talisman as a git hook template, as that will cause
+We recommend installing Talisman as a **pre-commit git hook template**, as that will cause
 Talisman to be present, not only in your existing git repositories, but also in any new repository that you 'init' or
 'clone'.
 
@@ -226,6 +226,10 @@ In the above example, the file *danger.pem* has been flagged as a security breac
 * The filename matches one of the pre-configured patterns.
 * The file contains an awsSecretKey which is scanned and flagged by Talisman
 
+If you have installed Talisman as a pre-commit hook, it will scan only the _diff_ within each commit. This means that it would only report errors for parts of the file that were changed.
+
+In case you have installed Talisman as a pre-push hook, it will scan the complete file in which changes are made. As mentioned above, it is recommended that you use Talisman as a **pre-commit hook**.
+
 ## Validations
 The following detectors execute against the changesets to detect secrets/sensitive information:
 
@@ -321,7 +325,6 @@ In case you want to store the reports in some other location, it can be provided
 * `talisman --scan --rd=/Users/username/Desktop`
 
 <i>Talisman currently does not support ignoring of files for scanning.</i>
-
 # Uninstallation
 The uninstallation process depends on how you had installed Talisman.
 You could have chosen to install as a global hook template or at a single repository.

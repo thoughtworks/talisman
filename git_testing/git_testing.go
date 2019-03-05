@@ -107,12 +107,16 @@ func (git *GitTesting) FileContents(filePath string) []byte {
 }
 
 func (git *GitTesting) AddAndcommit(fileName string, message string) {
-	git.ExecCommand("git", "add", fileName)
-	git.ExecCommand("git", "commit", fileName, "-m", message)
+	git.Add(fileName)
+	git.Commit(fileName, message)
 }
 
 func (git *GitTesting) Add(fileName string) {
 	git.ExecCommand("git", "add", fileName)
+}
+
+func (git *GitTesting) Commit(fileName string, message string) {
+	git.ExecCommand("git", "commit", fileName, "-m", message)
 }
 
 func (git *GitTesting) GetBlobDetails(fileName string) string {
