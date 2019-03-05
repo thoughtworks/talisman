@@ -38,6 +38,21 @@ func RepoLocatedAt(path string) GitRepo {
 	return GitRepo{absoluteRoot}
 }
 
+//Gets all the staged files and collects the diff section in each file
+func (repo GitRepo) GetDiffForStagedFiles() []Addition {
+	files := repo.stagedFiles()
+	result := make([]Addition, len(files))
+	for i, file := range files {
+		data := repo.fetchStagedDiff(file)
+		result[i] = NewAddition(file, data)
+	}
+
+	log.WithFields(log.Fields{
+		"additions": result,
+	}).Debug("Generating staged additions.")
+	return result
+}
+
 func (repo GitRepo) StagedAdditions() []Addition {
 	files := repo.stagedFiles()
 	result := make([]Addition, len(files))
@@ -206,6 +221,20 @@ func (repo GitRepo) outgoingNonDeletedFiles(oldCommit, newCommit string) []strin
 
 func (repo *GitRepo) fetchStagedChanges() string {
 	return string(repo.executeRepoCommand("git", "diff", "--cached", "--name-status", "--diff-filter=ACM"))
+}
+
+//Fetches the currently staged diff and filters the command output to get only the modified sections of the file
+func (repo *GitRepo) fetchStagedDiff(fileName string) []byte {
+	var result []byte
+	changes := strings.Split(string(repo.executeRepoCommand("git", "diff", "--staged", fileName)), "\n")
+	for _, c := range changes {
+		if !strings.HasPrefix(c, "+++") && !strings.HasPrefix(c, "---") && strings.HasPrefix(c, "+") {
+
+			result = append(result, strings.TrimPrefix(c, "+")...)
+			result = append(result, "\n"...)
+		}
+	}
+	return result
 }
 
 func (repo GitRepo) fetchRawOutgoingDiff(oldCommit string, newCommit string) string {
