@@ -5,7 +5,7 @@
 </div>
 <p align="center">A tool to detect and prevent secrets from getting checked in</p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Go Report Card](https://goreportcard.com/badge/thoughtworks/talisman)](https://goreportcard.com/report/thoughtworks/talisman) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/thoughtworks/talisman/issues)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Go Report Card](https://goreportcard.com/badge/thoughtworks/talisman)](https://goreportcard.com/report/thoughtworks/talisman) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/thoughtworks/talisman/issues) [![Build Status](https://travis-ci.org/thoughtworks/talisman.svg?branch=master)](https://travis-ci.org/thoughtworks/talisman)
 
 
 ## Table of Contents
@@ -18,6 +18,8 @@
 - [Talisman in action](#talisman-in-action)
 	- [Validations](#validations) 
 	- [Ignoring files](#ignoring-files)
+  - [Checksum Calculator](#checksum-calculator)
+  - [Scanning Git hisotry](#scanning-git-history)
 - [Uninstallation](#uninstallation)
 	- [From a global hook template](#uninstallation-from-a-global-hook-template)
 	- [From a single repository](#uninstallation-from-a-single-repository)   
@@ -111,7 +113,7 @@ In order to use husky, make sure you have already set TALISMAN_HOME to `$PATH`.
  ###### Windows
  
  ``` 
-    "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" -githook pre-commit'" 
+    "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" --githook pre-commit'" 
 ```
  
  ###### Linux/Unix
@@ -128,7 +130,7 @@ In order to use husky, make sure you have already set TALISMAN_HOME to `$PATH`.
      {
         "husky": {
           "hooks": {
-            "pre-commit": "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" -githook pre-commit'" && "other-scripts"
+            "pre-commit": "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" --githook pre-commit'" && "other-scripts"
             }
         }
     }
@@ -187,9 +189,17 @@ a real git revision!)
 talisman --pattern="./**/*.{go,md}"
 ```
 # Upgrading
-To update Talisman to the latest release, run the following curl command:
+[Recommended] Update Talisman binary and hook scripts to the latest release:
+
 ```bash
 curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/update_talisman.bash > /tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash
+```
+
+
+Update only Talisman binary by executing:
+
+```bash
+curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/update_talisman.bash > /tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash talisman-binary
 ```
 
 # Talisman in action
@@ -322,11 +332,20 @@ You could have chosen to install as a global hook template or at a single reposi
 Please follow the steps below based on which option you had chosen at installation.
 
 ## Uninstallation from a global hook template
-To uninstall talisman globally from your machine, run:
+Run the following command on your terminal to uninstall talisman globally from your machine.
+
+For pre-commit hook:
 
 ```
 curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/uninstall.bash > /tmp/uninstall_talisman.bash && /bin/bash /tmp/uninstall_talisman.bash 
 ```
+
+For pre-push hook:
+
+```
+curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/uninstall.bash > /tmp/uninstall_talisman.bash && /bin/bash /tmp/uninstall_talisman.bash pre-push
+```
+
 This will
 
 1. ask you for the base dir of all your repos, find all git repos inside it and remove talisman hooks

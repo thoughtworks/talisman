@@ -255,7 +255,7 @@ func TestPatternFindsSecretInNestedFile(t *testing.T) {
 func runTalisman(git *git_testing.GitTesting) int {
 	_options := options{
 		debug:   false,
-		githook: "pre-push",
+		githook: PrePush,
 	}
 	return runTalismanWithOptions(git, _options)
 }
@@ -282,6 +282,7 @@ type GitOperation func(*git_testing.GitTesting)
 func withNewTmpGitRepo(doGitOperation GitOperation) {
 	withNewTmpDirNamed("talisman-acceptance-test", func(gitPath string) {
 		gt := git_testing.Init(gitPath)
+		gt.RemoveHooks()
 		doGitOperation(gt)
 		os.RemoveAll(gitPath)
 	})

@@ -1,13 +1,13 @@
 package main
 
+import flag "github.com/spf13/pflag"
+
 import (
 	"bufio"
-	"flag"
 	"fmt"
 	"io"
 	"os"
 	"strings"
-
 	"talisman/git_repo"
 
 	log "github.com/Sirupsen/logrus"
@@ -19,7 +19,10 @@ var (
 	showVersion bool
 	pattern     string
 	//Version : Version of talisman
-	Version = "Development Build"
+	Version  = "Development Build"
+	scan     bool
+	checksum string
+	reportdirectory string
 )
 
 const (
@@ -34,9 +37,12 @@ func init() {
 }
 
 type options struct {
-	debug   bool
-	githook string
-	pattern string
+	debug    bool
+	githook  string
+	pattern  string
+	scan     bool
+	checksum string
+	reportdirectory string
 }
 
 //Logger is the default log device, set to emit at the Error level by default
@@ -48,6 +54,12 @@ func main() {
 	flag.StringVar(&pattern, "p", "", "short form of pattern")
 	flag.StringVar(&pattern, "pattern", "", "pattern (glob-like) of files to scan (ignores githooks)")
 	flag.StringVar(&githook, "githook", PrePush, "either pre-push or pre-commit")
+	flag.BoolVar(&scan, "s", false, "short form of scanner")
+	flag.BoolVar(&scan, "scan", false, "scanner scans the git commit history for potential secrets")
+	flag.StringVar(&checksum, "c", "", "short form of checksum calculator")
+	flag.StringVar(&checksum, "checksum", "", "checksum calculator calculates checksum and suggests .talsimarc format")
+	flag.StringVar(&reportdirectory, "reportdirectory", "", "directory where the scan reports will be stored")
+	flag.StringVar(&reportdirectory, "rd", "", "short form of report directory")
 
 	flag.Parse()
 
@@ -56,10 +68,18 @@ func main() {
 		os.Exit(0)
 	}
 
+	if flag.NFlag() == 0 {
+		flag.PrintDefaults()
+		os.Exit(0)
+	}
+
 	_options := options{
-		debug:   fdebug,
-		githook: githook,
-		pattern: pattern,
+		debug:    fdebug,
+		githook:  githook,
+		pattern:  pattern,
+		scan:     scan,
+		checksum: checksum,
+		reportdirectory: reportdirectory,
 	}
 
 	os.Exit(run(os.Stdin, _options))
@@ -77,7 +97,13 @@ func run(stdin io.Reader, _options options) (returnCode int) {
 	}
 
 	var additions []git_repo.Addition
-	if _options.pattern != "" {
+	if _options.checksum != "" {
+		log.Infof("Running %s patterns against checksum calculator", _options.checksum)
+		return NewRunner(make([]git_repo.Addition, 0)).RunChecksumCalculator(strings.Fields(_options.checksum))
+	} else if _options.scan {
+		log.Infof("Running scanner")
+		return NewRunner(make([]git_repo.Addition, 0)).Scan(_options.reportdirectory)
+	} else if _options.pattern != "" {
 		log.Infof("Running %s pattern", _options.pattern)
 		directoryHook := NewDirectoryHook()
 		additions = directoryHook.GetFilesFromDirectory(_options.pattern)

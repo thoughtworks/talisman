@@ -3,3 +3,5 @@ pre_push_hook.go
 acceptance_test.go
 go.mod
 go.sum
+README.md
+.travis.yml

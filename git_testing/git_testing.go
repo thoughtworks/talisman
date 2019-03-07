@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/drhodes/golorem"
+	lorem "github.com/drhodes/golorem"
 )
 
 var Logger *logrus.Entry
@@ -169,4 +169,8 @@ func (git *GitTesting) doInGitRoot(operation func()) {
 
 func (git *GitTesting) GetRoot() string {
 	return git.gitRoot
+}
+
+func (git *GitTesting) RemoveHooks() {
+	git.ExecCommand("rm", "-rf", ".git/hooks/")
 }
