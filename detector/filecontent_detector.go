@@ -31,8 +31,9 @@ func (fc *FileContentDetector) AggressiveMode() *FileContentDetector {
 }
 
 func (fc *FileContentDetector) Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
+	cc := NewChecksumCompare(additions, ignoreConfig)
 	for _, addition := range additions {
-		if ignoreConfig.Deny(addition, "filecontent") {
+		if ignoreConfig.Deny(addition, "filecontent") || cc.IsScanNotRequired(addition) {
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
 			}).Info("Ignoring addition as it was specified to be ignored.")

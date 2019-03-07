@@ -1,6 +1,9 @@
 package detector
 
-import "talisman/git_repo"
+import (
+	"os"
+	"talisman/git_repo"
+)
 
 //Detector represents a single kind of test to be performed against a set of Additions
 //Detectors are expected to honor the ignores that are passed in and log them in the results
@@ -40,9 +43,11 @@ func (dc *Chain) AddDetector(d Detector) *Chain {
 //Test validates the additions against each detector in the chain.
 //The results are passed in from detector to detector and thus collect all errors from all detectors
 func (dc *Chain) Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
-	cs := NewChecksumCalculator()
-	ignoreConfigModified := cs.FilterIgnoresBasedOnChecksums(additions, ignoreConfig)
+	wd, _ := os.Getwd()
+	repo := git_repo.RepoLocatedAt(wd)
+	gitTrackedFilesAsAdditions := repo.TrackedFilesAsAdditions()
+	gitTrackedFilesAsAdditions = append(gitTrackedFilesAsAdditions, additions...)
 	for _, v := range dc.detectors {
-		v.Test(additions, ignoreConfigModified, result)
+		v.Test(additions, ignoreConfig, result)
 	}
 }
