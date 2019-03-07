@@ -16,6 +16,20 @@ func NewChecksumCompare(gitAdditions []git_repo.Addition, talismanRCIgnoreConfig
 	return &cc
 }
 
+func (cc *ChecksumCompare) IsScanNotRequired(addition git_repo.Addition) bool {
+	currentCollectiveChecksum := utility.CollectiveSHA256Hash([]string{string(addition.Path)})
+	declaredCheckSum := ""
+	for _, ignore := range cc.ignoreConfig.FileIgnoreConfig {
+		if addition.Matches(ignore.FileName) {
+			currentCollectiveChecksum = utility.CollectiveSHA256Hash([]string{ignore.FileName})
+			declaredCheckSum = ignore.Checksum
+		}
+
+	}
+	return currentCollectiveChecksum == declaredCheckSum
+
+}
+
 //FilterIgnoresBasedOnChecksums filters the file ignores from the TalismanRCIgnore which doesn't have any checksum value or having mismatched checksum value from the .talsimanrc
 func (cc *ChecksumCompare) FilterIgnoresBasedOnChecksums() TalismanRCIgnore {
 	finalIgnores := []FileIgnoreConfig{}
