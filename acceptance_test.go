@@ -19,14 +19,14 @@ const awsAccessKeyIDExample string = "accessKey=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEX
 const talismanRCDataWithIgnoreDetectorWithFilename = `
 fileignoreconfig:
 - filename: private.pem
-  checksum: 05db785bf1e1712f69b81eeb9956bd797b956e7179ebe3cb7bb2cd9be037a24c
+  checksum: 05db785bf1e1712f69b81eeb9956bd797b956e7179ebe3cb7bb2cd9be37a24c
   ignore_detectors: [filename]
 `
 
 const talismanRCDataWithIgnoreDetectorWithFilecontent = `
 fileignoreconfig:
 - filename: private.pem
-  checksum: 05db785bf1e1712f69b81eeb9956bd797b956e7179ebe3cb7bb2cd9be037a24c
+  checksum: 05db785bf1e1712f69b81eeb9956bd797b956e7179ebe3cb7bb2cd9be37a24c
   ignore_detectors: [filecontent]
 `
 
