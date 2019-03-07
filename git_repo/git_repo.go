@@ -49,7 +49,7 @@ func (repo GitRepo) GetDiffForStagedFiles() []Addition {
 
 	log.WithFields(log.Fields{
 		"additions": result,
-	}).Info("Generating staged additions.")
+	}).Debug("Generating staged additions.")
 	return result
 }
 
