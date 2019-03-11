@@ -40,8 +40,8 @@ func GenerateReport(r *detector.DetectionResults, directory string) string {
 		log.Fatal("Cannot create report.json file", err)
 
 	}
-	jsonResultSchema := detector.GetJsonSchema(r)
-	jsonString, err := json.Marshal(jsonResultSchema)
+	//jsonResultSchema := detector.GetJsonSchema(r)
+	jsonString, err := json.Marshal(r)
 	if err != nil {
 		log.Fatal("Unable to marshal JSON")
 	}
