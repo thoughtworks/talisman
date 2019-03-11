@@ -42,8 +42,8 @@ func shouldPassDetectionOfSecretPattern(filename string, content []byte, t *test
 
 func getFailureMessage(results *DetectionResults, additions []git_repo.Addition) string {
 	failureMessages := []string{}
-	for _, failureDetails := range results.GetFailures(additions[0].Path) {
-		failureMessages = append(failureMessages, failureDetails.Message)
+	for failureMessage := range results.GetFailures(additions[0].Path).FailuresInCommits {
+		failureMessages = append(failureMessages, failureMessage)
 	}
 	return failureMessages[0]
 }

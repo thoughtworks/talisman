@@ -30,13 +30,13 @@ func (detector PatternDetector) Test(additions []git_repo.Addition, ignoreConfig
 						"filePath": addition.Path,
 						"pattern":  detection,
 					}).Warn("Warning file as it matched pattern.")
-					result.Warn(addition.Path, "filecontent", fmt.Sprintf("Potential secret pattern : %s", detection), addition.Commits)
+					result.Warn(addition.Path, fmt.Sprintf("Potential secret pattern : %s", detection), addition.Commits)
 				} else {
 					log.WithFields(log.Fields{
 						"filePath": addition.Path,
 						"pattern":  detection,
 					}).Info("Failing file as it matched pattern.")
-					result.Fail(addition.Path, "filecontent", fmt.Sprintf("Potential secret pattern : %s", detection), addition.Commits)
+					result.Fail(addition.Path, fmt.Sprintf("Potential secret pattern : %s", detection), addition.Commits)
 				}
 			}
 		}

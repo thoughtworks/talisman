@@ -28,7 +28,7 @@ func TestValidationChainWithFailingValidationAlwaysFails(t *testing.T) {
 type FailingDetection struct{}
 
 func (v FailingDetection) Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
-	result.Fail("some_file", "filecontent","FAILED BY DESIGN", []string{})
+	result.Fail("some_file", "FAILED BY DESIGN", []string{})
 }
 
 type PassingDetection struct{}

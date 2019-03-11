@@ -174,8 +174,8 @@ func TestResultsShouldContainCreditCardNumberIfCreditCardNumberExistInFile(t *te
 
 func getFailureMessages(results *DetectionResults, filePath git_repo.FilePath) []string {
 	failureMessages := []string{}
-	for _, failureDetails := range results.GetFailures(filePath) {
-		failureMessages = append(failureMessages, failureDetails.Message)
+	for failureMessage := range results.GetFailures(filePath).FailuresInCommits {
+		failureMessages = append(failureMessages, failureMessage)
 	}
 	return failureMessages
 }
