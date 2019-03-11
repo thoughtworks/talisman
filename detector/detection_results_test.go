@@ -15,25 +15,25 @@ func TestNewDetectionResultsAreSuccessful(t *testing.T) {
 
 func TestCallingFailOnDetectionResultsFails(t *testing.T) {
 	results := NewDetectionResults()
-	results.Fail("some_filename", "Bomb", []string{})
+	results.Fail("some_filename", "filename", "Bomb", []string{})
 	assert.False(t, results.Successful(), "Calling fail on a result should not make it succeed")
 	assert.True(t, results.HasFailures(), "Calling fail on a result should make it fail")
 }
 
 func TestCanRecordMultipleErrorsAgainstASingleFile(t *testing.T) {
 	results := NewDetectionResults()
-	results.Fail("some_filename", "Bomb", []string{})
-	results.Fail("some_filename", "Complete & utter failure", []string{})
-	results.Fail("another_filename", "Complete & utter failure", []string{})
-	assert.Len(t, results.GetFailures("some_filename").FailuresInCommits, 2, "Expected two errors against some_filename.")
-	assert.Len(t, results.GetFailures("another_filename").FailuresInCommits, 1, "Expected one error against another_filename")
+	results.Fail("some_filename", "filename", "Bomb", []string{})
+	results.Fail("some_filename", "filename", "Complete & utter failure", []string{})
+	results.Fail("another_filename", "filename", "Complete & utter failure", []string{})
+	assert.Len(t, results.GetFailures("some_filename"), 2, "Expected two errors against some_filename.")
+	assert.Len(t, results.GetFailures("another_filename"), 1, "Expected one error against another_filename")
 }
 
 func TestResultsReportsFailures(t *testing.T) {
 	results := NewDetectionResults()
-	results.Fail("some_filename", "Bomb", []string{})
-	results.Fail("some_filename", "Complete & utter failure", []string{})
-	results.Fail("another_filename", "Complete & utter failure", []string{})
+	results.Fail("some_filename", "", "Bomb", []string{})
+	results.Fail("some_filename", "", "Complete & utter failure", []string{})
+	results.Fail("another_filename", "", "Complete & utter failure", []string{})
 
 	actualErrorReport := results.ReportFileFailures("some_filename")
 	firstErrorMessage := strings.Join(actualErrorReport[0], " ")
@@ -63,7 +63,7 @@ func TestResultsReportsFailures(t *testing.T) {
 
 func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 	results := NewDetectionResults()
-	results.Fail("some_file.pem", "Bomb", []string{})
+	results.Fail("some_file.pem", "filecontent", "Bomb", []string{})
 
 	actualErrorReport := results.Report()
 
