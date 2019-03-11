@@ -1,57 +1,4 @@
-package report
 
-import (
-	"encoding/json"
-	"html/template"
-	"log"
-	"os"
-	"path/filepath"
-	"talisman/detector"
-)
-
-const reportsFolder = "talisman_reports"
-const htmlFileName string = "report.html"
-const jsonFileName string = "report.json"
-// GenerateReport generates a talisman scan report in html format
-func GenerateReport(r *detector.DetectionResults, directory string) string {
-
-	var path string
-	var htmlFilePath string
-	var jsonFilePath string
-
-	path = filepath.Join(directory, "talisman_reports")
-	htmlFilePath = filepath.Join(directory, reportsFolder, htmlFileName)
-	jsonFilePath = filepath.Join(directory, reportsFolder, jsonFileName)
-	os.MkdirAll(path, 0755)
-
-
-	reportHTML := getReportHTML()
-	reportTemplate := template.New("report")
-	reportTemplate, _ = reportTemplate.Parse(reportHTML)
-	htmlFile, err := os.Create(htmlFilePath)
-	if err != nil {
-		log.Fatal("Cannot create report.html file", err)
-	}
-	reportTemplate.ExecuteTemplate(htmlFile, "report", r)
-	htmlFile.Close()
-
-	jsonFile, err := os.Create(jsonFilePath)
-	if err != nil {
-		log.Fatal("Cannot create report.json file", err)
-
-	}
-	//jsonResultSchema := detector.GetJsonSchema(r)
-	jsonString, err := json.Marshal(r)
-	if err != nil {
-		log.Fatal("Unable to marshal JSON")
-	}
-	jsonFile.Write(jsonString)
-	jsonFile.Close()
-	return path
-}
-
-func getReportHTML() string {
-	return `
 	<html>
 		<head>
 			<style>
@@ -159,7 +106,7 @@ func getReportHTML() string {
 		</head>
 		<body>
 			<div id="logo">
-				<!-- Generator: Adobe Illustrator 19.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+				
 				<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 					width="62" height="79px" viewBox="0 0 520 660" enable-background="new 0 0 520 660" xml:space="preserve">
 					<defs>
@@ -303,37 +250,4 @@ func getReportHTML() string {
 							<span id="commit-heading">Found in Commit (Git SHAs)</span>
 						</th>
 					</tr>
-					{{range $filePath, $FailureData := .Failures}}
-						<tr>
-							<td>{{$filePath}}</td>
-							<td>
-								<table class="details">
-									{{range $failureMessage, $commits := $FailureData.FailuresInCommits}}
-										<tr>
-											<td class="failure-message">
-												{{$failureMessage}}
-											</td>
-											<td>
-												<table>
-												{{range $commit := $commits}}
-													<tr><td>{{$commit}}</td></tr>
-												{{end}}
-												</table>
-											</td>
-										</tr>
-									{{end}}
-								</table>
-							</td>
-						</tr>
-					{{end}}
-				</table>
-			</div>
-			<footer class="site-footer">
-  				<div class="wrapper">
-    				<h3 class="footer-heading"><a href="https://github.com/thoughtworks/talisman/">GitHub</a></h3>
-    				<h2 class="footer-heading">&#9400; 2016&nbsp;ThoughtWorks, Inc.</h2>
-  				</div>
-			</footer>
-		</body>
-	</html>`
-}
+					
