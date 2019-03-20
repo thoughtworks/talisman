@@ -68,9 +68,9 @@ func TestShouldParseIgnoreLinesProperly(t *testing.T) {
 func TestDirectoryPatterns(t *testing.T) {
 	assertAccepts("foo/", "", "bar", t)
 	assertAccepts("foo/", "", "foo", t)
-	assertDenies("foo/", "", "foo/bar", t)
-	assertDenies("foo/", "", "foo/bar.txt", t)
-	assertDenies("foo/", "", "foo/bar/baz.txt", t)
+	assertDenies("foo/", "filename", "foo/bar", t)
+	assertDenies("foo/", "filename", "foo/bar.txt", t)
+	assertDenies("foo/", "filename", "foo/bar/baz.txt", t)
 }
 
 //Need to work on this test case as it deals with comments and talismanrc does not deal in comments
@@ -91,7 +91,7 @@ func TestIgnoringDetectors(t *testing.T) {
 }
 
 func assertDenies(line, ignoreDetector string, path string, t *testing.T) {
-	assertDeniesDetector(line, ignoreDetector, path, "someDetector", t)
+	assertDeniesDetector(line, ignoreDetector, path, "filename", t)
 }
 
 func assertDeniesDetector(line, ignoreDetector string, path string, detectorName string, t *testing.T) {

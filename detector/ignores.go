@@ -98,7 +98,7 @@ func NewIgnore(pattern string, comment string) Ignore {
 
 func (i FileIgnoreConfig) isEffective(detectorName string) bool {
 	return !isEmptyString(i.FileName) &&
-		(contains(i.IgnoreDetectors, detectorName) || len(i.IgnoreDetectors) == 0)
+		contains(i.IgnoreDetectors, detectorName)
 }
 
 

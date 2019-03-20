@@ -143,6 +143,8 @@ func shouldNotFailWithDefaultDetectorAndIgnores(fileName, ignore string, t *test
 
 	fileIgnoreConfig := FileIgnoreConfig{}
 	fileIgnoreConfig.FileName = ignore
+	fileIgnoreConfig.IgnoreDetectors = make([]string, 1)
+	fileIgnoreConfig.IgnoreDetectors[0] = "filename"
 	talismanRCIgnore := TalismanRCIgnore{}
 	talismanRCIgnore.FileIgnoreConfig = make([]FileIgnoreConfig, 1)
 	talismanRCIgnore.FileIgnoreConfig[0] = fileIgnoreConfig

@@ -31,6 +31,8 @@ func TestShouldNotFlagIgnoredLargeFiles(t *testing.T) {
 	filename := "filename"
 	fileIgnoreConfig := FileIgnoreConfig{}
 	fileIgnoreConfig.FileName = filename
+	fileIgnoreConfig.IgnoreDetectors = make([]string, 1)
+	fileIgnoreConfig.IgnoreDetectors[0] = "filesize"
 	talismanRCIgnore := TalismanRCIgnore{}
 	talismanRCIgnore.FileIgnoreConfig = make([]FileIgnoreConfig, 1)
 	talismanRCIgnore.FileIgnoreConfig[0] = fileIgnoreConfig
