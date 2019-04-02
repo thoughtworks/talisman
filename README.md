@@ -17,8 +17,8 @@
 - [Talisman in action](#talisman-in-action)
 	- [Validations](#validations) 
 	- [Ignoring files](#ignoring-files)
-  	- [Talisman as a CLI command](#talisman-as-a-cli-command)
-  		- [Scanner](#scanner)
+  	- [Talisman as a CLI utility](#talisman-as-a-cli-utility)
+  		- [Git History Scanner](#git-history-scanner)
   		- [Checksum Calculator](#checksum-calculator)
 - [Uninstallation](#uninstallation)
 	- [From a global hook template](#uninstallation-from-a-global-hook-template)
@@ -187,15 +187,12 @@ curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/gl
 ```
 
 
-<<<<<<< HEAD
 Update only Talisman binary by executing:
 
 ```bash
 curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/update_talisman.bash > /tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash talisman-binary
 ```
 
-=======
->>>>>>> Added missing information about scanner and wildcard ignores
 # Talisman in action
 
 After the installation is successful, Talisman will run checks for obvious secrets automatically before each commit or push (as chosen during installation). In case there are any security breaches detected, talisman will display a detailed report of the errors:
@@ -295,7 +292,7 @@ If any of the files are modified, talisman will scan the files again, unless you
 * It also brings in more secure practices with every modification of a file with a potential sensitive value to be reviewed
 * The new format also brings in the extensibility to introduce new usable functionalities. Keep a watch out for more </i>
 
-## Talisman as a CLI command
+## Talisman as a CLI utility
 
 If you execute `talisman` on the command line, you will be able to view all the parameter options you can pass
 
@@ -313,7 +310,8 @@ If you execute `talisman` on the command line, you will be able to view all the 
       --version           show current version of talisman
 ```
 
-### Scanner
+
+### Git history Scanner
 
 You can now execute Talisman from CLI, and potentially add it to your CI/CD pipelines, to scan git history of your repository to find any sensitive content.
 This includes scanning of the files listed in the .talismanrc file as well.
@@ -322,8 +320,12 @@ This includes scanning of the files listed in the .talismanrc file as well.
 
  1. Get into the git directory path to be scanned `cd <directory to scan>` 
  2. Run the scan command `talisman --scan`
+  * Running this command will create a folder named <i>talisman_reports</i> in the root of the current directory and store the report files there.
+  * You can also specify the location for reports by providing an additional parameter as <i>--reportDirectory</i> or <i>--rd</i>
+<br>For example, `talisman --scan --reportdirectory=/Users/username/Desktop`
 
- You can use the other options to scan as given above.
+You can use the other options to scan as given above.
+ 
 
 <i>Talisman currently does not support ignoring of files for scanning.</i>
 
@@ -355,20 +357,6 @@ Example output:
 
 Note: Checksum calculator considers the staged files while calculating the collective checksum of the files.
 
-<<<<<<< HEAD
-Running this command will create a folder named <i>talisman_reports</i> in the root of the current directory and store the report files there.
-
-In case you want to store the reports in some other location, it can be provided as an option with the command:
-
-* `talisman --scan --reportdirectory=/Users/username/Desktop`
-=======
->>>>>>> Added missing information about scanner and wildcard ignores
-
-   OR
-
-* `talisman --scan --rd=/Users/username/Desktop`
-
-<i>Talisman currently does not support ignoring of files for scanning.</i>
 # Uninstallation
 The uninstallation process depends on how you had installed Talisman.
 You could have chosen to install as a global hook template or at a single repository.
