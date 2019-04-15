@@ -13,13 +13,13 @@
 - [Installation](#installation)
 	- [As a global hook template (Recommended)](#installation-as-a-global-hook-template)
 	- [To a single repository](#installation-to-a-single-project)
-	- [As a CLI to find file types](#installation-as-a-cli)
 - [Upgrading Talisman](#Upgrading)
 - [Talisman in action](#talisman-in-action)
 	- [Validations](#validations) 
 	- [Ignoring files](#ignoring-files)
-  - [Checksum Calculator](#checksum-calculator)
-  - [Scanning Git hisotry](#scanning-git-history)
+  	- [Talisman as a CLI utility](#talisman-as-a-cli-utility)
+  		- [Git History Scanner](#git-history-scanner)
+  		- [Checksum Calculator](#checksum-calculator)
 - [Uninstallation](#uninstallation)
 	- [From a global hook template](#uninstallation-from-a-global-hook-template)
 	- [From a single repository](#uninstallation-from-a-single-repository)   
@@ -37,11 +37,10 @@ keys, authorization tokens, private keys etc.
 
 Talisman supports MAC OSX, Linux and Windows.
 
-Talisman can be installed and used in one of three different ways:
+Talisman can be installed and used in one of the following ways:
 
 1. As a git hook as a global [git hook template](https://git-scm.com/docs/git-init#_template_directory)
 2. As a git hook into a single git repository
-3. As a CLI with the `--pattern` argument to find files
 
 Talisman can be set up as either a pre-commit or pre-push hook on the git repositories.
 
@@ -179,15 +178,7 @@ a real git revision!)
     # -   id: talisman-push
 ```
 
-## Installation as a CLI
-1. Download the Talisman binary from the [Releases page](https://github.com/thoughtworks/talisman/releases) corresponding to your system type
-2. Place the binary somewhere (either directly in your repository, or by putting it somewhere in your system and adding it to your `$PATH`)
-3. Run talisman with the `--pattern` argument (matches glob-like patterns, [see more](https://github.com/bmatcuk/doublestar#patterns))
 
-```bash
-# finds all .go and .md files in the current directory (recursively) 
-talisman --pattern="./**/*.{go,md}"
-```
 # Upgrading
 [Recommended] Update Talisman binary and hook scripts to the latest release:
 
@@ -243,7 +234,7 @@ The following detectors execute against the changesets to detect secrets/sensiti
 
 ## Ignoring Files
 
-If you're *really* sure you want to push that file, you can configure it into the `.talismanrc` file in the project root. The contents required for ignoring your failed files will be printed by Talisman on the console immediately after the Talisman Error report:
+If you're *really* sure you want to push that file, you can configure it into the `.talismanrc` file in the project root. The contents required for ignoring your failed files will be printed by Talisman on the console immediately after the Talisman Error Report:
 
 
 ```bash
@@ -255,6 +246,8 @@ fileignoreconfig:
 ```
 Entering this in the `.talismanrc` file will ensure that Talisman will ignore the `danger.pem` file as long as the checksum matches the value mentioned in the `checksum` field.  
 
+### Ignoring specific detectors
+
 Below is a detailed description of the various fields that can be configured into the `.talismanrc` file:
 
 * `filename` : This field should mention the fully qualified filename.
@@ -262,6 +255,7 @@ Below is a detailed description of the various fields that can be configured int
 * `ignore_detectors` : This field will disable specific detectors for a particular file.
 For example, if your `init-env.sh` filename triggers a warning, you can only disable
 this warning while still being alerted if other things go wrong (e.g. file content):
+
 
 ```bash
 fileignoreconfig:
@@ -279,8 +273,65 @@ At the moment, you can ignore
 * `filename`
 * `filesize`
 
+### Ignoring multiple files of same type (with wildcards)
 
-## Checksum Calculator
+You can choose to ignore all files of a certain type, because you know they will always be safe, and you wouldn't want Talisman to scan them.
+
+Steps:
+	
+1. Format a wildard pattern for the files you want to ignore. For example, `*.lock`
+2. Use the [checksum calculator](#checksum-calculator) to feed the pattern and attain a collective checksum. For example, `talisman --checksum="*.lock" `
+3. Copy the fileconfig block, printed on console, to .talismanrc file.
+
+If any of the files are modified, talisman will scan the files again, unless you re-calculate the new checksum and replace it in .talismanrc file.
+
+<br/><i>
+**Note**: The use of .talismanignore has been deprecated. File .talismanrc replaces it because:
+
+* .talismanrc has a much more legible yaml format
+* It also brings in more secure practices with every modification of a file with a potential sensitive value to be reviewed
+* The new format also brings in the extensibility to introduce new usable functionalities. Keep a watch out for more </i>
+
+## Talisman as a CLI utility
+
+If you execute `talisman` on the command line, you will be able to view all the parameter options you can pass
+
+```
+	  --c string          short form of checksum calculator
+     --checksum string    checksum calculator calculates checksum and suggests .talsimarc format
+      --d                 short form of debug
+      --debug             enable debug mode (warning: very verbose)
+      --githook string    either pre-push or pre-commit (default "pre-push")
+      --p string          short form of pattern
+      --pattern string    pattern (glob-like) of files to scan (ignores githooks)
+      --s                 short form of scanner
+      --scan              scanner scans the git commit history for potential secrets
+      --v                 short form of version
+      --version           show current version of talisman
+```
+
+
+### Git history Scanner
+
+You can now execute Talisman from CLI, and potentially add it to your CI/CD pipelines, to scan git history of your repository to find any sensitive content.
+This includes scanning of the files listed in the .talismanrc file as well.
+
+**Steps**:
+
+ 1. Get into the git directory path to be scanned `cd <directory to scan>` 
+ 2. Run the scan command `talisman --scan`
+  * Running this command will create a folder named <i>talisman_reports</i> in the root of the current directory and store the report files there.
+  * You can also specify the location for reports by providing an additional parameter as <i>--reportDirectory</i> or <i>--rd</i>
+<br>For example, `talisman --scan --reportdirectory=/Users/username/Desktop`
+
+You can use the other options to scan as given above.
+ 
+
+<i>Talisman currently does not support ignoring of files for scanning.</i>
+
+
+
+### Checksum Calculator
 
 Talisman Checksum calculator gives out yaml format which you can directly copy and paste in .talismanrc file in order to ignore particular file formats from talisman detectors.
 
@@ -293,38 +344,19 @@ For Example:
 2. Multiple file names / patterns can be given with space seperation.
 
 Example output:
-```
-.talismanrc format for given file names / patterns
-fileignoreconfig:
-- filename: '*.pem'
-  checksum: f731b26be086fd2647c40801630e2219ef207cb1aacc02f9bf0559a75c0855a4
-  ignore_detectors: []
-- filename: '*.txt'
-  checksum: d9e9e94868d7de5b2a0706b8d38d0f79730839e0eb4de4e9a2a5a014c7c43f35
-  ignore_detectors: []
-```
+
+	.talismanrc format for given file names / patterns
+	fileignoreconfig:
+	- filename: '*.pem'
+	  checksum: f731b26be086fd2647c40801630e2219ef207cb1aacc02f9bf0559a75c0855a4
+	  ignore_detectors: []
+	- filename: '*.txt'
+	  checksum: d9e9e94868d7de5b2a0706b8d38d0f79730839e0eb4de4e9a2a5a014c7c43f35
+	  ignore_detectors: []
+
 
 Note: Checksum calculator considers the staged files while calculating the collective checksum of the files.
 
-## Scanning Git history
-
-Talisman also scans the content present in the git history of the repository, this includes scanning of the files listed in the .talismanrc file as well.
-
-To run the scanner please "cd" into the directory to be scanned and run the following command
-
-* `talisman --scan`
-
-Running this command will create a folder named <i>talisman_reports</i> in the root of the current directory and store the report files there.
-
-In case you want to store the reports in some other location, it can be provided as an option with the command:
-
-* `talisman --scan --reportdirectory=/Users/username/Desktop`
-
-   OR
-
-* `talisman --scan --rd=/Users/username/Desktop`
-
-<i>Talisman currently does not support ignoring of files for scanning.</i>
 # Uninstallation
 The uninstallation process depends on how you had installed Talisman.
 You could have chosen to install as a global hook template or at a single repository.
