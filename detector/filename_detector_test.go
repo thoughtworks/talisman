@@ -13,7 +13,8 @@ import (
 
 func TestShouldFlagPotentialSSHPrivateKeys(t *testing.T) {
 	shouldFail("id_rsa", "^.+_rsa$", t)
-	shouldFail("id_dsa", "^.+_dsa$", t)
+	shouldFail("id_dsa", "^.+_dsa.*$", t)
+	shouldFail("id_dsa.pub", "^.+_dsa.*$", t)
 	shouldFail("id_ed25519", "^.+_ed25519$", t)
 	shouldFail("id_ecdsa", "^.+_ecdsa$", t)
 }

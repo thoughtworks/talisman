@@ -18,7 +18,7 @@ type FileNameDetector struct {
 //DefaultFileNameDetector returns a FileNameDetector that tests Additions against the pre-configured patterns
 func DefaultFileNameDetector() Detector {
 	return NewFileNameDetector("^.+_rsa$",
-		"^.+_dsa$",
+		"^.+_dsa.*$",
 		"^.+_ed25519$",
 		"^.+_ecdsa$",
 		"^\\.\\w+_history$",

@@ -180,7 +180,10 @@ a real git revision!)
 
 
 # Upgrading
-[Recommended] Update Talisman binary and hook scripts to the latest release:
+Since release v0.4.4, Talisman <b>automatically updates</b> the binary to the latest release, when the hook is invoked (at pre-commit/pre-push, as set up). So, just sit back, relax, and keep using the latest Talisman without any extra efforts.
+
+If at all you need to manually upgrade, here are the steps:
+<br>[Recommended] Update Talisman binary and hook scripts to the latest release:
 
 ```bash
 curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/update_talisman.bash > /tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash
