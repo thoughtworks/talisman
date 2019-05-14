@@ -19,6 +19,7 @@
   	- [Talisman as a CLI utility](#talisman-as-a-cli-utility)
   		- [Git History Scanner](#git-history-scanner)
   		- [Checksum Calculator](#checksum-calculator)
+	- [Talisman HTML Reporting](#talisman-html-reporting)
 - [Uninstallation](#uninstallation)
 	- [From a global hook template](#uninstallation-from-a-global-hook-template)
 	- [From a single repository](#uninstallation-from-a-single-repository)   
@@ -358,8 +359,6 @@ Example output:
 
 
 Note: Checksum calculator considers the staged files while calculating the collective checksum of the files.
-
-<i>Talisman currently does not support ignoring of files for scanning.</i>
 
 # Talisman HTML Reporting
 <i>Powered by 		<a href="https://jaydeepc.github.io/report-mine-website/"><img class=logo align=bottom width="10%" height="10%" src="https://github.com/jaydeepc/talisman-html-report/raw/master/img/logo_reportmine.png" /></a></i>
