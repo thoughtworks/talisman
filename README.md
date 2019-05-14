@@ -363,7 +363,7 @@ Note: Checksum calculator considers the staged files while calculating the colle
 # Talisman HTML Reporting
 <i>Powered by 		<a href="https://jaydeepc.github.io/report-mine-website/"><img class=logo align=bottom width="10%" height="10%" src="https://github.com/jaydeepc/talisman-html-report/raw/master/img/logo_reportmine.png" /></a></i>
 
-Talisman CLI tool `talisman` also comes with the capability to provide detailed and sharable HTML report. Once you have installed Talisman, please follow the steps mentioned in [talisman-html-report]('https://github.com/jaydeepc/talisman-html-report'), to install the reporting package in `.talisman` folder. To generate the html report, run:
+Talisman CLI tool `talisman` also comes with the capability to provide detailed and sharable HTML report. Once you have installed Talisman, please follow the steps mentioned in [talisman-html-report](https://github.com/jaydeepc/talisman-html-report), to install the reporting package in `.talisman` folder. To generate the html report, run:
 
 * `talisman --htmlreport`
 
