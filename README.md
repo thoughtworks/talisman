@@ -1,6 +1,6 @@
 <div style="display: flex; justify-content: center;">
 	<h1 align="center">
-		<img class=logo align=bottom width="5%" height="5%" src="https://thoughtworks.github.io/talisman/logo.svg" />
+		<img class=logo align=bottom width="25%" height="95%" src="https://github.com/jaydeepc/talisman-html-report/raw/master/img/talisman.png" />
 		Talisman</h1>
 </div>
 <p align="center">A tool to detect and prevent secrets from getting checked in</p>
@@ -15,7 +15,7 @@
 	- [To a single repository](#installation-to-a-single-project)
 - [Upgrading Talisman](#Upgrading)
 - [Talisman in action](#talisman-in-action)
-	- [Validations](#validations) 
+	- [Validations](#validations)
 	- [Ignoring files](#ignoring-files)
   	- [Talisman as a CLI utility](#talisman-as-a-cli-utility)
   		- [Git History Scanner](#git-history-scanner)
@@ -28,7 +28,7 @@
 	- [Releasing](#releasing)  
 
 # What is Talisman?
-Talisman is a tool that installs a hook to your repository to ensure that potential secrets or sensitive information do not leave the developer's workstation. 
+Talisman is a tool that installs a hook to your repository to ensure that potential secrets or sensitive information do not leave the developer's workstation.
 
 It validates the outgoing changeset for things that look suspicious - such as potential SSH
 keys, authorization tokens, private keys etc.
@@ -47,7 +47,7 @@ Talisman can be set up as either a pre-commit or pre-push hook on the git reposi
 Find the instructions below.
 
 ## [Recommended approach]
-## Installation as a global hook template 
+## Installation as a global hook template
 
 We recommend installing Talisman as a **pre-commit git hook template**, as that will cause
 Talisman to be present, not only in your existing git repositories, but also in any new repository that you 'init' or
@@ -58,7 +58,7 @@ Talisman to be present, not only in your existing git repositories, but also in 
   As a pre-commit hook:
 
   ```
-curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/install.bash > /tmp/install_talisman.bash && /bin/bash /tmp/install_talisman.bash 
+curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/install.bash > /tmp/install_talisman.bash && /bin/bash /tmp/install_talisman.bash
 ```
 
   OR
@@ -104,19 +104,19 @@ In the suggestion, it will prompt the following code to be included in .pre-comm
 #### 2. Husky (Linux/Unix/Windows)
 [husky](https://github.com/typicode/husky/blob/master/DOCS.md) is an npm module for managing git hooks.
 In order to use husky, make sure you have already set TALISMAN_HOME to `$PATH`.
- 
+
 + **Existing Users**
- 
+
  If you already are using husky, add the following lines to husky pre-commit in package.json
- 
+
  ###### Windows
- 
- ``` 
-    "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" --githook pre-commit'" 
+
+ ```
+    "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" --githook pre-commit'"
 ```
- 
+
  ###### Linux/Unix
- 
+
  ```
     $TALISMAN_HOME/talisman_hook_script pre-commit
 ```
@@ -281,7 +281,7 @@ At the moment, you can ignore
 You can choose to ignore all files of a certain type, because you know they will always be safe, and you wouldn't want Talisman to scan them.
 
 Steps:
-	
+
 1. Format a wildard pattern for the files you want to ignore. For example, `*.lock`
 2. Use the [checksum calculator](#checksum-calculator) to feed the pattern and attain a collective checksum. For example, `talisman --checksum="*.lock" `
 3. Copy the fileconfig block, printed on console, to .talismanrc file.
@@ -321,14 +321,14 @@ This includes scanning of the files listed in the .talismanrc file as well.
 
 **Steps**:
 
- 1. Get into the git directory path to be scanned `cd <directory to scan>` 
+ 1. Get into the git directory path to be scanned `cd <directory to scan>`
  2. Run the scan command `talisman --scan`
   * Running this command will create a folder named <i>talisman_reports</i> in the root of the current directory and store the report files there.
   * You can also specify the location for reports by providing an additional parameter as <i>--reportDirectory</i> or <i>--rd</i>
 <br>For example, `talisman --scan --reportdirectory=/Users/username/Desktop`
 
 You can use the other options to scan as given above.
- 
+
 
 <i>Talisman currently does not support ignoring of files for scanning.</i>
 
@@ -372,7 +372,7 @@ Run the following command on your terminal to uninstall talisman globally from y
 For pre-commit hook:
 
 ```
-curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/uninstall.bash > /tmp/uninstall_talisman.bash && /bin/bash /tmp/uninstall_talisman.bash 
+curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/uninstall.bash > /tmp/uninstall_talisman.bash && /bin/bash /tmp/uninstall_talisman.bash
 ```
 
 For pre-push hook:
@@ -384,13 +384,13 @@ curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/gl
 This will
 
 1. ask you for the base dir of all your repos, find all git repos inside it and remove talisman hooks
-2. remove talisman hook from .git-template 
+2. remove talisman hook from .git-template
 3. remove talisman from the central install location ($HOME/.talisman/bin).<br>
 
 <i>You will have to manually remove TALISMAN_HOME from your environment variables</i>
 
 ## Uninstallation from a single repository
-When you installed Talisman, it must have created a pre-commit or pre-push hook (as selected) in your repository during installation. 
+When you installed Talisman, it must have created a pre-commit or pre-push hook (as selected) in your repository during installation.
 
 You can remove the hook manually by deleting the Talisman pre-commit or pre-push hook from .git/hooks folder in repository.
 
