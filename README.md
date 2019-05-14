@@ -359,6 +359,44 @@ Example output:
 
 Note: Checksum calculator considers the staged files while calculating the collective checksum of the files.
 
+<i>Talisman currently does not support ignoring of files for scanning.</i>
+
+# Talisman HTML Reporting
+<i>Powered by 		<a href="https://jaydeepc.github.io/report-mine-website/"><img class=logo align=bottom width="10%" height="10%" src="https://github.com/jaydeepc/talisman-html-report/raw/master/img/logo_reportmine.png" /></a></i>
+
+Talisman CLI tool `talisman` also comes with the capability to provide detailed and sharable HTML report. Once you have installed Talisman, please follow the steps mentioned in [talisman-html-report]('https://github.com/jaydeepc/talisman-html-report'), to install the reporting package in `.talisman` folder. To generate the html report, run:
+
+* `talisman --htmlreport`
+
+This will scan the repository and create a folder `talisman_html_report` under the the scanned repository. We need to start an HTTP server inside this repository to access the report.Below is a recommended approach to start a HTTP server:
+
+* `python -m SimpleHTTPServer <port> (eg: 8000)`
+
+You can now access the report by navigating to:
+
+`http://localhost:8000`
+
+## Sample Screenshots
+
+* Welcome
+
+<img width="100%" height="70%" src="https://github.com/jaydeepc/talisman-html-report/raw/master/sample/summary.png" />
+
+* Summary
+
+<img width="100%" height="70%" src="https://github.com/jaydeepc/talisman-html-report/raw/master/sample/execution-summary.png" />
+
+* Detailed Report
+
+<img width="100%" height="70%" src="https://github.com/jaydeepc/talisman-html-report/raw/master/sample/detailed.png" />
+
+* Error Report
+
+<img width="100%" height="70%" src="https://github.com/jaydeepc/talisman-html-report/raw/master/sample/error-report.png" />
+
+<i> **Note**: You don't have to start a server if you are running Talisman in CI or any other hosted environment </i>
+
+
 # Uninstallation
 The uninstallation process depends on how you had installed Talisman.
 You could have chosen to install as a global hook template or at a single repository.

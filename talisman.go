@@ -23,6 +23,7 @@ var (
 	scan     bool
 	checksum string
 	reportdirectory string
+	htmlreport bool
 )
 
 const (
@@ -43,6 +44,7 @@ type options struct {
 	scan     bool
 	checksum string
 	reportdirectory string
+	htmlreport bool
 }
 
 //Logger is the default log device, set to emit at the Error level by default
@@ -60,6 +62,8 @@ func main() {
 	flag.StringVar(&checksum, "checksum", "", "checksum calculator calculates checksum and suggests .talsimarc format")
 	flag.StringVar(&reportdirectory, "reportdirectory", "", "directory where the scan reports will be stored")
 	flag.StringVar(&reportdirectory, "rd", "", "short form of report directory")
+	flag.BoolVar(&htmlreport, "htmlreport", false, "Generate html report")
+	flag.BoolVar(&htmlreport, "hr", false, "short form of html report")
 
 	flag.Parse()
 
@@ -80,6 +84,7 @@ func main() {
 		scan:     scan,
 		checksum: checksum,
 		reportdirectory: reportdirectory,
+		htmlreport: htmlreport,
 	}
 
 	os.Exit(run(os.Stdin, _options))
@@ -103,6 +108,9 @@ func run(stdin io.Reader, _options options) (returnCode int) {
 	} else if _options.scan {
 		log.Infof("Running scanner")
 		return NewRunner(make([]git_repo.Addition, 0)).Scan(_options.reportdirectory)
+	} else if _options.htmlreport {
+		log.Infof("Running scanner with html report")
+		return NewRunner(make([]git_repo.Addition, 0)).Scan("talisman_html_report")
 	} else if _options.pattern != "" {
 		log.Infof("Running %s pattern", _options.pattern)
 		directoryHook := NewDirectoryHook()
