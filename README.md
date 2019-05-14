@@ -1,4 +1,4 @@
-<div style="display: flex; justify-content: center;">
+<div align="center">
 		<img class=logo align=bottom width="25%" height="95%" src="https://github.com/jaydeepc/talisman-html-report/raw/master/img/talisman.png" />
 </div>
 <h1 align="center">Talisman</h1>
