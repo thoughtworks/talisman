@@ -1,22 +1,22 @@
 package report
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"path"
-	"encoding/json"
 	"log"
 	"os"
 	"os/user"
+	"path"
 	"path/filepath"
 	"talisman/detector"
 )
 
 var reportsFolder string
+
 const htmlFileName string = "report.html"
 const jsonFileName string = "report.json"
-
 
 // GenerateReport generates a talisman scan report in html format
 func GenerateReport(r *detector.DetectionResults, directory string) string {
@@ -25,25 +25,25 @@ func GenerateReport(r *detector.DetectionResults, directory string) string {
 	var jsonFilePath string
 	var home_dir string
 	var base_report_dir_path string
+	const htmlReportDir string = "talisman_html_report"
 
-	if directory == "talisman_html_report" {
-			path = directory
-			// base_report_dir_path = filepath.Join(home_dir, ".talisman/bin/talisman_html_report")
-			// Dir(base_report_dir_path, "talisman_html_report")
+	if directory == htmlReportDir {
+		path = directory
+		// base_report_dir_path = filepath.Join(home_dir, ".talisman/bin/talisman_html_report")
+		// Dir(base_report_dir_path, "talisman_html_report")
 	} else {
-			path = filepath.Join(directory, "talisman_reports")
+		path = filepath.Join(directory, "talisman_reports")
 	}
 
 	jsonFilePath = filepath.Join(path, "/data", jsonFileName)
 
-
 	usr, err := user.Current()
 	home_dir = usr.HomeDir
 
-	base_report_dir_path = filepath.Join(home_dir, ".talisman/bin/talisman_html_report")
+	base_report_dir_path = filepath.Join(home_dir, ".talisman", "bin", htmlReportDir)
 
 	os.MkdirAll(path, 0755)
-	Dir(base_report_dir_path, "talisman_html_report")
+	Dir(base_report_dir_path, htmlReportDir)
 
 	jsonFile, err := os.Create(jsonFilePath)
 	if err != nil {
