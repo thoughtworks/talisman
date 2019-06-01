@@ -39,12 +39,15 @@ Talisman supports MAC OSX, Linux and Windows.
 
 Talisman can be installed and used in one of the following ways:
 
-1. As a git hook as a global [git hook template](https://git-scm.com/docs/git-init#_template_directory)
+1. As a git hook as a global [git hook template](https://git-scm.com/docs/git-init#_template_directory) and a CLI utility (for git repo scanning)
 2. As a git hook into a single git repository
 
 Talisman can be set up as either a pre-commit or pre-push hook on the git repositories.
 
 Find the instructions below.
+
+*Disclaimer: Secrets creeping in via a forced push in a git repository cannot be detected by Talisman. A forced push is believed to be notorious in its own ways, and we suggest git repository admins to apply appropriate measures to authorize such activities.*
+
 
 ## [Recommended approach]
 ## Installation as a global hook template
