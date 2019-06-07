@@ -49,7 +49,7 @@ func GenerateReport(r *detector.DetectionResults, directory string) string {
 	jsonFile, err := os.Create(jsonFilePath)
 
 	if err != nil {
-		fmt.Println("\n")
+		fmt.Printf("\n")
 		log.Fatal("Cannot create report.json file\n", err)
 	}
 
@@ -68,9 +68,9 @@ func generateErrorMsg() {
 	color.HiMagenta("Please go through Talisman Readme and make sure you install the same from:")
 	color.Yellow("\nhttps://github.com/jaydeepc/talisman-html-report")
 	color.Cyan("\nOR use 'talisman --scan' if you want the JSON report alone\n")
-	fmt.Println("\n")
+	fmt.Printf("\n")
 	color.Red("Failed: Unable to perform Scan")
-	fmt.Println("\n")
-	log.Fatalln("Run Status: Failed\n")
-	fmt.Println("\n")
+	fmt.Printf("\n")
+	log.Fatalln("Run Status: Failed")
+	fmt.Printf("\n")
 }
