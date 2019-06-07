@@ -11,3 +11,4 @@ talisman_windows_*
 vendor/
 git_repo/data/*
 .talismanrc
+.vscode/**
