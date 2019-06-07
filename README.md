@@ -365,7 +365,7 @@ Note: Checksum calculator considers the staged files while calculating the colle
 
 Talisman CLI tool `talisman` also comes with the capability to provide detailed and sharable HTML report. Once you have installed Talisman, please follow the steps mentioned in [talisman-html-report](https://github.com/jaydeepc/talisman-html-report), to install the reporting package in `.talisman` folder. To generate the html report, run:
 
-* `talisman --htmlreport`
+* `talisman --scanWithHtml`
 
 This will scan the repository and create a folder `talisman_html_report` under the the scanned repository. We need to start an HTTP server inside this repository to access the report.Below is a recommended approach to start a HTTP server:
 
