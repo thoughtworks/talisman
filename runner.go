@@ -8,6 +8,7 @@ import (
 	"talisman/git_repo"
 	"talisman/report"
 	"talisman/scanner"
+	"talisman/utility"
 )
 
 const (
@@ -39,12 +40,14 @@ func (r *Runner) RunWithoutErrors() int {
 //Scan scans git commit history for potential secrets and returns 0 or 1 as exit code
 func (r *Runner) Scan(reportDirectory string) int {
 
-	fmt.Println("Please wait while talisman scans entire repository including the git history...")
+	fmt.Printf("\n\n")
+	utility.CreateArt("Running Scan..")
 	additions := scanner.GetAdditions()
 	ignores := detector.TalismanRCIgnore{}
 	detector.DefaultChain().Test(additions, ignores, r.results)
 	reportsPath := report.GenerateReport(r.results, reportDirectory)
-	fmt.Printf("Please check %s folder for the talisman scan report", reportsPath)
+	fmt.Printf("\nPlease check '%s' folder for the talisman scan report\n", reportsPath)
+	fmt.Printf("\n")
 	return r.exitStatus()
 }
 

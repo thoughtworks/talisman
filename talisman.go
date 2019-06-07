@@ -19,11 +19,11 @@ var (
 	showVersion bool
 	pattern     string
 	//Version : Version of talisman
-	Version  = "Development Build"
-	scan     bool
-	checksum string
+	Version         = "Development Build"
+	scan            bool
+	checksum        string
 	reportdirectory string
-	htmlreport bool
+	scanWithHtml    bool
 )
 
 const (
@@ -38,13 +38,13 @@ func init() {
 }
 
 type options struct {
-	debug    bool
-	githook  string
-	pattern  string
-	scan     bool
-	checksum string
+	debug           bool
+	githook         string
+	pattern         string
+	scan            bool
+	checksum        string
 	reportdirectory string
-	htmlreport bool
+	scanWithHtml    bool
 }
 
 //Logger is the default log device, set to emit at the Error level by default
@@ -62,8 +62,8 @@ func main() {
 	flag.StringVar(&checksum, "checksum", "", "checksum calculator calculates checksum and suggests .talsimarc format")
 	flag.StringVar(&reportdirectory, "reportdirectory", "", "directory where the scan reports will be stored")
 	flag.StringVar(&reportdirectory, "rd", "", "short form of report directory")
-	flag.BoolVar(&htmlreport, "htmlreport", false, "Generate html report")
-	flag.BoolVar(&htmlreport, "hr", false, "short form of html report")
+	flag.BoolVar(&scanWithHtml, "scanWithHtml", false, "Generate html report. (**Make sure you have installed talisman_html_report to use this, as mentioned in Readme)**")
+	flag.BoolVar(&scanWithHtml, "swh", false, "short form of html report scanner")
 
 	flag.Parse()
 
@@ -78,13 +78,13 @@ func main() {
 	}
 
 	_options := options{
-		debug:    fdebug,
-		githook:  githook,
-		pattern:  pattern,
-		scan:     scan,
-		checksum: checksum,
+		debug:           fdebug,
+		githook:         githook,
+		pattern:         pattern,
+		scan:            scan,
+		checksum:        checksum,
 		reportdirectory: reportdirectory,
-		htmlreport: htmlreport,
+		scanWithHtml:    scanWithHtml,
 	}
 
 	os.Exit(run(os.Stdin, _options))
@@ -108,7 +108,7 @@ func run(stdin io.Reader, _options options) (returnCode int) {
 	} else if _options.scan {
 		log.Infof("Running scanner")
 		return NewRunner(make([]git_repo.Addition, 0)).Scan(_options.reportdirectory)
-	} else if _options.htmlreport {
+	} else if _options.scanWithHtml {
 		log.Infof("Running scanner with html report")
 		return NewRunner(make([]git_repo.Addition, 0)).Scan("talisman_html_report")
 	} else if _options.pattern != "" {
