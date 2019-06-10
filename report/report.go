@@ -63,7 +63,7 @@ func GenerateReport(r *detector.DetectionResults, directory string) string {
 }
 
 func generateErrorMsg() {
-	color.HiMagenta("\nLooks like you are using 'talisman --htmlreport' for scanning.")
+	color.HiMagenta("\nLooks like you are using 'talisman --scanWithHtml' for scanning.")
 	color.HiMagenta("But it appears that you have not installed Talisman Html Report")
 	color.HiMagenta("Please go through Talisman Readme and make sure you install the same from:")
 	color.Yellow("\nhttps://github.com/jaydeepc/talisman-html-report")
