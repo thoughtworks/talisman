@@ -1,8 +1,5 @@
-
-<div style="display: flex; justify-content: center;">
-	<h1 align="center">
+<div align="center">
 		<img class=logo align=bottom width="25%" height="95%" src="https://github.com/jaydeepc/talisman-html-report/raw/master/img/talisman.png" />
-		Talisman</h1>
 </div>
 <h1 align="center">Talisman</h1>
 <p align="center">A tool to detect and prevent secrets from getting checked in</p>
