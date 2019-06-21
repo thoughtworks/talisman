@@ -1,8 +1,11 @@
 package git_repo
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -26,6 +29,40 @@ func TestEmptyRepoReturnsNoFileChanges(t *testing.T) {
 	cleanTestData()
 	_, repo := setupOriginAndClones(testLocation, cloneLocation)
 	assert.Len(t, repo.AllAdditions(), 0, "Empty git repo should not have any changes")
+}
+
+func TestGetDiffForStagedFiles(t *testing.T) {
+	cleanTestData()
+	git, repo := setupOriginAndClones(testLocation, cloneLocation)
+	git.AppendFileContent("a.txt", "New content.\n", "Spanning multiple lines, even.")
+	git.CreateFileWithContents("new.txt", "created contents")
+	git.Add("a.txt")
+	git.Add("new.txt")
+	additions := repo.GetDiffForStagedFiles()
+
+	assert.Len(t, additions, 2)
+	modifiedAddition := additions[0]
+	createdAddition := additions[1]
+
+	aTxtFileContents, err := ioutil.ReadFile(path.Join(cloneLocation, "a.txt"))
+	assert.NoError(t, err)
+	newTxtFileContents, err := ioutil.ReadFile(path.Join(cloneLocation, "new.txt"))
+	assert.NoError(t, err)
+
+	expectedModifiedAddition := Addition{
+		Path: FilePath("a.txt"),
+		Name: FileName("a.txt"),
+		Data: []byte(fmt.Sprintf("%s\n", string(aTxtFileContents))),
+	}
+
+	expectedCreatedAddition := Addition{
+		Path: FilePath("new.txt"),
+		Name: FileName("new.txt"),
+		Data: []byte(fmt.Sprintf("%s\n", string(newTxtFileContents))),
+	}
+
+	assert.Equal(t, expectedModifiedAddition, modifiedAddition)
+	assert.Equal(t, expectedCreatedAddition, createdAddition)
 }
 
 func TestAdditionsReturnsEditsAndAdds(t *testing.T) {
