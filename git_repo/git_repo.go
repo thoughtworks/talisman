@@ -180,8 +180,11 @@ func (repo GitRepo) stagedFiles() []string {
 	var result []string
 	for _, c := range stagedFiles {
 		if len(c) != 0 {
-			file := strings.Split(c, "\t")[1]
-			result = append(result, file)
+			changeTypeAndFile := strings.Split(c, "\t")
+			if len(changeTypeAndFile) > 0 {
+				file := changeTypeAndFile[1]
+				result = append(result, file)
+			}
 		}
 	}
 	return result
