@@ -228,7 +228,7 @@ function run() {
 		if [ -f $FILE_PATH ] && grep -q "TALISMAN_HOME" $FILE_PATH; then
 			if ! grep -q ">>> talisman >>>" $FILE_PATH; then
 				sed -i'-talisman.bak' '/TALISMAN_HOME/d' $FILE_PATH
-				echo "\n" >>${ENV_FILE}
+				echo -e "\n" >>${ENV_FILE}
 				echo "# >>> talisman >>>" >>$FILE_PATH
 				echo "# Below environment variables should not be modified unless you know what you are doing" >>$FILE_PATH
 				echo "export TALISMAN_HOME=${TALISMAN_SETUP_DIR}" >>$FILE_PATH
@@ -287,7 +287,7 @@ function run() {
 	function set_talisman_home_and_binary_path() {
 		ENV_FILE="$1"
 		echo -e "Setting up TALISMAN_HOME in ${ENV_FILE}"
-		echo "\n" >>${ENV_FILE}
+		echo -e "\n" >>${ENV_FILE}
 		echo "# >>> talisman >>>" >>${ENV_FILE}
 		echo "# Below environment variables should not be modified unless you know what you are doing" >>${ENV_FILE}
 		echo "export TALISMAN_HOME=${TALISMAN_SETUP_DIR}" >>${ENV_FILE}
