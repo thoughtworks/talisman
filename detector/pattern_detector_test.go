@@ -16,8 +16,9 @@ func TestShouldDetectPasswordPatterns(t *testing.T) {
 	shouldPassDetectionOfSecretPattern(filename, []byte("<ConsumerKey>alksjdhfkjaklsdhflk12345adskjf</ConsumerKey>"), t)
 	shouldPassDetectionOfSecretPattern(filename, []byte("AWS key :"), t)
 	shouldPassDetectionOfSecretPattern(filename, []byte(`BEGIN RSA PRIVATE KEY-----
-aghjdjadslgjagsfjlsgjalsgjaghjldasja
------END RSA PRIVATE KEY`), t)
+	aghjdjadslgjagsfjlsgjalsgjaghjldasja
+	-----END RSA PRIVATE KEY`), t)
+	shouldPassDetectionOfSecretPattern(filename, []byte(`PWD=appropriate`), t)
 }
 
 func TestShouldIgnorePasswordPatterns(t *testing.T) {
@@ -44,6 +45,9 @@ func getFailureMessage(results *DetectionResults, additions []git_repo.Addition)
 	failureMessages := []string{}
 	for _, failureDetails := range results.GetFailures(additions[0].Path) {
 		failureMessages = append(failureMessages, failureDetails.Message)
+	}
+	if len(failureMessages) == 0 {
+		return ""
 	}
 	return failureMessages[0]
 }

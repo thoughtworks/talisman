@@ -235,7 +235,11 @@ func (r *DetectionResults) Successful() bool {
 
 //GetFailures returns the various reasons that a given FilePath was marked as failing by all the detectors in the current run
 func (r *DetectionResults) GetFailures(fileName git_repo.FilePath) []Details {
-	return r.getResultDetailsForFilePath(fileName).FailureList
+	results := r.getResultDetailsForFilePath(fileName)
+	if results == nil {
+		return []Details{}
+	}
+	return results.FailureList
 }
 
 func (r *DetectionResults) ReportWarnings() string {
