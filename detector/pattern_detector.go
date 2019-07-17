@@ -46,9 +46,9 @@ func (detector PatternDetector) Test(additions []git_repo.Addition, ignoreConfig
 //NewPatternDetector returns a PatternDetector that tests Additions against the pre-configured patterns
 func NewPatternDetector() *PatternDetector {
 	patternStrings := []string{
-
 		"(?i)(['|\"|_]?password['|\"]? *[:|=][^,|;|\n]{8,})",
 		"(?i)(['|\"|_]?pw['|\"]? *[:|=][^,|;|\n]{8,})",
+		"(?i)(['|\"|_]?pwd['|\"]? *[:|=][^,|;|\n]{8,})",
 		"(?i)(['|\"|_]?pass['|\"]? *[:|=][^,|;|\n]{8,})",
 		"(?i)(['|\"|_]?pword['|\"]? *[:|=][^,|;|\n]{8,})",
 		"(?i)(['|\"|_]?adminPassword['|\"]? *[:|=|\n][^,|;]{8,})",
@@ -59,7 +59,8 @@ func NewPatternDetector() *PatternDetector {
 		"(?i)(<ConsumerSecret>\\S*<\\/ConsumerSecret>)",
 		"(?i)(AWS[ |\\w]+key[ |\\w]+[:|=])",
 		"(?i)(AWS[ |\\w]+secret[ |\\w]+[:|=])",
-		"(?s)(BEGIN RSA PRIVATE KEY.*END RSA PRIVATE KEY)"}
+		"(?s)(BEGIN RSA PRIVATE KEY.*END RSA PRIVATE KEY)",
+	}
 
 	return &PatternDetector{NewSecretsPatternDetector(patternStrings)}
 }
