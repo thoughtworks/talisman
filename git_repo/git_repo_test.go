@@ -172,6 +172,17 @@ func TestStagedAdditionsShouldNotIncludeDeletedFiles(t *testing.T) {
 	assert.Len(t, stagedAdditions, 0)
 }
 
+func TestMatchShouldAllowWildcardPatternMatches(t *testing.T) {
+	file1 := Addition{Path: "bigfile", Name: "bigfile"}
+	file2 := Addition{Path: "anotherbigfile", Name: "anotherbigfile"}
+	file3 := Addition{Path: "somefile", Name: "somefile"}
+	pattern := "*bigfile"
+
+	assert.True(t, file1.Matches(pattern))
+	assert.True(t, file2.Matches(pattern))
+	assert.False(t, file3.Matches(pattern))
+}
+
 func setupOriginAndClones(originLocation, cloneLocation string) (*git_testing.GitTesting, GitRepo) {
 	origin := RepoLocatedAt(originLocation)
 	git := git_testing.Init(origin.root)

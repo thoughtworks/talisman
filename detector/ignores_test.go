@@ -73,6 +73,31 @@ func TestDirectoryPatterns(t *testing.T) {
 	assertDenies("foo/", "filename", "foo/bar/baz.txt", t)
 }
 
+func TestIgnoreAdditionsByScope(t *testing.T) {
+	file1 := testAddition("yarn.lock")
+	file2 := testAddition("similaryarn.lock")
+	file3 := testAddition("java.lock")
+	file4 := testAddition("Gopkg.lock")
+	file5 := testAddition("vendors/abc")
+	additions := []git_repo.Addition{file1, file2, file3, file4, file5}
+
+	scopesToIgnore := []string{"node", "go"}
+	talismanRCIgnoreConfig := CreateTalismanRCIgnoreWithScopeIgnore(scopesToIgnore)
+
+	nodeIgnores := []string{"node.lock", "*yarn.lock"}
+	javaIgnores := []string{"java.lock"}
+	goIgnores := []string{"go.lock", "Gopkg.lock", "vendors/"}
+	scopesMap := map[string] []string {"node": nodeIgnores, "java":javaIgnores, "go": goIgnores}
+
+	filteredAdditions := IgnoreAdditionsByScope(additions, talismanRCIgnoreConfig, scopesMap);
+
+	assert.NotContains(t, filteredAdditions, file1)
+	assert.NotContains(t, filteredAdditions, file2)
+	assert.Contains(t, filteredAdditions, file3)
+	assert.NotContains(t, filteredAdditions, file4)
+	assert.NotContains(t, filteredAdditions, file5)
+}
+
 //Need to work on this test case as it deals with comments and talismanrc does not deal in comments
 //func TestCommentPatterns(t *testing.T) {
 //	assertAccepts("foo # some comment", "bar", t)
@@ -120,6 +145,18 @@ func CreateTalismanRCIgnoreWithFileName(filename string, detector string) Talism
 	talismanRCIgnore := TalismanRCIgnore{}
 	talismanRCIgnore.FileIgnoreConfig = make([]FileIgnoreConfig, 1)
 	talismanRCIgnore.FileIgnoreConfig[0] = fileIgnoreConfig
+	return talismanRCIgnore
+}
+
+func CreateTalismanRCIgnoreWithScopeIgnore(scopesToIgnore []string) TalismanRCIgnore {
+	var scopeConfigs []ScopeConfig
+	for _, scopeIgnore := range scopesToIgnore {
+		scopeIgnoreConfig := ScopeConfig{}
+		scopeIgnoreConfig.ScopeName = scopeIgnore
+		scopeConfigs = append(scopeConfigs, scopeIgnoreConfig)
+	}
+
+	talismanRCIgnore := TalismanRCIgnore{ ScopeConfig: scopeConfigs}
 	return talismanRCIgnore
 }
 
