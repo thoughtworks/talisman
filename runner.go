@@ -27,7 +27,10 @@ type Runner struct {
 
 //NewRunner returns a new Runner.
 func NewRunner(additions []git_repo.Addition) *Runner {
-	return &Runner{additions, detector.NewDetectionResults()}
+	return &Runner{
+		additions: additions,
+		results:   detector.NewDetectionResults(),
+	}
 }
 
 //RunWithoutErrors will validate the commit range for errors and return either COMPLETED_SUCCESSFULLY or COMPLETED_WITH_ERRORS
@@ -64,8 +67,18 @@ func (r *Runner) RunChecksumCalculator(fileNamePatterns []string) int {
 }
 
 func (r *Runner) doRun() {
-	ignoresNew := detector.ReadConfigFromRCFile(readRepoFile())
-	detector.DefaultChain().Test(r.additions, ignoresNew, r.results)
+	rcConfigIgnores := detector.ReadConfigFromRCFile(readRepoFile())
+	scopeMap := getScopeConfig()
+	additionsToScan := detector.IgnoreAdditionsByScope(r.additions, rcConfigIgnores, scopeMap);
+	detector.DefaultChain().Test(additionsToScan, rcConfigIgnores, r.results)
+}
+
+func getScopeConfig() map[string][]string {
+	scopeConfig := map[string][]string{
+		"node": {"yarn.lock", "package-lock.json", "node_modules/"},
+		"go": {"makefile", "go.mod", "go.sum", "Gopkg.toml", "Gopkg.lock", "glide.yaml", "glide.lock", "vendor/"},
+	}
+	return scopeConfig
 }
 
 func (r *Runner) printReport() {

@@ -17,9 +17,6 @@ const (
 	//IgnoreDetectorCommentPattern represents a special comment that ignores only certain detectors
 	IgnoreDetectorCommentPattern string = "^ignore:([^\\s]+).*$"
 
-	//DefaultIgnoreFileName represents the name of the default file in which the ignore patterns are configured
-	DefaultIgnoreFileName string = ".talismanignore"
-
 	//DefaultRCFileName represents the name of default file in which all the ignore patterns are configured in new version
 	DefaultRCFileName string = ".talismanrc"
 )
@@ -42,8 +39,13 @@ type FileIgnoreConfig struct {
 	IgnoreDetectors []string `yaml:"ignore_detectors"`
 }
 
+type ScopeConfig struct {
+	ScopeName string `yaml:"scope"`
+}
+
 type TalismanRCIgnore struct {
-	FileIgnoreConfig []FileIgnoreConfig  `yaml:"fileignoreconfig"`
+	FileIgnoreConfig []FileIgnoreConfig `yaml:"fileignoreconfig"`
+	ScopeConfig      []ScopeConfig      `yaml:"scopeconfig"`
 }
 
 func (ignore TalismanRCIgnore) IsEmpty() bool {
@@ -68,17 +70,6 @@ func NewTalismanRCIgnore(fileContents []byte) (TalismanRCIgnore) {
 		return talismanRCIgnore
 	}
 	return talismanRCIgnore
-}
-
-//ReadIgnoresFromFile builds an Ignores from the lines configured in a File.
-//The file itself is supplied as a File Read operation, which is specified, by default, as reading a file in the root of the repository.
-//The file name that is read is DEFAULT_IGNORE_FILE_NAME (".talismanignore")
-func ReadIgnoresFromFile(repoFileRead func(string) ([]byte, error)) Ignores {
-	contents, err := repoFileRead(DefaultIgnoreFileName)
-	if err != nil {
-		panic(err)
-	}
-	return NewIgnores(strings.Split(string(contents), "\n")...)
 }
 
 func NewIgnore(pattern string, comment string) Ignore {
@@ -126,6 +117,29 @@ func (i TalismanRCIgnore) Accept(addition git_repo.Addition, detectorName string
 	return !i.Deny(addition, detectorName)
 }
 
+func IgnoreAdditionsByScope(additions []git_repo.Addition, rcConfigIgnores TalismanRCIgnore, scopeMap map[string][]string) []git_repo.Addition {
+	var applicableScopeFileNames []string
+	if rcConfigIgnores.ScopeConfig != nil {
+		for _, scope := range rcConfigIgnores.ScopeConfig {
+			if len(scopeMap[scope.ScopeName]) > 0 {
+				applicableScopeFileNames = append(applicableScopeFileNames, scopeMap[scope.ScopeName]...)
+			}
+		}
+	}
+	var result []git_repo.Addition
+	for _, addition := range additions {
+		isFilePresentInScope := false
+		for _, fileName := range applicableScopeFileNames {
+			if addition.Matches(fileName) {
+				isFilePresentInScope = true
+			}
+		}
+		if !isFilePresentInScope {
+			result = append(result, addition)
+		}
+	}
+	return result
+}
 //Deny answers true if the Addition.Path is configured to be ignored and not checked by the detectors
 func (i TalismanRCIgnore) Deny(addition git_repo.Addition, detectorName string) bool {
 	result := false

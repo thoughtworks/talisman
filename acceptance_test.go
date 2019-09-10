@@ -23,6 +23,11 @@ fileignoreconfig:
   ignore_detectors: [filename]
 `
 
+const talismanRCDataWithScopeAsGo = `
+scopeconfig:
+ - scope: go
+`
+
 const talismanRCDataWithIgnoreDetectorWithFilecontent = `
 fileignoreconfig:
 - filename: private.pem
@@ -179,6 +184,30 @@ func TestAddingSecretKeyShouldExitOneIfTheyContainBadContentButOnlyFilenameDetec
 		git.CreateFileWithContents("private.pem", awsAccessKeyIDExample)
 		git.CreateFileWithContents(".talismanrc", talismanRCDataWithIgnoreDetectorWithFilename)
 		git.AddAndcommit("private.pem", "add private key")
+
+		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 1 and fail as only filename was ignored")
+	})
+}
+
+func TestAddingSecretKeyShouldExitZeroIfFileIsWithinConfiguredScope(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents("glide.lock", awsAccessKeyIDExample)
+		git.CreateFileWithContents("glide.yaml", awsAccessKeyIDExample)
+		git.CreateFileWithContents(".talismanrc", talismanRCDataWithScopeAsGo)
+		git.AddAndcommit("*", "add private key")
+
+		assert.Equal(t, 0, runTalisman(git), "Expected run() to return 1 and fail as only filename was ignored")
+	})
+}
+
+func TestAddingSecretKeyShouldExitOneIfFileIsNotWithinConfiguredScope(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents("danger.pem", awsAccessKeyIDExample)
+		git.CreateFileWithContents("glide.yaml", awsAccessKeyIDExample)
+		git.CreateFileWithContents(".talismanrc", talismanRCDataWithScopeAsGo)
+		git.AddAndcommit("*", "add private key")
 
 		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 1 and fail as only filename was ignored")
 	})

@@ -291,6 +291,22 @@ Steps:
 
 If any of the files are modified, talisman will scan the files again, unless you re-calculate the new checksum and replace it in .talismanrc file.
 
+### Ignoring files by specifying language scope
+
+You can choose to ignore files by specifying the language scope for your project in your talismanrc.
+
+```
+scopeconfig:
+  - scope: go
+  - scope: node
+```
+
+Talisman is configured to ignore certain files based on the specified scope. For example, mentioning the node scope in the scopeconfig will prevent talisman from scanning files such as the yarn.lock or package-lock.json.  
+
+You can specify multiple scopes. 
+
+Currently .talismanrc only supports scopeconfig support for go and node. Other scopes will be added shortly. 
+
 <br/><i>
 **Note**: The use of .talismanignore has been deprecated. File .talismanrc replaces it because:
 

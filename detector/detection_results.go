@@ -310,7 +310,7 @@ func (r *DetectionResults) suggestTalismanRC(filePaths []string) string {
 		fileIgnoreConfigs = append(fileIgnoreConfigs, fileIgnoreConfig)
 	}
 
-	talismanRcIgnoreConfig := TalismanRCIgnore{fileIgnoreConfigs}
+	talismanRcIgnoreConfig := TalismanRCIgnore{FileIgnoreConfig: fileIgnoreConfigs}
 	m, _ := yaml.Marshal(&talismanRcIgnoreConfig)
 	return string(m)
 }

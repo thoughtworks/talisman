@@ -27,7 +27,7 @@ func TestShouldIgnorePasswordPatterns(t *testing.T) {
 	filename := "secret.txt"
 	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
 	fileIgnoreConfig := FileIgnoreConfig{filename, "833b6c24c8c2c5c7e1663226dc401b29c005492dc76a1150fc0e0f07f29d4cc3", []string{"filecontent"}}
-	ignores := TalismanRCIgnore{[]FileIgnoreConfig{fileIgnoreConfig}}
+	ignores := TalismanRCIgnore{FileIgnoreConfig:[]FileIgnoreConfig{fileIgnoreConfig}}
 
 	NewPatternDetector().Test(additions, ignores, results)
 	assert.True(t, results.Successful(), "Expected file %s to be ignored by pattern", filename)
