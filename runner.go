@@ -69,14 +69,15 @@ func (r *Runner) RunChecksumCalculator(fileNamePatterns []string) int {
 func (r *Runner) doRun() {
 	rcConfigIgnores := detector.ReadConfigFromRCFile(readRepoFile())
 	scopeMap := getScopeConfig()
-	additionsToScan := detector.IgnoreAdditionsByScope(r.additions, rcConfigIgnores, scopeMap);
+	additionsToScan := detector.IgnoreAdditionsByScope(r.additions, rcConfigIgnores, scopeMap)
 	detector.DefaultChain().Test(additionsToScan, rcConfigIgnores, r.results)
 }
 
 func getScopeConfig() map[string][]string {
 	scopeConfig := map[string][]string{
 		"node": {"yarn.lock", "package-lock.json", "node_modules/"},
-		"go": {"makefile", "go.mod", "go.sum", "Gopkg.toml", "Gopkg.lock", "glide.yaml", "glide.lock", "vendor/"},
+		"go":   {"makefile", "go.mod", "go.sum", "Gopkg.toml", "Gopkg.lock", "glide.yaml", "glide.lock", "vendor/"},
+		"idea": {".idea/"},
 	}
 	return scopeConfig
 }

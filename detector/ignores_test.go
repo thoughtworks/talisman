@@ -79,23 +79,26 @@ func TestIgnoreAdditionsByScope(t *testing.T) {
 	file3 := testAddition("java.lock")
 	file4 := testAddition("Gopkg.lock")
 	file5 := testAddition("vendors/abc")
-	additions := []git_repo.Addition{file1, file2, file3, file4, file5}
+	file6 := testAddition(".idea/asd")
+	additions := []git_repo.Addition{file1, file2, file3, file4, file5, file6}
 
-	scopesToIgnore := []string{"node", "go"}
+	scopesToIgnore := []string{"node", "go", "idea"}
 	talismanRCIgnoreConfig := CreateTalismanRCIgnoreWithScopeIgnore(scopesToIgnore)
 
 	nodeIgnores := []string{"node.lock", "*yarn.lock"}
 	javaIgnores := []string{"java.lock"}
 	goIgnores := []string{"go.lock", "Gopkg.lock", "vendors/"}
-	scopesMap := map[string] []string {"node": nodeIgnores, "java":javaIgnores, "go": goIgnores}
+	ideaIgnores := []string{".idea/"}
+	scopesMap := map[string][]string{"node": nodeIgnores, "java": javaIgnores, "go": goIgnores, "idea": ideaIgnores}
 
-	filteredAdditions := IgnoreAdditionsByScope(additions, talismanRCIgnoreConfig, scopesMap);
+	filteredAdditions := IgnoreAdditionsByScope(additions, talismanRCIgnoreConfig, scopesMap)
 
 	assert.NotContains(t, filteredAdditions, file1)
 	assert.NotContains(t, filteredAdditions, file2)
 	assert.Contains(t, filteredAdditions, file3)
 	assert.NotContains(t, filteredAdditions, file4)
 	assert.NotContains(t, filteredAdditions, file5)
+	assert.NotContains(t, filteredAdditions, file6)
 }
 
 //Need to work on this test case as it deals with comments and talismanrc does not deal in comments
@@ -156,7 +159,7 @@ func CreateTalismanRCIgnoreWithScopeIgnore(scopesToIgnore []string) TalismanRCIg
 		scopeConfigs = append(scopeConfigs, scopeIgnoreConfig)
 	}
 
-	talismanRCIgnore := TalismanRCIgnore{ ScopeConfig: scopeConfigs}
+	talismanRCIgnore := TalismanRCIgnore{ScopeConfig: scopeConfigs}
 	return talismanRCIgnore
 }
 
