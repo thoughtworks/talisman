@@ -12,3 +12,5 @@ vendor/
 git_repo/data/*
 .talismanrc
 .vscode/**
+coverage.out
+coverage.txt
