@@ -1,5 +1,11 @@
 # Contributing to Talisman
 
+By contributing to Talisman, you agree to abide by the [code of conduct](CODE_OF_CONDUCT.md).
+
+## How to start contributing
+
+If you are not sure how to begin contributing to Talisman, have a look at the issues tagged under [good first issue](https://github.com/thoughtworks/talisman/labels/good%20first%20issue). 
+
 ## Developing locally
 
 To contribute to Talisman, you need a working golang development
@@ -21,6 +27,16 @@ To build Talisman, we can use [gox](https://github.com/mitchellh/gox):
 ```` gox -osarch="darwin/amd64 linux/386 linux/amd64" ````
 
 Convenience scripts ```./build``` and ```./clean``` perform build and clean-up as mentioned above.
+
+## Submitting a Pull Request
+
+To send in a pull request
+
+1. Fork the repo.
+2. Create a new feature branch based off the master branch.
+3. Provide the commit message with the the issue number and a proper description.
+4. Ensure that all the tests pass.
+5. Submit the pull request.  
 
 ## Releasing
 

@@ -448,3 +448,7 @@ This will
 When you installed Talisman, it must have created a pre-commit or pre-push hook (as selected) in your repository during installation.
 
 You can remove the hook manually by deleting the Talisman pre-commit or pre-push hook from .git/hooks folder in repository.
+
+## Contributing to Talisman
+
+To contribute to Talisman, have a look at our [contributing guide](contributing.md).
