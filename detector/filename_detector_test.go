@@ -6,7 +6,7 @@ package detector
 import (
 	"testing"
 
-	"talisman/git_repo"
+	"talisman/gitrepo"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -166,12 +166,12 @@ func shouldFailWithDefaultDetector(fileName, pattern string, t *testing.T) {
 	assert.True(t, results.HasFailures(), "Expected file %s to fail the check against default detector. Missing pattern %s?", fileName, pattern)
 }
 
-func additionsNamed(names ...string) []git_repo.Addition {
-	result := make([]git_repo.Addition, len(names))
+func additionsNamed(names ...string) []gitrepo.Addition {
+	result := make([]gitrepo.Addition, len(names))
 	for i, name := range names {
-		result[i] = git_repo.Addition{
-			Path: git_repo.FilePath(name),
-			Name: git_repo.FileName(name),
+		result[i] = gitrepo.Addition{
+			Path: gitrepo.FilePath(name),
+			Name: gitrepo.FileName(name),
 			Data: make([]byte, 0),
 		}
 	}

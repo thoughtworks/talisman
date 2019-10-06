@@ -1,4 +1,4 @@
-package git_repo
+package gitrepo
 
 import (
 	"fmt"
@@ -38,7 +38,7 @@ func RepoLocatedAt(path string) GitRepo {
 	return GitRepo{absoluteRoot}
 }
 
-//Gets all the staged files and collects the diff section in each file
+//GetDiffForStagedFiles gets all the staged files and collects the diff section in each file
 func (repo GitRepo) GetDiffForStagedFiles() []Addition {
 	files := repo.stagedFiles()
 	result := make([]Addition, len(files))
@@ -53,6 +53,7 @@ func (repo GitRepo) GetDiffForStagedFiles() []Addition {
 	return result
 }
 
+//StagedAdditions returns the files staged for commit in a GitRepo
 func (repo GitRepo) StagedAdditions() []Addition {
 	files := repo.stagedFiles()
 	result := make([]Addition, len(files))
@@ -72,7 +73,7 @@ func (repo GitRepo) AllAdditions() []Addition {
 	return repo.AdditionsWithinRange("origin/master", "master")
 }
 
-//Additions returns the outgoing additions and modifications in a GitRepo that are in the given commit range. This does not include files that were deleted.
+//AdditionsWithinRange returns the outgoing additions and modifications in a GitRepo that are in the given commit range. This does not include files that were deleted.
 func (repo GitRepo) AdditionsWithinRange(oldCommit string, newCommit string) []Addition {
 	files := repo.outgoingNonDeletedFiles(oldCommit, newCommit)
 	result := make([]Addition, len(files))
@@ -97,6 +98,7 @@ func NewAddition(filePath string, content []byte) Addition {
 	}
 }
 
+//NewScannerAddition returns an new Addition for a file with supplied contents and all of the commits the file is in
 func NewScannerAddition(filePath string, commits []string, content []byte) Addition {
 	return Addition{
 		Path:    FilePath(filePath),
@@ -130,9 +132,8 @@ func (repo GitRepo) CheckIfFileExists(fileName string) bool {
 	filepath := path.Join(repo.root, fileName)
 	if _, err := os.Stat(filepath); os.IsNotExist(err) {
 		return false
-	} else {
-		return true
 	}
+	return true
 }
 
 //Matches states whether the addition matches the given pattern.
@@ -156,6 +157,7 @@ func (a Addition) Matches(pattern string) bool {
 	return result
 }
 
+//TrackedFilesAsAdditions returns all of the tracked files in a GitRepo as Additions
 func (repo GitRepo) TrackedFilesAsAdditions() []Addition {
 	trackedFilePaths := repo.trackedFilePaths()
 	var additions []Addition

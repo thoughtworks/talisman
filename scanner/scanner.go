@@ -4,7 +4,7 @@ import (
 	"log"
 	"os/exec"
 	"strings"
-	"talisman/git_repo"
+	"talisman/gitrepo"
 )
 
 // BlobsInCommits is a map of blob and list of the commits the blobs is present in.
@@ -13,15 +13,15 @@ type BlobsInCommits struct {
 }
 
 // GetAdditions will get all the additions for entire git history
-func GetAdditions() []git_repo.Addition {
+func GetAdditions() []gitrepo.Addition {
 	blobsInCommits := getBlobsInCommit()
-	var additions []git_repo.Addition
+	var additions []gitrepo.Addition
 	for blob := range blobsInCommits.commits {
 		objectDetails := strings.Split(blob, "\t")
 		objectHash := objectDetails[0]
 		data := getData(objectHash)
 		filePath := objectDetails[1]
-		newAddition := git_repo.NewScannerAddition(filePath, blobsInCommits.commits[blob], data)
+		newAddition := gitrepo.NewScannerAddition(filePath, blobsInCommits.commits[blob], data)
 		additions = append(additions, newAddition)
 	}
 	return additions

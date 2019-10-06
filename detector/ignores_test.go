@@ -3,7 +3,7 @@ package detector
 import (
 	"testing"
 
-	"talisman/git_repo"
+	"talisman/gitrepo"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -79,7 +79,7 @@ func TestIgnoreAdditionsByScope(t *testing.T) {
 	file3 := testAddition("java.lock")
 	file4 := testAddition("Gopkg.lock")
 	file5 := testAddition("vendors/abc")
-	additions := []git_repo.Addition{file1, file2, file3, file4, file5}
+	additions := []gitrepo.Addition{file1, file2, file3, file4, file5}
 
 	scopesToIgnore := []string{"node", "go"}
 	talismanRCIgnoreConfig := CreateTalismanRCIgnoreWithScopeIgnore(scopesToIgnore)
@@ -131,8 +131,8 @@ func assertAcceptsDetector(line, ignoreDetector string, path string, detectorNam
 	assert.True(t, CreateTalismanRCIgnoreWithFileName(line, ignoreDetector).Accept(testAddition(path), detectorName), "%s is expected to accept a file named %s.", line, path)
 }
 
-func testAddition(path string) git_repo.Addition {
-	return git_repo.NewAddition(path, make([]byte, 0))
+func testAddition(path string) gitrepo.Addition {
+	return gitrepo.NewAddition(path, make([]byte, 0))
 }
 
 func CreateTalismanRCIgnoreWithFileName(filename string, detector string) TalismanRCIgnore {

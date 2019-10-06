@@ -2,14 +2,14 @@ package detector
 
 import (
 	"os"
-	"talisman/git_repo"
+	"talisman/gitrepo"
 )
 
 //Detector represents a single kind of test to be performed against a set of Additions
 //Detectors are expected to honor the ignores that are passed in and log them in the results
 //Detectors are expected to signal any errors to the results
 type Detector interface {
-	Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults)
+	Test(additions []gitrepo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults)
 }
 
 //Chain represents a chain of Detectors.
@@ -42,9 +42,9 @@ func (dc *Chain) AddDetector(d Detector) *Chain {
 
 //Test validates the additions against each detector in the chain.
 //The results are passed in from detector to detector and thus collect all errors from all detectors
-func (dc *Chain) Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
+func (dc *Chain) Test(additions []gitrepo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
 	wd, _ := os.Getwd()
-	repo := git_repo.RepoLocatedAt(wd)
+	repo := gitrepo.RepoLocatedAt(wd)
 	gitTrackedFilesAsAdditions := repo.TrackedFilesAsAdditions()
 	gitTrackedFilesAsAdditions = append(gitTrackedFilesAsAdditions, additions...)
 	for _, v := range dc.detectors {

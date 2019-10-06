@@ -2,7 +2,7 @@ package detector
 
 import (
 	"fmt"
-	"talisman/git_repo"
+	"talisman/gitrepo"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -12,7 +12,7 @@ type PatternDetector struct {
 }
 
 //Test tests the contents of the Additions to ensure that they don't look suspicious
-func (detector PatternDetector) Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
+func (detector PatternDetector) Test(additions []gitrepo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
 	cc := NewChecksumCompare(additions, ignoreConfig)
 	for _, addition := range additions {
 		if ignoreConfig.Deny(addition, "filecontent") || cc.IsScanNotRequired(addition) {

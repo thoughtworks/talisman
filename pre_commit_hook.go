@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"talisman/git_repo"
+	"talisman/gitrepo"
 )
 
 type PreCommitHook struct{}
@@ -12,8 +12,8 @@ func NewPreCommitHook() *PreCommitHook {
 	return &PreCommitHook{}
 }
 
-func (p *PreCommitHook) GetRepoAdditions() []git_repo.Addition {
+func (p *PreCommitHook) GetRepoAdditions() []gitrepo.Addition {
 	wd, _ := os.Getwd()
-	repo := git_repo.RepoLocatedAt(wd)
+	repo := gitrepo.RepoLocatedAt(wd)
 	return repo.GetDiffForStagedFiles()
 }

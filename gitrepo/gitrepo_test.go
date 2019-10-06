@@ -1,4 +1,4 @@
-package git_repo
+package gitrepo
 
 import (
 	"fmt"
