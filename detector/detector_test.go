@@ -3,7 +3,7 @@ package detector
 import (
 	"testing"
 
-	"talisman/git_repo"
+	"talisman/gitrepo"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -27,11 +27,11 @@ func TestValidationChainWithFailingValidationAlwaysFails(t *testing.T) {
 
 type FailingDetection struct{}
 
-func (v FailingDetection) Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
-	result.Fail("some_file", "filecontent","FAILED BY DESIGN", []string{})
+func (v FailingDetection) Test(additions []gitrepo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
+	result.Fail("some_file", "filecontent", "FAILED BY DESIGN", []string{})
 }
 
 type PassingDetection struct{}
 
-func (p PassingDetection) Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
+func (p PassingDetection) Test(additions []gitrepo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
 }

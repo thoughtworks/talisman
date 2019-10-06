@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 	"talisman/detector"
-	"talisman/git_repo"
+	"talisman/gitrepo"
 	"talisman/utility"
 
 	yaml "gopkg.in/yaml.v2"
@@ -23,7 +23,7 @@ func NewChecksumCalculator(patterns []string) *ChecksumCalculator {
 //SuggestTalismanRC returns the suggestion for .talismanrc format
 func (cc *ChecksumCalculator) SuggestTalismanRC() string {
 	wd, _ := os.Getwd()
-	repo := git_repo.RepoLocatedAt(wd)
+	repo := gitrepo.RepoLocatedAt(wd)
 	gitTrackedFilesAsAdditions := repo.TrackedFilesAsAdditions()
 	//Adding staged files for calculation
 	gitTrackedFilesAsAdditions = append(gitTrackedFilesAsAdditions, repo.StagedAdditions()...)
@@ -45,7 +45,7 @@ func (cc *ChecksumCalculator) SuggestTalismanRC() string {
 	return result
 }
 
-func (cc *ChecksumCalculator) calculateCollectiveChecksumForPattern(fileNamePattern string, additions []git_repo.Addition) string {
+func (cc *ChecksumCalculator) calculateCollectiveChecksumForPattern(fileNamePattern string, additions []gitrepo.Addition) string {
 	var patternpaths []string
 	currentCollectiveChecksum := ""
 	for _, addition := range additions {

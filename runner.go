@@ -5,7 +5,7 @@ import (
 	"os"
 	"talisman/checksumcalculator"
 	"talisman/detector"
-	"talisman/git_repo"
+	"talisman/gitrepo"
 	"talisman/report"
 	"talisman/scanner"
 	"talisman/utility"
@@ -21,12 +21,12 @@ const (
 
 //Runner represents a single run of the validations for a given commit range
 type Runner struct {
-	additions []git_repo.Addition
+	additions []gitrepo.Addition
 	results   *detector.DetectionResults
 }
 
 //NewRunner returns a new Runner.
-func NewRunner(additions []git_repo.Addition) *Runner {
+func NewRunner(additions []gitrepo.Addition) *Runner {
 	return &Runner{
 		additions: additions,
 		results:   detector.NewDetectionResults(),
@@ -99,6 +99,6 @@ func (r *Runner) exitStatus() int {
 
 func readRepoFile() func(string) ([]byte, error) {
 	wd, _ := os.Getwd()
-	repo := git_repo.RepoLocatedAt(wd)
+	repo := gitrepo.RepoLocatedAt(wd)
 	return repo.ReadRepoFileOrNothing
 }

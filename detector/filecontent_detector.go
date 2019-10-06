@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"talisman/git_repo"
+	"talisman/gitrepo"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -31,7 +31,7 @@ func (fc *FileContentDetector) AggressiveMode() *FileContentDetector {
 	return fc
 }
 
-func (fc *FileContentDetector) Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
+func (fc *FileContentDetector) Test(additions []gitrepo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
 	cc := NewChecksumCompare(additions, ignoreConfig)
 	for _, addition := range additions {
 		if ignoreConfig.Deny(addition, "filecontent") || cc.IsScanNotRequired(addition) {
@@ -60,7 +60,7 @@ func (fc *FileContentDetector) Test(additions []git_repo.Addition, ignoreConfig 
 	}
 }
 
-func fillResults(results []string, addition git_repo.Addition, result *DetectionResults, info string, output string) {
+func fillResults(results []string, addition gitrepo.Addition, result *DetectionResults, info string, output string) {
 	for _, res := range results {
 		if res != "" {
 			log.WithFields(log.Fields{
@@ -75,19 +75,19 @@ func fillResults(results []string, addition git_repo.Addition, result *Detection
 	}
 }
 
-func fillBase46DetectionResults(base64Results []string, addition git_repo.Addition, result *DetectionResults) {
+func fillBase46DetectionResults(base64Results []string, addition gitrepo.Addition, result *DetectionResults) {
 	const info = "Failing file as it contains a base64 encoded text."
 	const output = "Expected file to not to contain base64 encoded texts such as: %s"
 	fillResults(base64Results, addition, result, info, output)
 }
 
-func fillCreditCardDetectionResults(creditCardResults []string, addition git_repo.Addition, result *DetectionResults) {
+func fillCreditCardDetectionResults(creditCardResults []string, addition gitrepo.Addition, result *DetectionResults) {
 	const info = "Failing file as it contains a potential credit card number."
 	const output = "Expected file to not to contain credit card numbers such as: %s"
 	fillResults(creditCardResults, addition, result, info, output)
 }
 
-func fillHexDetectionResults(hexResults []string, addition git_repo.Addition, result *DetectionResults) {
+func fillHexDetectionResults(hexResults []string, addition gitrepo.Addition, result *DetectionResults) {
 	const info = "Failing file as it contains a hex encoded text."
 	const output = "Expected file to not to contain hex encoded texts such as: %s"
 	fillResults(hexResults, addition, result, info, output)

@@ -2,7 +2,7 @@ package main
 
 import (
 	"io/ioutil"
-	"talisman/git_repo"
+	"talisman/gitrepo"
 
 	log "github.com/Sirupsen/logrus"
 
@@ -15,8 +15,8 @@ func NewDirectoryHook() *DirectoryHook {
 	return &DirectoryHook{}
 }
 
-func (p *DirectoryHook) GetFilesFromDirectory(globPattern string) []git_repo.Addition {
-	var result []git_repo.Addition
+func (p *DirectoryHook) GetFilesFromDirectory(globPattern string) []gitrepo.Addition {
+	var result []gitrepo.Addition
 
 	files, _ := doublestar.Glob(globPattern)
 	for _, file := range files {
@@ -26,7 +26,7 @@ func (p *DirectoryHook) GetFilesFromDirectory(globPattern string) []git_repo.Add
 			continue
 		}
 
-		newAddition := git_repo.NewAddition(file, data)
+		newAddition := gitrepo.NewAddition(file, data)
 		result = append(result, newAddition)
 	}
 
