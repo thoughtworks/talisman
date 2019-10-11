@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"talisman/checksumcalculator"
 	"talisman/detector"
@@ -48,7 +49,11 @@ func (r *Runner) Scan(reportDirectory string) int {
 	additions := scanner.GetAdditions()
 	ignores := detector.TalismanRCIgnore{}
 	detector.DefaultChain().Test(additions, ignores, r.results)
-	reportsPath := report.GenerateReport(r.results, reportDirectory)
+	reportsPath, err := report.GenerateReport(r.results, reportDirectory)
+	if err != nil {
+		log.Printf("error while generating report: %v", err)
+		return CompletedWithErrors
+	}
 	fmt.Printf("\nPlease check '%s' folder for the talisman scan report\n", reportsPath)
 	fmt.Printf("\n")
 	return r.exitStatus()
