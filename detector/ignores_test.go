@@ -3,7 +3,7 @@ package detector
 import (
 	"testing"
 
-	"talisman/git_repo"
+	"talisman/gitrepo"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -134,8 +134,8 @@ func assertAcceptsDetector(line, ignoreDetector string, path string, detectorNam
 	assert.True(t, CreateTalismanRCIgnoreWithFileName(line, ignoreDetector).Accept(testAddition(path), detectorName), "%s is expected to accept a file named %s.", line, path)
 }
 
-func testAddition(path string) git_repo.Addition {
-	return git_repo.NewAddition(path, make([]byte, 0))
+func testAddition(path string) gitrepo.Addition {
+	return gitrepo.NewAddition(path, make([]byte, 0))
 }
 
 func CreateTalismanRCIgnoreWithFileName(filename string, detector string) TalismanRCIgnore {

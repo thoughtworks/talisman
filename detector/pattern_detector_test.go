@@ -1,7 +1,7 @@
 package detector
 
 import (
-	"talisman/git_repo"
+	"talisman/gitrepo"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,7 +25,7 @@ func TestShouldIgnorePasswordPatterns(t *testing.T) {
 	results := NewDetectionResults()
 	content := []byte("\"password\" : UnsafePassword")
 	filename := "secret.txt"
-	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
+	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 	fileIgnoreConfig := FileIgnoreConfig{filename, "833b6c24c8c2c5c7e1663226dc401b29c005492dc76a1150fc0e0f07f29d4cc3", []string{"filecontent"}}
 	ignores := TalismanRCIgnore{FileIgnoreConfig:[]FileIgnoreConfig{fileIgnoreConfig}}
 
@@ -35,13 +35,13 @@ func TestShouldIgnorePasswordPatterns(t *testing.T) {
 
 func shouldPassDetectionOfSecretPattern(filename string, content []byte, t *testing.T) {
 	results := NewDetectionResults()
-	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
+	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 	NewPatternDetector().Test(additions, TalismanRCIgnore{}, results)
 	expected := "Potential secret pattern : " + string(content)
 	assert.Equal(t, expected, getFailureMessage(results, additions))
 }
 
-func getFailureMessage(results *DetectionResults, additions []git_repo.Addition) string {
+func getFailureMessage(results *DetectionResults, additions []gitrepo.Addition) string {
 	failureMessages := []string{}
 	for _, failureDetails := range results.GetFailures(additions[0].Path) {
 		failureMessages = append(failureMessages, failureDetails.Message)

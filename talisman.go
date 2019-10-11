@@ -8,7 +8,7 @@ import (
 	"io"
 	"os"
 	"strings"
-	"talisman/git_repo"
+	"talisman/gitrepo"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -101,16 +101,16 @@ func run(stdin io.Reader, _options options) (returnCode int) {
 		_options.githook = PrePush
 	}
 
-	var additions []git_repo.Addition
+	var additions []gitrepo.Addition
 	if _options.checksum != "" {
 		log.Infof("Running %s patterns against checksum calculator", _options.checksum)
-		return NewRunner(make([]git_repo.Addition, 0)).RunChecksumCalculator(strings.Fields(_options.checksum))
+		return NewRunner(make([]gitrepo.Addition, 0)).RunChecksumCalculator(strings.Fields(_options.checksum))
 	} else if _options.scan {
 		log.Infof("Running scanner")
-		return NewRunner(make([]git_repo.Addition, 0)).Scan(_options.reportdirectory)
+		return NewRunner(make([]gitrepo.Addition, 0)).Scan(_options.reportdirectory)
 	} else if _options.scanWithHtml {
 		log.Infof("Running scanner with html report")
-		return NewRunner(make([]git_repo.Addition, 0)).Scan("talisman_html_report")
+		return NewRunner(make([]gitrepo.Addition, 0)).Scan("talisman_html_report")
 	} else if _options.pattern != "" {
 		log.Infof("Running %s pattern", _options.pattern)
 		directoryHook := NewDirectoryHook()

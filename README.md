@@ -4,7 +4,7 @@
 <h1 align="center">Talisman</h1>
 <p align="center">A tool to detect and prevent secrets from getting checked in</p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Go Report Card](https://goreportcard.com/badge/thoughtworks/talisman)](https://goreportcard.com/report/thoughtworks/talisman) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/thoughtworks/talisman/issues) [![Build Status](https://travis-ci.org/thoughtworks/talisman.svg?branch=master)](https://travis-ci.org/thoughtworks/talisman)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Go Report Card](https://goreportcard.com/badge/thoughtworks/talisman)](https://goreportcard.com/report/thoughtworks/talisman) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/thoughtworks/talisman/issues) [![Build Status](https://travis-ci.org/thoughtworks/talisman.svg?branch=master)](https://travis-ci.org/thoughtworks/talisman) [![Coverage Status](https://coveralls.io/repos/github/thoughtworks/talisman/badge.svg?branch=master)](https://coveralls.io/github/thoughtworks/talisman?branch=master)
 
 
 ## Table of Contents
@@ -450,39 +450,6 @@ When you installed Talisman, it must have created a pre-commit or pre-push hook 
 
 You can remove the hook manually by deleting the Talisman pre-commit or pre-push hook from .git/hooks folder in repository.
 
-# Contributing to Talisman
+## Contributing to Talisman
 
-## Developing locally
-
-To contribute to Talisman, you need a working golang development
-environment. Check [this link](https://golang.org/doc/install) to help
-you get started with that.
-
-Talisman now uses go modules (GO111MODULE=on) to manage dependencies
-
-Once you have go 1.11 installed and setup, clone the talisman repository. In your
-working copy, fetch the dependencies by having go mod fetch them for
-you.
-
-```` GO111MODULE=on go mod vendor ````
-
-To run tests ```` GO111MODULE=on go test -mod=vendor ./...  ````
-
-To build Talisman, we can use [gox](https://github.com/mitchellh/gox):
-
-```` gox -osarch="darwin/amd64 linux/386 linux/amd64" ````
-
-Convenince scripts ```./build``` and ```./clean``` perform build and clean-up as mentioned above.
-
-
-## Releasing
-
-* Follow the instructions at the end of 'Developing locally' to build the binaries
-* Bump the [version in install.sh](https://github.com/thoughtworks/talisman/blob/d4b1b1d11137dbb173bf681a03f16183a9d82255/install.sh#L10) according to [semver](https://semver.org/) conventions
-* Update the [expected hashes in install.sh](https://github.com/thoughtworks/talisman/blob/d4b1b1d11137dbb173bf681a03f16183a9d82255/install.sh#L16-L18) to match the new binaries you just created (`shasum -b -a256 ...`)
-* Make release commit and tag with the new version prefixed by `v` (like `git tag v0.3.0`)
-* Push your release commit and tag: `git push && git push --tags`
-* [Create a new release in github](https://github.com/thoughtworks/talisman/releases/new), filling in the new commit tag you just created
-* Update the install script hosted on github pages: `git checkout gh-pages`, `git checkout master -- install.sh`, `git commit -m ...`
-
-The latest version will now be accessible to anyone who builds their own binaries, downloads binaries directly from github releases, or uses the install script from the website.
+To contribute to Talisman, have a look at our [contributing guide](contributing.md).

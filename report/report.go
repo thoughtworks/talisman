@@ -13,53 +13,61 @@ import (
 	"github.com/fatih/color"
 )
 
-var reportsFolder string
-
-const htmlFileName string = "report.html"
 const jsonFileName string = "report.json"
 const htmlReportDir string = "talisman_html_report"
 
 // GenerateReport generates a talisman scan report in html format
-func GenerateReport(r *detector.DetectionResults, directory string) string {
+func GenerateReport(r *detector.DetectionResults, directory string) (string, error) {
 
 	var path string
 	var jsonFilePath string
-	var home_dir string
-	var base_report_dir_path string
+	var homeDir string
+	var baseReportDirPath string
 
 	usr, err := user.Current()
-	home_dir = usr.HomeDir
+	if err != nil {
+		return "", fmt.Errorf("error getting current user: %v", err.Error())
+	}
+	homeDir = usr.HomeDir
 
 	if directory == htmlReportDir {
 		path = directory
-		base_report_dir_path = filepath.Join(home_dir, ".talisman", htmlReportDir)
+		baseReportDirPath = filepath.Join(homeDir, ".talisman", htmlReportDir)
 		jsonFilePath = filepath.Join(path, "/data", jsonFileName)
-		os.MkdirAll(path, 0755)
-		err = utility.Dir(base_report_dir_path, htmlReportDir)
+		err = utility.Dir(baseReportDirPath, htmlReportDir)
 		if err != nil {
 			generateErrorMsg()
+			return "", fmt.Errorf("error copying reports: %v", err)
 		}
 	} else {
 		path = filepath.Join(directory, "talisman_reports", "/data")
 		jsonFilePath = filepath.Join(path, jsonFileName)
 	}
 
-	os.MkdirAll(path, 0755)
+	err = os.MkdirAll(path, 0755)
+	if err != nil {
+		return "", fmt.Errorf("error creating path %s: %v", path, err)
+	}
 
 	jsonFile, err := os.Create(jsonFilePath)
+	defer func() {
+		err = jsonFile.Close()
+		log.Fatalf("error closing file %s: %v", jsonFilePath, err)
+	}()
 
 	if err != nil {
-		fmt.Printf("\n")
-		log.Fatal("Cannot create report.json file\n", err)
+		return "", fmt.Errorf("error creating file %s: %v", jsonFilePath, err)
 	}
 
 	jsonString, err := json.Marshal(r)
 	if err != nil {
-		log.Fatal("Unable to marshal JSON")
+		return "", fmt.Errorf("error while marshal the report: %v", err)
 	}
-	jsonFile.Write(jsonString)
-	jsonFile.Close()
-	return path
+	_, err = jsonFile.Write(jsonString)
+	if err != nil {
+		return "", fmt.Errorf("error while writing report to file: %v", err)
+	}
+	return path, nil
 }
 
 func generateErrorMsg() {
@@ -72,5 +80,4 @@ func generateErrorMsg() {
 	color.Red("Failed: Unable to perform Scan")
 	fmt.Printf("\n")
 	log.Fatalln("Run Status: Failed")
-	fmt.Printf("\n")
 }

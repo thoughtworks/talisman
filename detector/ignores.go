@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"talisman/git_repo"
+	"talisman/gitrepo"
 )
 
 const (
@@ -113,11 +113,11 @@ func (i TalismanRCIgnore) AcceptsAll() bool {
 }
 
 //Accept answers true if the Addition.Path is configured to be checked by the detectors
-func (i TalismanRCIgnore) Accept(addition git_repo.Addition, detectorName string) bool {
+func (i TalismanRCIgnore) Accept(addition gitrepo.Addition, detectorName string) bool {
 	return !i.Deny(addition, detectorName)
 }
 
-func IgnoreAdditionsByScope(additions []git_repo.Addition, rcConfigIgnores TalismanRCIgnore, scopeMap map[string][]string) []git_repo.Addition {
+func IgnoreAdditionsByScope(additions []gitrepo.Addition, rcConfigIgnores TalismanRCIgnore, scopeMap map[string][]string) []gitrepo.Addition {
 	var applicableScopeFileNames []string
 	if rcConfigIgnores.ScopeConfig != nil {
 		for _, scope := range rcConfigIgnores.ScopeConfig {
@@ -126,7 +126,7 @@ func IgnoreAdditionsByScope(additions []git_repo.Addition, rcConfigIgnores Talis
 			}
 		}
 	}
-	var result []git_repo.Addition
+	var result []gitrepo.Addition
 	for _, addition := range additions {
 		isFilePresentInScope := false
 		for _, fileName := range applicableScopeFileNames {
@@ -141,7 +141,7 @@ func IgnoreAdditionsByScope(additions []git_repo.Addition, rcConfigIgnores Talis
 	return result
 }
 //Deny answers true if the Addition.Path is configured to be ignored and not checked by the detectors
-func (i TalismanRCIgnore) Deny(addition git_repo.Addition, detectorName string) bool {
+func (i TalismanRCIgnore) Deny(addition gitrepo.Addition, detectorName string) bool {
 	result := false
 	for _, pattern := range i.effectiveRules(detectorName) {
 		result = result || addition.Matches(pattern)

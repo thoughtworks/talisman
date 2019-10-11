@@ -3,7 +3,7 @@ package detector
 import (
 	"testing"
 
-	"talisman/git_repo"
+	"talisman/gitrepo"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -13,7 +13,7 @@ func TestShouldFlagPotentialAWSAccessKeysInAggressiveMode(t *testing.T) {
 	results := NewDetectionResults()
 	content := []byte(awsAccessKeyIDExample)
 	filename := "filename"
-	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
+	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 
 	NewFileContentDetector().AggressiveMode().Test(additions, TalismanRCIgnore{}, results)
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
@@ -24,7 +24,7 @@ func TestShouldFlagPotentialAWSAccessKeysAtPropertyDefinitionInAggressiveMode(t 
 	results := NewDetectionResults()
 	content := []byte(awsAccessKeyIDExample)
 	filename := "filename"
-	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
+	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 
 	NewFileContentDetector().AggressiveMode().Test(additions, TalismanRCIgnore{}, results)
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
@@ -35,7 +35,7 @@ func TestShouldNotFlagPotentialSecretsWithinSafeJavaCodeEvenInAggressiveMode(t *
 	results := NewDetectionResults()
 	content := []byte(awsAccessKeyIDExample)
 	filename := "filename"
-	additions := []git_repo.Addition{git_repo.NewAddition(filename, content)}
+	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 
 	NewFileContentDetector().AggressiveMode().Test(additions, TalismanRCIgnore{}, results)
 	if results == nil {

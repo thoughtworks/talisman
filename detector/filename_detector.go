@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"talisman/git_repo"
+	"talisman/gitrepo"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -76,7 +76,7 @@ func NewFileNameDetector(patternStrings ...string) Detector {
 }
 
 //Test tests the fileNames of the Additions to ensure that they don't look suspicious
-func (fd FileNameDetector) Test(additions []git_repo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
+func (fd FileNameDetector) Test(additions []gitrepo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
 	cc := NewChecksumCompare(additions, ignoreConfig)
 	for _, addition := range additions {
 		if ignoreConfig.Deny(addition, "filename") || cc.IsScanNotRequired(addition){

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"talisman/git_repo"
+	"talisman/gitrepo"
 	"talisman/utility"
 
 	"github.com/olekukonko/tablewriter"
@@ -18,7 +18,7 @@ type Details struct {
 }
 
 type ResultsDetails struct {
-	Filename git_repo.FilePath `json:"filename"`
+	Filename gitrepo.FilePath `json:"filename"`
 	FailureList []Details      `json:"failure_list"`
 	WarningList []Details      `json:"warning_list"`
 	IgnoreList []Details 	   `json:"ignore_list"`
@@ -88,7 +88,7 @@ func getDetaisByCategoryAndMessage(detailsList []Details, category string, failu
 	return nil
 }
 
-func (r *DetectionResults) getResultDetailsForFilePath(fileName git_repo.FilePath) *ResultsDetails {
+func (r *DetectionResults) getResultDetailsForFilePath(fileName gitrepo.FilePath) *ResultsDetails {
 	for _, resultDetail := range r.Results {
 		if resultDetail.Filename == fileName {
 			return &resultDetail
@@ -109,7 +109,7 @@ func NewDetectionResults() *DetectionResults {
 //Fail is used to mark the supplied FilePath as failing a detection for a supplied reason.
 //Detectors are encouraged to provide context sensitive messages so that fixing the errors is made simple for the end user
 //Fail may be called multiple times for each FilePath and the calls accumulate the provided reasons
-func (r *DetectionResults) Fail(filePath git_repo.FilePath, category string, message string, commits []string) {
+func (r *DetectionResults) Fail(filePath gitrepo.FilePath, category string, message string, commits []string) {
 	isFilePresentInResults := false
 	for resultIndex := 0; resultIndex < len(r.Results); resultIndex++ {
 		if r.Results[resultIndex].Filename == filePath {
@@ -135,7 +135,7 @@ func (r *DetectionResults) Fail(filePath git_repo.FilePath, category string, mes
 	r.updateResultsSummary(category)
 }
 
-func (r *DetectionResults) Warn(filePath git_repo.FilePath, category string, message string, commits []string) {
+func (r *DetectionResults) Warn(filePath gitrepo.FilePath, category string, message string, commits []string) {
 	isFilePresentInResults := false
 	for resultIndex := 0; resultIndex < len(r.Results); resultIndex++ {
 		if r.Results[resultIndex].Filename == filePath {
@@ -163,7 +163,7 @@ func (r *DetectionResults) Warn(filePath git_repo.FilePath, category string, mes
 
 //Ignore is used to mark the supplied FilePath as being ignored.
 //The most common reason for this is that the FilePath is Denied by the Ignores supplied to the Detector, however, Detectors may use more sophisticated reasons to ignore files.
-func (r *DetectionResults) Ignore(filePath git_repo.FilePath, category string) {
+func (r *DetectionResults) Ignore(filePath gitrepo.FilePath, category string) {
 
 	isFilePresentInResults := false
 	for resultIndex := 0; resultIndex < len(r.Results); resultIndex++ {
@@ -192,7 +192,7 @@ func (r *DetectionResults) Ignore(filePath git_repo.FilePath, category string) {
 }
 
 
-func createNewResultForFile(category string, message string, commits []string, filePath git_repo.FilePath) ResultsDetails {
+func createNewResultForFile(category string, message string, commits []string, filePath gitrepo.FilePath) ResultsDetails {
 	failureDetails := Details{category, message, commits}
 	resultDetails := ResultsDetails{filePath, make([]Details, 0), make([]Details, 0), make([]Details, 0)}
 	resultDetails.FailureList = append(resultDetails.FailureList, failureDetails)
@@ -234,7 +234,7 @@ func (r *DetectionResults) Successful() bool {
 }
 
 //GetFailures returns the various reasons that a given FilePath was marked as failing by all the detectors in the current run
-func (r *DetectionResults) GetFailures(fileName git_repo.FilePath) []Details {
+func (r *DetectionResults) GetFailures(fileName gitrepo.FilePath) []Details {
 	results := r.getResultDetailsForFilePath(fileName)
 	if results == nil {
 		return []Details{}
@@ -316,7 +316,7 @@ func (r *DetectionResults) suggestTalismanRC(filePaths []string) string {
 }
 
 //ReportFileFailures adds a string to table documenting the various failures detected on the supplied FilePath by all detectors in the current run
-func (r *DetectionResults) ReportFileFailures(filePath git_repo.FilePath) [][]string {
+func (r *DetectionResults) ReportFileFailures(filePath gitrepo.FilePath) [][]string {
 	failureList := r.getResultDetailsForFilePath(filePath).FailureList
 	var data [][]string
 	if len(failureList) > 0 {
@@ -330,7 +330,7 @@ func (r *DetectionResults) ReportFileFailures(filePath git_repo.FilePath) [][]st
 	return data
 }
 
-func (r *DetectionResults) ReportFileWarnings(filePath git_repo.FilePath) [][]string {
+func (r *DetectionResults) ReportFileWarnings(filePath gitrepo.FilePath) [][]string {
 	warningList := r.getResultDetailsForFilePath(filePath).WarningList
 	var data [][]string
 	if len(warningList) > 0 {
@@ -344,8 +344,8 @@ func (r *DetectionResults) ReportFileWarnings(filePath git_repo.FilePath) [][]st
 	return data
 }
 
-func keys(aMap map[git_repo.FilePath][]string) []git_repo.FilePath {
-	var result []git_repo.FilePath
+func keys(aMap map[gitrepo.FilePath][]string) []gitrepo.FilePath {
+	var result []gitrepo.FilePath
 	for filePath := range aMap {
 		result = append(result, filePath)
 	}
