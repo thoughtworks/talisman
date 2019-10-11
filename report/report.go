@@ -13,9 +13,6 @@ import (
 	"github.com/fatih/color"
 )
 
-var reportsFolder string
-
-const htmlFileName string = "report.html"
 const jsonFileName string = "report.json"
 const htmlReportDir string = "talisman_html_report"
 
@@ -24,18 +21,18 @@ func GenerateReport(r *detector.DetectionResults, directory string) string {
 
 	var path string
 	var jsonFilePath string
-	var home_dir string
-	var base_report_dir_path string
+	var homeDir string
+	var baseReportDirPath string
 
 	usr, err := user.Current()
-	home_dir = usr.HomeDir
+	homeDir = usr.HomeDir
 
 	if directory == htmlReportDir {
 		path = directory
-		base_report_dir_path = filepath.Join(home_dir, ".talisman", htmlReportDir)
+		baseReportDirPath = filepath.Join(homeDir, ".talisman", htmlReportDir)
 		jsonFilePath = filepath.Join(path, "/data", jsonFileName)
 		os.MkdirAll(path, 0755)
-		err = utility.Dir(base_report_dir_path, htmlReportDir)
+		err = utility.Dir(baseReportDirPath, htmlReportDir)
 		if err != nil {
 			generateErrorMsg()
 		}
