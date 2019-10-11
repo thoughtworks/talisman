@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-
+	"sync"
 	"talisman/gitrepo"
 
 	log "github.com/Sirupsen/logrus"
@@ -31,66 +31,126 @@ func (fc *FileContentDetector) AggressiveMode() *FileContentDetector {
 	return fc
 }
 
+type contentType int
+
+const (
+	base64Content contentType = iota
+	hexContent
+	creditCardContent
+)
+
+func (ct contentType) getInfo() string {
+	switch ct {
+	case base64Content:
+		return "Failing file as it contains a base64 encoded text."
+	case hexContent:
+		return "Failing file as it contains a hex encoded text."
+	case creditCardContent:
+		return "Failing file as it contains a potential credit card number."
+	}
+	return ""
+}
+
+func (ct contentType) getOutput() string {
+	switch ct {
+	case base64Content:
+		return "Expected file to not to contain base64 encoded texts such as: %s"
+	case hexContent:
+		return "Expected file to not to contain hex encoded texts such as: %s"
+	case creditCardContent:
+		return "Expected file to not to contain credit card numbers such as: %s"
+	}
+
+	return ""
+}
+
+type content struct {
+	name        gitrepo.FileName
+	path        gitrepo.FilePath
+	contentType contentType
+	results     []string
+}
+
 func (fc *FileContentDetector) Test(additions []gitrepo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
 	cc := NewChecksumCompare(additions, ignoreConfig)
+	re := regexp.MustCompile(`(?i)checksum[ \t]*:[ \t]*[0-9a-fA-F]+`)
+
+	contents := make(chan content, 512)
+	ignoredFilePaths := make(chan gitrepo.FilePath, len(additions))
+
+	waitGroup := sync.WaitGroup{}
+	waitGroup.Add(len(additions))
 	for _, addition := range additions {
-		if ignoreConfig.Deny(addition, "filecontent") || cc.IsScanNotRequired(addition) {
-			log.WithFields(log.Fields{
-				"filePath": addition.Path,
-			}).Info("Ignoring addition as it was specified to be ignored.")
-			result.Ignore(addition.Path, "filecontent")
-			continue
+		go func(waitGroup *sync.WaitGroup, addition gitrepo.Addition) {
+			defer waitGroup.Done()
+			if ignoreConfig.Deny(addition, "filecontent") || cc.IsScanNotRequired(addition) {
+				ignoredFilePaths <- addition.Path
+				return
+			}
+
+			if string(addition.Name) == DefaultRCFileName {
+				content := re.ReplaceAllString(string(addition.Data), "")
+				data := []byte(content)
+				addition.Data = data
+			}
+			contents <- content{
+				name:        addition.Name,
+				path:        addition.Path,
+				contentType: base64Content,
+				results:     fc.detectFile(addition.Data, checkBase64),
+			}
+			contents <- content{
+				name:        addition.Name,
+				path:        addition.Path,
+				contentType: hexContent,
+				results:     fc.detectFile(addition.Data, checkHex),
+			}
+			contents <- content{
+				name:        addition.Name,
+				path:        addition.Path,
+				contentType: creditCardContent,
+				results:     fc.detectFile(addition.Data, checkCreditCardNumber),
+			}
+		}(&waitGroup, addition)
+	}
+	go func(waitGroup *sync.WaitGroup) {
+		waitGroup.Wait()
+		close(ignoredFilePaths)
+		close(contents)
+	}(&waitGroup)
+
+	for ignoredChanHasMore, contentChanHasMore := true, true; ignoredChanHasMore || contentChanHasMore; {
+		select {
+		case ignoredFilePath, hasMore := <-ignoredFilePaths:
+			processIgnoredFilepath(ignoredFilePath, result)
+			ignoredChanHasMore = hasMore
+		case c, hasMore := <-contents:
+			processContent(c, result)
+			contentChanHasMore = hasMore
 		}
-
-		if string(addition.Name) == DefaultRCFileName {
-			re := regexp.MustCompile(`(?i)checksum[ \t]*:[ \t]*[0-9a-fA-F]+`)
-			content := re.ReplaceAllString(string(addition.Data), "")
-			data := []byte(content)
-			addition.Data = data
-		}
-
-		base64Results := fc.detectFile(addition.Data, checkBase64)
-		fillBase46DetectionResults(base64Results, addition, result)
-
-		hexResults := fc.detectFile(addition.Data, checkHex)
-		fillHexDetectionResults(hexResults, addition, result)
-
-		creditCardResults := fc.detectFile(addition.Data, checkCreditCardNumber)
-		fillCreditCardDetectionResults(creditCardResults, addition, result)
 	}
 }
 
-func fillResults(results []string, addition gitrepo.Addition, result *DetectionResults, info string, output string) {
-	for _, res := range results {
+func processIgnoredFilepath(path gitrepo.FilePath, result *DetectionResults) {
+	log.WithFields(log.Fields{
+		"filePath": path,
+	}).Info("Ignoring addition as it was specified to be ignored.")
+	result.Ignore(path, "filecontent")
+}
+
+func processContent(c content, result *DetectionResults) {
+	for _, res := range c.results {
 		if res != "" {
 			log.WithFields(log.Fields{
-				"filePath": addition.Path,
-			}).Info(info)
-			if string(addition.Name) == DefaultRCFileName {
-				result.Warn(addition.Path, "filecontent", fmt.Sprintf(output, res), []string{})
+				"filePath": c.path,
+			}).Info(c.contentType.getInfo())
+			if string(c.name) == DefaultRCFileName {
+				result.Warn(c.path, "filecontent", fmt.Sprintf(c.contentType.getOutput(), res), []string{})
 			} else {
-				result.Fail(addition.Path, "filecontent", fmt.Sprintf(output, res), []string{})
+				result.Fail(c.path, "filecontent", fmt.Sprintf(c.contentType.getOutput(), res), []string{})
 			}
 		}
 	}
-}
-
-func fillBase46DetectionResults(base64Results []string, addition gitrepo.Addition, result *DetectionResults) {
-	const info = "Failing file as it contains a base64 encoded text."
-	const output = "Expected file to not to contain base64 encoded texts such as: %s"
-	fillResults(base64Results, addition, result, info, output)
-}
-
-func fillCreditCardDetectionResults(creditCardResults []string, addition gitrepo.Addition, result *DetectionResults) {
-	const info = "Failing file as it contains a potential credit card number."
-	const output = "Expected file to not to contain credit card numbers such as: %s"
-	fillResults(creditCardResults, addition, result, info, output)
-}
-
-func fillHexDetectionResults(hexResults []string, addition gitrepo.Addition, result *DetectionResults) {
-	const info = "Failing file as it contains a hex encoded text."
-	const output = "Expected file to not to contain hex encoded texts such as: %s"
-	fillResults(hexResults, addition, result, info, output)
 }
 
 func (fc *FileContentDetector) detectFile(data []byte, getResult fn) []string {
