@@ -2,42 +2,77 @@ package detector
 
 import (
 	"fmt"
-	"talisman/gitrepo"
-
 	log "github.com/Sirupsen/logrus"
+	"sync"
+	"talisman/gitrepo"
 )
 
 type PatternDetector struct {
 	secretsPattern *PatternMatcher
 }
 
+type match struct {
+	name       gitrepo.FileName
+	path       gitrepo.FilePath
+	commits    []string
+	detections []string
+}
+
 //Test tests the contents of the Additions to ensure that they don't look suspicious
 func (detector PatternDetector) Test(additions []gitrepo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
 	cc := NewChecksumCompare(additions, ignoreConfig)
+	matches := make(chan match, 512)
+	ignoredFilePaths := make(chan gitrepo.FilePath, 512)
+	waitGroup := sync.WaitGroup{}
+	waitGroup.Add(len(additions))
 	for _, addition := range additions {
-		if ignoreConfig.Deny(addition, "filecontent") || cc.IsScanNotRequired(addition) {
-			log.WithFields(log.Fields{
-				"filePath": addition.Path,
-			}).Info("Ignoring addition as it was specified to be ignored.")
-			result.Ignore(addition.Path, "filecontent")
-			continue
+		go func(addition gitrepo.Addition, waitGroup *sync.WaitGroup) {
+			defer waitGroup.Done()
+			if ignoreConfig.Deny(addition, "filecontent") || cc.IsScanNotRequired(addition) {
+				ignoredFilePaths <- addition.Path
+				return
+			}
+			detections := detector.secretsPattern.check(string(addition.Data))
+			matches <- match{name: addition.Name, path: addition.Path, detections: detections, commits: addition.Commits}
+		}(addition, &waitGroup)
+	}
+	go func(group *sync.WaitGroup) {
+		group.Wait()
+		close(matches)
+		close(ignoredFilePaths)
+	}(&waitGroup)
+	for i := 0; i < len(additions); i++ {
+		select {
+		case match := <-matches:
+			detector.processMatch(match, result)
+		case ignore := <-ignoredFilePaths:
+			detector.processIgnore(ignore, result)
 		}
-		detections := detector.secretsPattern.check(string(addition.Data))
-		for _, detection := range detections {
-			if detection != "" {
-				if string(addition.Name) == DefaultRCFileName {
-					log.WithFields(log.Fields{
-						"filePath": addition.Path,
-						"pattern":  detection,
-					}).Warn("Warning file as it matched pattern.")
-					result.Warn(addition.Path, "filecontent", fmt.Sprintf("Potential secret pattern : %s", detection), addition.Commits)
-				} else {
-					log.WithFields(log.Fields{
-						"filePath": addition.Path,
-						"pattern":  detection,
-					}).Info("Failing file as it matched pattern.")
-					result.Fail(addition.Path, "filecontent", fmt.Sprintf("Potential secret pattern : %s", detection), addition.Commits)
-				}
+	}
+}
+
+func (detector PatternDetector) processIgnore(ignoredFilePath gitrepo.FilePath, result *DetectionResults) {
+	log.WithFields(log.Fields{
+		"filePath": ignoredFilePath,
+	}).Info("Ignoring addition as it was specified to be ignored.")
+	result.Ignore(ignoredFilePath, "filecontent")
+}
+
+func (detector PatternDetector) processMatch(match match, result *DetectionResults) {
+	for _, detection := range match.detections {
+		if detection != "" {
+			if string(match.name) == DefaultRCFileName {
+				log.WithFields(log.Fields{
+					"filePath": match.path,
+					"pattern":  detection,
+				}).Warn("Warning file as it matched pattern.")
+				result.Warn(match.path, "filecontent", fmt.Sprintf("Potential secret pattern : %s", detection), match.commits)
+			} else {
+				log.WithFields(log.Fields{
+					"filePath": match.path,
+					"pattern":  detection,
+				}).Info("Failing file as it matched pattern.")
+				result.Fail(match.path, "filecontent", fmt.Sprintf("Potential secret pattern : %s", detection), match.commits)
 			}
 		}
 	}
