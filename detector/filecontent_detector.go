@@ -78,10 +78,10 @@ func (fc *FileContentDetector) Test(additions []gitrepo.Addition, ignoreConfig T
 	contents := make(chan content, 512)
 	ignoredFilePaths := make(chan gitrepo.FilePath, len(additions))
 
-	waitGroup := sync.WaitGroup{}
+	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(len(additions))
 	for _, addition := range additions {
-		go func(waitGroup *sync.WaitGroup, addition gitrepo.Addition) {
+		go func(addition gitrepo.Addition) {
 			defer waitGroup.Done()
 			if ignoreConfig.Deny(addition, "filecontent") || cc.IsScanNotRequired(addition) {
 				ignoredFilePaths <- addition.Path
@@ -111,13 +111,13 @@ func (fc *FileContentDetector) Test(additions []gitrepo.Addition, ignoreConfig T
 				contentType: creditCardContent,
 				results:     fc.detectFile(addition.Data, checkCreditCardNumber),
 			}
-		}(&waitGroup, addition)
+		}(addition)
 	}
-	go func(waitGroup *sync.WaitGroup) {
+	go func() {
 		waitGroup.Wait()
 		close(ignoredFilePaths)
 		close(contents)
-	}(&waitGroup)
+	}()
 
 	for ignoredChanHasMore, contentChanHasMore := true, true; ignoredChanHasMore || contentChanHasMore; {
 		select {
