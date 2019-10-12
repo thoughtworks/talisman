@@ -41,12 +41,14 @@ func (detector PatternDetector) Test(additions []gitrepo.Addition, ignoreConfig 
 		close(matches)
 		close(ignoredFilePaths)
 	}()
-	for i := 0; i < len(additions); i++ {
+	for ignoredChanHasMore, matchChanHasMore := true, true; ignoredChanHasMore || matchChanHasMore; {
 		select {
-		case match := <-matches:
+		case match, hasMore := <-matches:
 			detector.processMatch(match, result)
-		case ignore := <-ignoredFilePaths:
+			matchChanHasMore = hasMore
+		case ignore, hasMore := <-ignoredFilePaths:
 			detector.processIgnore(ignore, result)
+			ignoredChanHasMore = hasMore
 		}
 	}
 }
