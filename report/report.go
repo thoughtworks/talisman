@@ -17,9 +17,8 @@ const jsonFileName string = "report.json"
 const htmlReportDir string = "talisman_html_report"
 
 // GenerateReport generates a talisman scan report in html format
-func GenerateReport(r *detector.DetectionResults, directory string) (string, error) {
+func GenerateReport(r *detector.DetectionResults, directory string) (path string, err error) {
 
-	var path string
 	var jsonFilePath string
 	var homeDir string
 	var baseReportDirPath string
@@ -51,8 +50,9 @@ func GenerateReport(r *detector.DetectionResults, directory string) (string, err
 
 	jsonFile, err := os.Create(jsonFilePath)
 	defer func() {
-		err = jsonFile.Close()
-		log.Fatalf("error closing file %s: %v", jsonFilePath, err)
+		if err = jsonFile.Close(); err != nil {
+			err = fmt.Errorf("error closing file %s: %v", jsonFilePath, err)
+		}
 	}()
 
 	if err != nil {
