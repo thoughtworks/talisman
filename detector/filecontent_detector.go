@@ -51,7 +51,7 @@ func (ct contentType) getInfo() string {
 	return ""
 }
 
-func (ct contentType) getOutput() string {
+func (ct contentType) getMessageFormat() string {
 	switch ct {
 	case base64Content:
 		return "Expected file to not to contain base64 encoded texts such as: %s"
@@ -145,9 +145,9 @@ func processContent(c content, result *DetectionResults) {
 				"filePath": c.path,
 			}).Info(c.contentType.getInfo())
 			if string(c.name) == DefaultRCFileName {
-				result.Warn(c.path, "filecontent", fmt.Sprintf(c.contentType.getOutput(), res), []string{})
+				result.Warn(c.path, "filecontent", fmt.Sprintf(c.contentType.getMessageFormat(), res), []string{})
 			} else {
-				result.Fail(c.path, "filecontent", fmt.Sprintf(c.contentType.getOutput(), res), []string{})
+				result.Fail(c.path, "filecontent", fmt.Sprintf(c.contentType.getMessageFormat(), res), []string{})
 			}
 		}
 	}
