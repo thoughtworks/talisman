@@ -49,21 +49,14 @@ type options struct {
 
 //Logger is the default log device, set to emit at the Error level by default
 func main() {
-	flag.BoolVar(&fdebug, "d", false, "short form of debug")
-	flag.BoolVar(&fdebug, "debug", false, "enable debug mode (warning: very verbose)")
-	flag.BoolVar(&showVersion, "v", false, "short form of version")
-	flag.BoolVar(&showVersion, "version", false, "show current version of talisman")
-	flag.StringVar(&pattern, "p", "", "short form of pattern")
-	flag.StringVar(&pattern, "pattern", "", "pattern (glob-like) of files to scan (ignores githooks)")
-	flag.StringVar(&githook, "githook", PrePush, "either pre-push or pre-commit")
-	flag.BoolVar(&scan, "s", false, "short form of scanner")
-	flag.BoolVar(&scan, "scan", false, "scanner scans the git commit history for potential secrets")
-	flag.StringVar(&checksum, "c", "", "short form of checksum calculator")
-	flag.StringVar(&checksum, "checksum", "", "checksum calculator calculates checksum and suggests .talsimarc format")
-	flag.StringVar(&reportdirectory, "reportdirectory", "", "directory where the scan reports will be stored")
-	flag.StringVar(&reportdirectory, "rd", "", "short form of report directory")
-	flag.BoolVar(&scanWithHtml, "scanWithHtml", false, "Generate html report. (**Make sure you have installed talisman_html_report to use this, as mentioned in Readme)**")
-	flag.BoolVar(&scanWithHtml, "swh", false, "short form of html report scanner")
+	flag.BoolVarP(&fdebug, "debug", "d", false, "enable debug mode (warning: very verbose)")
+	flag.BoolVarP(&showVersion, "version", "v", false, "show current version of talisman")
+	flag.StringVarP(&pattern, "pattern", "p", "", "pattern (glob-like) of files to scan (ignores githooks)")
+	flag.StringVarP(&githook, "githook", "g", PrePush, "either pre-push or pre-commit")
+	flag.BoolVarP(&scan, "scan", "s", false, "scanner scans the git commit history for potential secrets")
+	flag.StringVarP(&checksum, "checksum", "c", "", "checksum calculator calculates checksum and suggests .talsimarc format")
+	flag.StringVarP(&reportdirectory, "reportdirectory", "r", "", "directory where the scan reports will be stored")
+	flag.BoolVarP(&scanWithHtml, "scanWithHtml", "w", false, "generate html report (**Make sure you have installed talisman_html_report to use this, as mentioned in Readme**)")
 
 	flag.Parse()
 
