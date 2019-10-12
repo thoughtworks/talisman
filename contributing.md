@@ -4,7 +4,7 @@ By contributing to Talisman, you agree to abide by the [code of conduct](CODE_OF
 
 ## How to start contributing
 
-If you are not sure how to begin contributing to Talisman, have a look at the issues tagged under [good first issue](https://github.com/thoughtworks/talisman/labels/good%20first%20issue). 
+If you are not sure how to begin contributing to Talisman, have a look at the issues tagged under [good first issue](https://github.com/thoughtworks/talisman/labels/good%20first%20issue).
 
 ## Developing locally
 
@@ -18,15 +18,19 @@ Once you have go 1.11 installed and setup, clone the talisman repository. In you
 working copy, fetch the dependencies by having go mod fetch them for
 you.
 
-```` GO111MODULE=on go mod vendor ````
+```
+GO111MODULE=on go mod vendor
+```
 
-To run tests ```` GO111MODULE=on go test -mod=vendor ./...  ````
+To run tests `GO111MODULE=on go test -mod=vendor ./...`
 
 To build Talisman, we can use [gox](https://github.com/mitchellh/gox):
 
-```` gox -osarch="darwin/amd64 linux/386 linux/amd64" ````
+```
+gox -osarch="darwin/amd64 linux/386 linux/amd64"
+```
 
-Convenience scripts ```./build``` and ```./clean``` perform build and clean-up as mentioned above.
+Convenience scripts `./build` and `./clean` perform build and clean-up as mentioned above.
 
 ## Submitting a Pull Request
 
@@ -36,7 +40,7 @@ To send in a pull request
 2. Create a new feature branch based off the master branch.
 3. Provide the commit message with the the issue number and a proper description.
 4. Ensure that all the tests pass.
-5. Submit the pull request.  
+5. Submit the pull request.
 
 ## Releasing
 
@@ -49,4 +53,3 @@ To send in a pull request
 * Update the install script hosted on github pages: `git checkout gh-pages`, `git checkout master -- install.sh`, `git commit -m ...`
 
 The latest version will now be accessible to anyone who builds their own binaries, downloads binaries directly from github releases, or uses the install script from the website.
-
