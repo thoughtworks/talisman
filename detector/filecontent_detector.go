@@ -72,6 +72,23 @@ type content struct {
 }
 
 func (fc *FileContentDetector) Test(additions []gitrepo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
+	contentTypes := []struct {
+		contentType
+		fn
+	}{
+		{
+			contentType: base64Content,
+			fn:          checkBase64,
+		},
+		{
+			contentType: hexContent,
+			fn:          checkHex,
+		},
+		{
+			contentType: creditCardContent,
+			fn:          checkCreditCardNumber,
+		},
+	}
 	cc := NewChecksumCompare(additions, ignoreConfig)
 	re := regexp.MustCompile(`(?i)checksum[ \t]*:[ \t]*[0-9a-fA-F]+`)
 
@@ -93,23 +110,13 @@ func (fc *FileContentDetector) Test(additions []gitrepo.Addition, ignoreConfig T
 				data := []byte(content)
 				addition.Data = data
 			}
-			contents <- content{
-				name:        addition.Name,
-				path:        addition.Path,
-				contentType: base64Content,
-				results:     fc.detectFile(addition.Data, checkBase64),
-			}
-			contents <- content{
-				name:        addition.Name,
-				path:        addition.Path,
-				contentType: hexContent,
-				results:     fc.detectFile(addition.Data, checkHex),
-			}
-			contents <- content{
-				name:        addition.Name,
-				path:        addition.Path,
-				contentType: creditCardContent,
-				results:     fc.detectFile(addition.Data, checkCreditCardNumber),
+			for _, ct := range contentTypes {
+				contents <- content{
+					name:        addition.Name,
+					path:        addition.Path,
+					contentType: ct.contentType,
+					results:     fc.detectFile(addition.Data, ct.fn),
+				}
 			}
 		}(addition)
 	}
