@@ -23,10 +23,10 @@ func (detector PatternDetector) Test(additions []gitrepo.Addition, ignoreConfig 
 	cc := NewChecksumCompare(additions, ignoreConfig)
 	matches := make(chan match, 512)
 	ignoredFilePaths := make(chan gitrepo.FilePath, 512)
-	waitGroup := sync.WaitGroup{}
+	waitGroup := &sync.WaitGroup{}
 	waitGroup.Add(len(additions))
 	for _, addition := range additions {
-		go func(addition gitrepo.Addition, waitGroup *sync.WaitGroup) {
+		go func(addition gitrepo.Addition) {
 			defer waitGroup.Done()
 			if ignoreConfig.Deny(addition, "filecontent") || cc.IsScanNotRequired(addition) {
 				ignoredFilePaths <- addition.Path
@@ -34,13 +34,13 @@ func (detector PatternDetector) Test(additions []gitrepo.Addition, ignoreConfig 
 			}
 			detections := detector.secretsPattern.check(string(addition.Data))
 			matches <- match{name: addition.Name, path: addition.Path, detections: detections, commits: addition.Commits}
-		}(addition, &waitGroup)
+		}(addition)
 	}
-	go func(group *sync.WaitGroup) {
-		group.Wait()
+	go func() {
+		waitGroup.Wait()
 		close(matches)
 		close(ignoredFilePaths)
-	}(&waitGroup)
+	}()
 	for i := 0; i < len(additions); i++ {
 		select {
 		case match := <-matches:
