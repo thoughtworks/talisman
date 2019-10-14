@@ -64,6 +64,18 @@ func (ct contentType) getMessageFormat() string {
 	return ""
 }
 
+func (ct contentType) getCheckFn() func(fc *FileContentDetector, word string) string {
+	switch ct {
+	case base64Content:
+		return checkBase64
+	case hexContent:
+		return checkHex
+	case creditCardContent:
+		return checkCreditCardNumber
+	}
+	return nil
+}
+
 type content struct {
 	name        gitrepo.FileName
 	path        gitrepo.FilePath
@@ -72,22 +84,10 @@ type content struct {
 }
 
 func (fc *FileContentDetector) Test(additions []gitrepo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
-	contentTypes := []struct {
-		contentType
-		fn
-	}{
-		{
-			contentType: base64Content,
-			fn:          checkBase64,
-		},
-		{
-			contentType: hexContent,
-			fn:          checkHex,
-		},
-		{
-			contentType: creditCardContent,
-			fn:          checkCreditCardNumber,
-		},
+	contentTypes := []contentType{
+		base64Content,
+		hexContent,
+		creditCardContent,
 	}
 	cc := NewChecksumCompare(additions, ignoreConfig)
 	re := regexp.MustCompile(`(?i)checksum[ \t]*:[ \t]*[0-9a-fA-F]+`)
@@ -114,8 +114,8 @@ func (fc *FileContentDetector) Test(additions []gitrepo.Addition, ignoreConfig T
 				contents <- content{
 					name:        addition.Name,
 					path:        addition.Path,
-					contentType: ct.contentType,
-					results:     fc.detectFile(addition.Data, ct.fn),
+					contentType: ct,
+					results:     fc.detectFile(addition.Data, ct.getCheckFn()),
 				}
 			}
 		}(addition)
