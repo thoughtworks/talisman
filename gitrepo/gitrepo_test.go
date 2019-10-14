@@ -40,29 +40,35 @@ func TestGetDiffForStagedFiles(t *testing.T) {
 	git.Add("new.txt")
 	additions := repo.GetDiffForStagedFiles()
 
-	assert.Len(t, additions, 2)
-	modifiedAddition := additions[0]
-	createdAddition := additions[1]
+	if assert.Len(t, additions, 2) {
+		modifiedAddition := additions[0]
+		createdAddition := additions[1]
 
-	aTxtFileContents, err := ioutil.ReadFile(path.Join(cloneLocation, "a.txt"))
-	assert.NoError(t, err)
-	newTxtFileContents, err := ioutil.ReadFile(path.Join(cloneLocation, "new.txt"))
-	assert.NoError(t, err)
+		aTxtFileContents, err := ioutil.ReadFile(path.Join(cloneLocation, "a.txt"))
+		assert.NoError(t, err)
+		newTxtFileContents, err := ioutil.ReadFile(path.Join(cloneLocation, "new.txt"))
+		assert.NoError(t, err)
 
-	expectedModifiedAddition := Addition{
-		Path: FilePath("a.txt"),
-		Name: FileName("a.txt"),
-		Data: []byte(fmt.Sprintf("%s\n", string(aTxtFileContents))),
+		expectedModifiedAddition := Addition{
+			Path: FilePath("a.txt"),
+			Name: FileName("a.txt"),
+			Data: []byte(fmt.Sprintf("%s\n", string(aTxtFileContents))),
+		}
+
+		expectedCreatedAddition := Addition{
+			Path: FilePath("new.txt"),
+			Name: FileName("new.txt"),
+			Data: []byte(fmt.Sprintf("%s\n", string(newTxtFileContents))),
+		}
+
+		// For human-readable comparison
+		assert.Equal(t, string(expectedModifiedAddition.Data), string(modifiedAddition.Data))
+		assert.Equal(t, string(expectedCreatedAddition.Data), string(createdAddition.Data))
+
+		assert.Equal(t, expectedModifiedAddition, modifiedAddition)
+		assert.Equal(t, expectedCreatedAddition, createdAddition)
 	}
 
-	expectedCreatedAddition := Addition{
-		Path: FilePath("new.txt"),
-		Name: FileName("new.txt"),
-		Data: []byte(fmt.Sprintf("%s\n", string(newTxtFileContents))),
-	}
-
-	assert.Equal(t, expectedModifiedAddition, modifiedAddition)
-	assert.Equal(t, expectedCreatedAddition, createdAddition)
 }
 
 func TestAdditionsReturnsEditsAndAdds(t *testing.T) {
