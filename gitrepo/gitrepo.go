@@ -2,14 +2,14 @@ package gitrepo
 
 import (
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
-
-	log "github.com/Sirupsen/logrus"
 )
 
 //FilePath represents the absolute path of an added file
@@ -38,13 +38,63 @@ func RepoLocatedAt(path string) GitRepo {
 	return GitRepo{absoluteRoot}
 }
 
-//GetDiffForStagedFiles gets all the staged files and collects the diff section in each file
+// GetDiffForStagedFiles gets all the staged files and collects the diff section in each file
 func (repo GitRepo) GetDiffForStagedFiles() []Addition {
-	files := repo.stagedFiles()
-	result := make([]Addition, len(files))
-	for i, file := range files {
-		data := repo.fetchStagedDiff(file)
-		result[i] = NewAddition(file, data)
+	stagedContent := repo.executeRepoCommand("git", "diff", "--staged")
+	content := strings.TrimSpace(string(stagedContent))
+	lines := strings.Split(content, "\n")
+	result := make([]Addition, 0)
+
+	if len(lines) < 1 {
+		return result
+	}
+
+	// Standard git diff header pattern
+	// ref: https://git-scm.com/docs/diff-format#_generating_patches_with_p
+	headerRegex := regexp.MustCompile("^diff --git a/([^ ]+) ")
+
+	lineNumberOfFirstHeader := 0
+	var additionFilename string
+	for ; lineNumberOfFirstHeader < len(lines); lineNumberOfFirstHeader++ {
+		if headerRegex.MatchString(lines[lineNumberOfFirstHeader]) {
+			matches := headerRegex.FindStringSubmatch(lines[lineNumberOfFirstHeader])
+			additionFilename = matches[1]
+			break
+		}
+	}
+
+	additionContentBuffer := &strings.Builder{}
+	for i := lineNumberOfFirstHeader + 1; i < len(lines); i++ {
+		if headerRegex.MatchString(lines[i]) {
+			// It is a new diff header
+			// which means we have reached the next file's header
+
+			// capture content written to buffer so far as addition content
+			stagedChanges := repo.extractAdditions(additionContentBuffer.String())
+			if stagedChanges != nil {
+				addition := NewAddition(additionFilename, stagedChanges)
+				result = append(
+					result, addition,
+				)
+			}
+
+			// get next file name and reset buffer for next iteration
+			matches := headerRegex.FindStringSubmatch(lines[i])
+			additionFilename = matches[1]
+			additionContentBuffer.Reset()
+		} else {
+			additionContentBuffer.WriteString(lines[i])
+			additionContentBuffer.WriteRune('\n')
+		}
+	}
+
+	// Save last file's diff content
+	stagedChanges := repo.extractAdditions(additionContentBuffer.String())
+	if stagedChanges != nil {
+		addition := NewAddition(additionFilename, stagedChanges)
+		result = append(
+			result, addition,
+		)
 	}
 
 	log.WithFields(log.Fields{
@@ -228,10 +278,11 @@ func (repo *GitRepo) fetchStagedChanges() string {
 	return string(repo.executeRepoCommand("git", "diff", "--cached", "--name-status", "--diff-filter=ACM"))
 }
 
-//Fetches the currently staged diff and filters the command output to get only the modified sections of the file
-func (repo *GitRepo) fetchStagedDiff(fileName string) []byte {
+// extractAdditions will accept git diff --staged {file} output and filters the command output
+// to get only the modified sections of the file
+func (repo *GitRepo) extractAdditions(diffContent string) []byte {
 	var result []byte
-	changes := strings.Split(string(repo.executeRepoCommand("git", "diff", "--staged", fileName)), "\n")
+	changes := strings.Split(diffContent, "\n")
 	for _, c := range changes {
 		if !strings.HasPrefix(c, "+++") && !strings.HasPrefix(c, "---") && strings.HasPrefix(c, "+") {
 
