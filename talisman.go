@@ -70,6 +70,13 @@ func main() {
 		os.Exit(0)
 	}
 
+	if githook != "" {
+		if !(githook == PreCommit || githook == PrePush) {
+			fmt.Println(fmt.Errorf("githook should be %s or %s, but got %s",PreCommit, PrePush, githook))
+			os.Exit(1)
+		}
+	}
+
 	_options := options{
 		debug:           fdebug,
 		githook:         githook,
