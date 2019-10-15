@@ -64,7 +64,7 @@ func (ct contentType) getMessageFormat() string {
 	return ""
 }
 
-func (ct contentType) getCheckFn() func(fc *FileContentDetector, word string) string {
+func (ct contentType) getCheckFn() fn {
 	switch ct {
 	case base64Content:
 		return checkBase64
