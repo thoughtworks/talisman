@@ -89,10 +89,10 @@ function run() {
 		"Darwin")
 			ARCHITECTURE="darwin"
 			;;
-		"MINGW32_NT-10.0-WOW")
+		MINGW32_NT-10.0-WOW*)
 			ARCHITECTURE="windows"
 			;;
-		"MINGW64_NT-10.0")
+		MINGW64_NT-10.0*)
 			ARCHITECTURE="windows"
 			;;
 		*)
