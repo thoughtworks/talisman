@@ -2,39 +2,42 @@ package detector
 
 import (
 	"fmt"
+	"github.com/AlecAivazis/survey/v2"
+	"gopkg.in/yaml.v2"
+	"log"
 	"os"
 	"strings"
 	"talisman/gitrepo"
 	"talisman/utility"
 
 	"github.com/olekukonko/tablewriter"
-	"gopkg.in/yaml.v2"
 )
 
 type Details struct {
-	Category string `json:"type"`
-	Message string `json:"message"`
-	Commits []string `json:"commits"`
+	Category string   `json:"type"`
+	Message  string   `json:"message"`
+	Commits  []string `json:"commits"`
 }
 
 type ResultsDetails struct {
-	Filename gitrepo.FilePath `json:"filename"`
-	FailureList []Details      `json:"failure_list"`
-	WarningList []Details      `json:"warning_list"`
-	IgnoreList []Details 	   `json:"ignore_list"`
+	Filename    gitrepo.FilePath `json:"filename"`
+	FailureList []Details        `json:"failure_list"`
+	WarningList []Details        `json:"warning_list"`
+	IgnoreList  []Details        `json:"ignore_list"`
 }
 
-type FailureTypes struct  {
+type FailureTypes struct {
 	Filecontent int `json:"filecontent"`
-	Filesize int `json:"filesize"`
-	Filename int `json:"filename"`
-	Warnings int `json:"warnings"`
-	Ignores int `json:"ignores"`
+	Filesize    int `json:"filesize"`
+	Filename    int `json:"filename"`
+	Warnings    int `json:"warnings"`
+	Ignores     int `json:"ignores"`
 }
 
 type ResultsSummary struct {
 	Types FailureTypes `json:"types"`
 }
+
 //
 //
 //type FailureData struct {
@@ -46,7 +49,7 @@ type ResultsSummary struct {
 //Currently, it keeps track of failures and ignored files.
 //The results are grouped by FilePath for easy reporting of all detected problems with individual files.
 type DetectionResults struct {
-	Summary ResultsSummary `json:"summary"`
+	Summary ResultsSummary   `json:"summary"`
 	Results []ResultsDetails `json:"results"`
 }
 
@@ -93,7 +96,7 @@ func (r *DetectionResults) getResultDetailsForFilePath(fileName gitrepo.FilePath
 		if resultDetail.Filename == fileName {
 			return &resultDetail
 		}
- 	}
+	}
 	//resultDetail := ResultsDetails{fileName, make([]Details, 0), make([]Details, 0), make([]Details, 0)}
 	//r.Results = append(r.Results, resultDetail)
 	return nil
@@ -101,10 +104,9 @@ func (r *DetectionResults) getResultDetailsForFilePath(fileName gitrepo.FilePath
 
 //NewDetectionResults is a new DetectionResults struct. It represents the pre-run state of a Detection run.
 func NewDetectionResults() *DetectionResults {
-	result := DetectionResults{ResultsSummary{FailureTypes{0,0,0, 0, 0}},make([]ResultsDetails, 0)}
+	result := DetectionResults{ResultsSummary{FailureTypes{0, 0, 0, 0, 0}}, make([]ResultsDetails, 0)}
 	return &result
 }
-
 
 //Fail is used to mark the supplied FilePath as failing a detection for a supplied reason.
 //Detectors are encouraged to provide context sensitive messages so that fixing the errors is made simple for the end user
@@ -191,7 +193,6 @@ func (r *DetectionResults) Ignore(filePath gitrepo.FilePath, category string) {
 	r.Summary.Types.Ignores++
 }
 
-
 func createNewResultForFile(category string, message string, commits []string, filePath gitrepo.FilePath) ResultsDetails {
 	failureDetails := Details{category, message, commits}
 	resultDetails := ResultsDetails{filePath, make([]Details, 0), make([]Details, 0), make([]Details, 0)}
@@ -258,7 +259,6 @@ func (r *DetectionResults) ReportWarnings() string {
 			data = append(data, warningData...)
 		}
 	}
-
 
 	filePathsForWarnings = utility.UniqueItems(filePathsForWarnings)
 	if r.Summary.Types.Warnings > 0 {
@@ -351,4 +351,3 @@ func keys(aMap map[gitrepo.FilePath][]string) []gitrepo.FilePath {
 	}
 	return result
 }
-
