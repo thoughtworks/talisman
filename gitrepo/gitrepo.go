@@ -165,7 +165,7 @@ func (repo GitRepo) ReadRepoFile(fileName string) ([]byte, error) {
 }
 
 //ReadRepoFileOrNothing returns the contents of the supplied relative filename by locating it in the git repo.
-//If the given file cannot be located in theb repo, then an empty array of bytes is returned for the content.
+//If the given file cannot be located in the repo, then an empty array of bytes is returned for the content.
 func (repo GitRepo) ReadRepoFileOrNothing(fileName string) ([]byte, error) {
 	filepath := path.Join(repo.root, fileName)
 	if _, err := os.Stat(filepath); err == nil {
