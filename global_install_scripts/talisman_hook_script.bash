@@ -1,5 +1,6 @@
 #!/bin/bash
 shopt -s extglob
+exec < /dev/tty
 
 # set TALISMAN_DEBUG="some-non-empty-value" in the env to get verbose output when the hook or talisman is running
 function echo_debug() {
