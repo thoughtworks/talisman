@@ -2,12 +2,13 @@ package detector
 
 import (
 	"fmt"
-	"github.com/AlecAivazis/survey/v2"
+	"github.com/spf13/afero"
 	"gopkg.in/yaml.v2"
 	"log"
 	"os"
 	"strings"
 	"talisman/gitrepo"
+	"talisman/prompt"
 	"talisman/utility"
 
 	"github.com/olekukonko/tablewriter"
@@ -272,7 +273,7 @@ func (r *DetectionResults) ReportWarnings() string {
 }
 
 //Report returns a string documenting the various failures and ignored files for the current run
-func (r *DetectionResults) Report() string {
+func (r *DetectionResults) Report(fs afero.Fs, ignoreFile string, prompter prompt.Prompt) string {
 	var result string
 	var filePathsForIgnoresAndFailures []string
 	var data [][]string
@@ -295,17 +296,17 @@ func (r *DetectionResults) Report() string {
 		fmt.Printf("\n\x1b[1m\x1b[31mTalisman Report:\x1b[0m\x1b[0m\n")
 		table.AppendBulk(data)
 		table.Render()
-		r.suggestTalismanRC(filePathsForIgnoresAndFailures)
+		r.suggestTalismanRC(fs, ignoreFile, filePathsForIgnoresAndFailures, prompter)
 	}
 	return result
 }
 
-func (r *DetectionResults) suggestTalismanRC(filePaths []string) {
+func (r *DetectionResults) suggestTalismanRC(fs afero.Fs, ignoreFile string, filePaths []string, prompter prompt.Prompt) {
 	var entriesToAdd []FileIgnoreConfig
 	for _, filePath := range filePaths {
 		currentChecksum := utility.CollectiveSHA256Hash([]string{filePath})
 		fileIgnoreConfig := FileIgnoreConfig{filePath, currentChecksum, []string{}}
-		if confirm(fileIgnoreConfig) {
+		if confirm(fileIgnoreConfig, prompter) {
 			entriesToAdd = append(entriesToAdd, fileIgnoreConfig)
 		}
 	}
@@ -313,20 +314,26 @@ func (r *DetectionResults) suggestTalismanRC(filePaths []string) {
 	if len(entriesToAdd) > 0 {
 		talismanRcIgnoreConfig := TalismanRCIgnore{FileIgnoreConfig: entriesToAdd}
 		ignoreEntries, _ := yaml.Marshal(&talismanRcIgnoreConfig)
-		f, err := os.OpenFile(DefaultRCFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		file, err := fs.OpenFile(ignoreFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
-			log.Printf("error opening %s: %w", DefaultRCFileName, err)
+			log.Printf("error opening %s: %w", ignoreFile, err)
 		}
-		if _, err := f.Write(ignoreEntries); err != nil {
-			log.Printf("error writing to %s: %w", DefaultRCFileName, err)
-		}
-		if err := f.Close(); err != nil {
-			log.Printf("error closing %s: %w", DefaultRCFileName, err)
+		defer func() {
+			err := file.Close()
+			if err != nil {
+				log.Printf("error closing %s: %w", ignoreFile, err)
+			}
+
+		}()
+
+		_, err = file.WriteString(string(ignoreEntries))
+		if err != nil {
+			log.Printf("error writing to %s: %w", ignoreFile, err)
 		}
 	}
 }
 
-func confirm(config FileIgnoreConfig) bool {
+func confirm(config FileIgnoreConfig, prompter prompt.Prompt) bool {
 	bytes, err := yaml.Marshal(&config)
 	if err != nil {
 		log.Printf("error marshalling file ignore config: %s", err)
@@ -334,19 +341,9 @@ func confirm(config FileIgnoreConfig) bool {
 
 	fmt.Println(string(bytes))
 
-	confirmationString := "Do you want to add this entry in talismanrc"
-	prompt := &survey.Confirm{
-		Default: false,
-		Message: confirmationString,
-	}
-	confirmation := false
-	err = survey.AskOne(prompt, &confirmation)
-	if err != nil {
-		log.Printf("error occured when getting input from user: %s", err)
-		return false
-	}
+	confirmationString := "Do you want to add this entry in talismanrc ?"
 
-	return confirmation
+	return prompter.Confirm(confirmationString)
 }
 
 //ReportFileFailures adds a string to table documenting the various failures detected on the supplied FilePath by all detectors in the current run

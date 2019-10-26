@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
+	"github.com/spf13/afero"
 	"log"
 	"os"
 	"talisman/checksumcalculator"
 	"talisman/detector"
 	"talisman/gitrepo"
+	"talisman/prompt"
 	"talisman/report"
 	"talisman/scanner"
 	"talisman/utility"
@@ -81,7 +83,7 @@ func (r *Runner) doRun() {
 func getScopeConfig() map[string][]string {
 	scopeConfig := map[string][]string{
 		"node": {"yarn.lock", "package-lock.json", "node_modules/"},
-		"go": {"makefile", "go.mod", "go.sum", "Gopkg.toml", "Gopkg.lock", "glide.yaml", "glide.lock", "vendor/"},
+		"go":   {"makefile", "go.mod", "go.sum", "Gopkg.toml", "Gopkg.lock", "glide.yaml", "glide.lock", "vendor/"},
 	}
 	return scopeConfig
 }
@@ -91,7 +93,9 @@ func (r *Runner) printReport() {
 		fmt.Println(r.results.ReportWarnings())
 	}
 	if r.results.HasIgnores() || r.results.HasFailures() {
-		r.results.Report()
+		prompter := prompt.NewPrompt()
+		fs := afero.NewOsFs()
+		r.results.Report(fs, detector.DefaultRCFileName, prompter)
 	}
 }
 

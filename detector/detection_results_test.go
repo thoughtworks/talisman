@@ -1,7 +1,10 @@
 package detector
 
 import (
+	"github.com/golang/mock/gomock"
+	"github.com/spf13/afero"
 	"strings"
+	mock "talisman/internal/mock/prompt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -62,23 +65,73 @@ func TestResultsReportsFailures(t *testing.T) {
 // }
 
 func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
-	results := NewDetectionResults()
-	results.Fail("some_file.pem", "filecontent", "Bomb", []string{})
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	actualErrorReport := results.Report()
-
-	assert.Regexp(t, "fileignoreconfig:", actualErrorReport, "Error report does not contain expected output")
-	assert.Regexp(t, "- filename: some_file.pem", actualErrorReport, "Error report does not contain expected output")
-	assert.Regexp(t, "checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac", actualErrorReport, "Error report does not contain expected output")
-	assert.Regexp(t, "ignore_detectors: \\[\\]", actualErrorReport, "Error report does not contain expected output")
-
-}
-
-func TestTalismanRCSuggestionWhenNoFailures(t *testing.T) {
+	prompter := mock.NewMockPrompt(ctrl)
 	results := NewDetectionResults()
 
-	actualErrorReport := results.Report()
+	// Creating temp file with some content
+	fs := afero.NewMemMapFs()
+	file, err := afero.TempFile(fs, "", "talismanrc")
+	assert.NoError(t, err)
+	ignoreFile := file.Name()
 
-	assert.NotRegexp(t, "fileignoreconfig:", actualErrorReport, "Error report should not contain this output")
+	existingContent := `fileignoreconfig:
+- filename: existing.pem
+  checksum: 123444ddssa75333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
+  ignore_detectors: []
+scopeconfig: []
+`
+	err = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
+	assert.NoError(t, err)
 
+	// The tests below depend on the upper configuration which is shared across all three of them. Hence the order in
+	// which they run matters.
+	t.Run("should not prompt if there are no failures", func(t *testing.T) {
+		prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
+
+		results.Report(fs, ignoreFile, prompter)
+		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
+
+		assert.NoError(t, err)
+		assert.Equal(t, existingContent, string(bytesFromFile))
+	})
+
+	t.Run("when user declines, entry should not be added to talismanrc", func(t *testing.T) {
+		prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(false)
+		results.Fail("some_file.pem", "filecontent", "Bomb", []string{})
+
+		results.Report(fs, ignoreFile, prompter)
+		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
+
+		assert.NoError(t, err)
+		assert.Equal(t, existingContent, string(bytesFromFile))
+	})
+
+	t.Run("when user confirms, entry should be appended to given ignore file", func(t *testing.T) {
+		prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(true)
+
+		results.Fail("some_file.pem", "filecontent", "Bomb", []string{})
+
+		expectedFileContent := `fileignoreconfig:
+- filename: existing.pem
+  checksum: 123444ddssa75333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
+  ignore_detectors: []
+scopeconfig: []
+fileignoreconfig:
+- filename: some_file.pem
+  checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
+  ignore_detectors: []
+scopeconfig: []
+`
+		results.Report(fs, ignoreFile, prompter)
+		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expectedFileContent, string(bytesFromFile))
+	})
+
+	err = fs.Remove(ignoreFile)
+	assert.NoError(t, err)
 }

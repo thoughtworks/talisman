@@ -13,6 +13,7 @@ require (
 	github.com/mattn/goveralls v0.0.3 // indirect
 	github.com/mitchellh/gox v1.0.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.1
+	github.com/spf13/afero v1.2.2
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.4.0
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
