@@ -1,0 +1,8 @@
+#! /usr/bin/env bash
+
+set -ex
+
+mkdir -p internal/mock
+
+# Mock for survey package
+mockgen -destination internal/mock/prompt/survey.go -package mock -source prompt/survey.go
