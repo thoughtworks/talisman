@@ -91,7 +91,7 @@ func (r *Runner) printReport() {
 		fmt.Println(r.results.ReportWarnings())
 	}
 	if r.results.HasIgnores() || r.results.HasFailures() {
-		fmt.Println(r.results.Report())
+		r.results.Report()
 	}
 }
 
