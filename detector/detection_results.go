@@ -295,24 +295,58 @@ func (r *DetectionResults) Report() string {
 		fmt.Printf("\n\x1b[1m\x1b[31mTalisman Report:\x1b[0m\x1b[0m\n")
 		table.AppendBulk(data)
 		table.Render()
-		result = result + fmt.Sprintf("\n\x1b[33mIf you are absolutely sure that you want to ignore the above files from talisman detectors, consider pasting the following format in .talismanrc file in the project root\x1b[0m\n")
-		result = result + r.suggestTalismanRC(filePathsForIgnoresAndFailures)
-		result = result + fmt.Sprintf("\n\n")
+		r.suggestTalismanRC(filePathsForIgnoresAndFailures)
 	}
 	return result
 }
 
-func (r *DetectionResults) suggestTalismanRC(filePaths []string) string {
-	var fileIgnoreConfigs []FileIgnoreConfig
+func (r *DetectionResults) suggestTalismanRC(filePaths []string) {
+	var entriesToAdd []FileIgnoreConfig
 	for _, filePath := range filePaths {
 		currentChecksum := utility.CollectiveSHA256Hash([]string{filePath})
 		fileIgnoreConfig := FileIgnoreConfig{filePath, currentChecksum, []string{}}
-		fileIgnoreConfigs = append(fileIgnoreConfigs, fileIgnoreConfig)
+		if confirm(fileIgnoreConfig) {
+			entriesToAdd = append(entriesToAdd, fileIgnoreConfig)
+		}
 	}
 
-	talismanRcIgnoreConfig := TalismanRCIgnore{FileIgnoreConfig: fileIgnoreConfigs}
-	m, _ := yaml.Marshal(&talismanRcIgnoreConfig)
-	return string(m)
+	if len(entriesToAdd) > 0 {
+		talismanRcIgnoreConfig := TalismanRCIgnore{FileIgnoreConfig: entriesToAdd}
+		ignoreEntries, _ := yaml.Marshal(&talismanRcIgnoreConfig)
+		f, err := os.OpenFile(DefaultRCFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Printf("error opening %s: %w", DefaultRCFileName, err)
+		}
+		if _, err := f.Write(ignoreEntries); err != nil {
+			log.Printf("error writing to %s: %w", DefaultRCFileName, err)
+		}
+		if err := f.Close(); err != nil {
+			log.Printf("error closing %s: %w", DefaultRCFileName, err)
+		}
+	}
+}
+
+func confirm(config FileIgnoreConfig) bool {
+	bytes, err := yaml.Marshal(&config)
+	if err != nil {
+		log.Printf("error marshalling file ignore config: %s", err)
+	}
+
+	fmt.Println(string(bytes))
+
+	confirmationString := "Do you want to add this entry in talismanrc"
+	prompt := &survey.Confirm{
+		Default: false,
+		Message: confirmationString,
+	}
+	confirmation := false
+	err = survey.AskOne(prompt, &confirmation)
+	if err != nil {
+		log.Printf("error occured when getting input from user: %s", err)
+		return false
+	}
+
+	return confirmation
 }
 
 //ReportFileFailures adds a string to table documenting the various failures detected on the supplied FilePath by all detectors in the current run
