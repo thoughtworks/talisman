@@ -7,6 +7,7 @@ require (
 	github.com/common-nighthawk/go-figure v0.0.0-20190529165535-67e0ed34491a
 	github.com/drhodes/golorem v0.0.0-20120624033213-6e38d8d5e455
 	github.com/fatih/color v1.7.0
+	github.com/golang/mock v1.3.1
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/mattn/goveralls v0.0.3 // indirect
