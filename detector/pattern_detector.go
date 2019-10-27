@@ -3,6 +3,7 @@ package detector
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"regexp"
 	"sync"
 	"talisman/gitrepo"
 )
@@ -10,6 +11,25 @@ import (
 type PatternDetector struct {
 	secretsPattern *PatternMatcher
 }
+
+var (
+	detectorPatterns = []*regexp.Regexp{
+		regexp.MustCompile("(?i)(['|\"|_]?password['|\"]? *[:|=][^,|;|\n]{8,})"),
+		regexp.MustCompile("(?i)(['|\"|_]?pw['|\"]? *[:|=][^,|;|\n]{8,})"),
+		regexp.MustCompile("(?i)(['|\"|_]?pwd['|\"]? *[:|=][^,|;|\n]{8,})"),
+		regexp.MustCompile("(?i)(['|\"|_]?pass['|\"]? *[:|=][^,|;|\n]{8,})"),
+		regexp.MustCompile("(?i)(['|\"|_]?pword['|\"]? *[:|=][^,|;|\n]{8,})"),
+		regexp.MustCompile("(?i)(['|\"|_]?adminPassword['|\"]? *[:|=|\n][^,|;]{8,})"),
+		regexp.MustCompile("(?i)(['|\"|_]?passphrase['|\"]? *[:|=|\n][^,|;]{8,})"),
+		regexp.MustCompile("(<[^(><.)]?password[^(><.)]*?>[^(><.)]+</[^(><.)]?password[^(><.)]*?>)"),
+		regexp.MustCompile("(<[^(><.)]?passphrase[^(><.)]*?>[^(><.)]+</[^(><.)]?passphrase[^(><.)]*?>)"),
+		regexp.MustCompile("(?i)(<ConsumerKey>\\S*<\\/ConsumerKey>)"),
+		regexp.MustCompile("(?i)(<ConsumerSecret>\\S*<\\/ConsumerSecret>)"),
+		regexp.MustCompile("(?i)(AWS[ |\\w]+key[ |\\w]+[:|=])"),
+		regexp.MustCompile("(?i)(AWS[ |\\w]+secret[ |\\w]+[:|=])"),
+		regexp.MustCompile("(?s)(BEGIN RSA PRIVATE KEY.*END RSA PRIVATE KEY)"),
+	}
+)
 
 type match struct {
 	name       gitrepo.FileName
@@ -88,22 +108,5 @@ func (detector PatternDetector) processMatch(match match, result *DetectionResul
 
 //NewPatternDetector returns a PatternDetector that tests Additions against the pre-configured patterns
 func NewPatternDetector() *PatternDetector {
-	patternStrings := []string{
-		"(?i)(['|\"|_]?password['|\"]? *[:|=][^,|;|\n]{8,})",
-		"(?i)(['|\"|_]?pw['|\"]? *[:|=][^,|;|\n]{8,})",
-		"(?i)(['|\"|_]?pwd['|\"]? *[:|=][^,|;|\n]{8,})",
-		"(?i)(['|\"|_]?pass['|\"]? *[:|=][^,|;|\n]{8,})",
-		"(?i)(['|\"|_]?pword['|\"]? *[:|=][^,|;|\n]{8,})",
-		"(?i)(['|\"|_]?adminPassword['|\"]? *[:|=|\n][^,|;]{8,})",
-		"(?i)(['|\"|_]?passphrase['|\"]? *[:|=|\n][^,|;]{8,})",
-		"(<[^(><.)]?password[^(><.)]*?>[^(><.)]+</[^(><.)]?password[^(><.)]*?>)",
-		"(<[^(><.)]?passphrase[^(><.)]*?>[^(><.)]+</[^(><.)]?passphrase[^(><.)]*?>)",
-		"(?i)(<ConsumerKey>\\S*<\\/ConsumerKey>)",
-		"(?i)(<ConsumerSecret>\\S*<\\/ConsumerSecret>)",
-		"(?i)(AWS[ |\\w]+key[ |\\w]+[:|=])",
-		"(?i)(AWS[ |\\w]+secret[ |\\w]+[:|=])",
-		"(?s)(BEGIN RSA PRIVATE KEY.*END RSA PRIVATE KEY)",
-	}
-
-	return &PatternDetector{NewSecretsPatternDetector(patternStrings)}
+	return &PatternDetector{NewSecretsPatternDetector(detectorPatterns)}
 }
