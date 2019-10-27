@@ -20,14 +20,6 @@ func (detector PatternMatcher) check(content string) []string {
 	return []string{""}
 }
 
-func initPattern(patternStrings []string) *PatternMatcher {
-	var patterns = make([]*regexp.Regexp, len(patternStrings))
-	for i, pattern := range patternStrings {
-		patterns[i], _ = regexp.Compile(pattern)
-	}
+func NewSecretsPatternDetector(patterns []*regexp.Regexp) *PatternMatcher {
 	return &PatternMatcher{patterns}
-}
-
-func NewSecretsPatternDetector(patterns []string) *PatternMatcher {
-	return initPattern(patterns)
 }
