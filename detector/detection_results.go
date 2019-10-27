@@ -316,19 +316,19 @@ func (r *DetectionResults) suggestTalismanRC(fs afero.Fs, ignoreFile string, fil
 		ignoreEntries, _ := yaml.Marshal(&talismanRcIgnoreConfig)
 		file, err := fs.OpenFile(ignoreFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
-			log.Printf("error opening %s: %w", ignoreFile, err)
+			log.Printf("error opening %s: %s", ignoreFile, err)
 		}
 		defer func() {
 			err := file.Close()
 			if err != nil {
-				log.Printf("error closing %s: %w", ignoreFile, err)
+				log.Printf("error closing %s: %s", ignoreFile, err)
 			}
 
 		}()
 
 		_, err = file.WriteString(string(ignoreEntries))
 		if err != nil {
-			log.Printf("error writing to %s: %w", ignoreFile, err)
+			log.Printf("error writing to %s: %s", ignoreFile, err)
 		}
 	}
 }

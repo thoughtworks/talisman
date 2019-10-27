@@ -1,6 +1,9 @@
 package main
 
-import flag "github.com/spf13/pflag"
+import (
+	flag "github.com/spf13/pflag"
+	"talisman/prompt"
+)
 
 import (
 	"bufio"
@@ -87,10 +90,12 @@ func main() {
 		scanWithHtml:    scanWithHtml,
 	}
 
-	os.Exit(run(os.Stdin, _options))
+	prompter := prompt.NewPrompt()
+
+	os.Exit(run(os.Stdin, _options, prompter))
 }
 
-func run(stdin io.Reader, _options options) (returnCode int) {
+func run(stdin io.Reader, _options options, prompter prompt.Prompt) (returnCode int) {
 	if _options.debug {
 		log.SetLevel(log.DebugLevel)
 	} else {
@@ -125,7 +130,7 @@ func run(stdin io.Reader, _options options) (returnCode int) {
 		additions = prePushHook.GetRepoAdditions()
 	}
 
-	return NewRunner(additions).RunWithoutErrors()
+	return NewRunner(additions).RunWithoutErrors(prompter)
 }
 
 func readRefAndSha(file io.Reader) (string, string, string, string) {
