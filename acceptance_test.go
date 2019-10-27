@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
+	"github.com/golang/mock/gomock"
 	"io"
 	"io/ioutil"
 	"os"
 	"strings"
+	mock "talisman/internal/mock/prompt"
+	"talisman/prompt"
 	"testing"
 
 	"talisman/git_testing"
@@ -48,52 +51,88 @@ func init() {
 }
 
 func TestNotHavingAnyOutgoingChangesShouldNotFail(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
+
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
-		assert.Equal(t, 0, runTalisman(git), "Expected run() to return 0 if no input is available on stdin. This happens when there are no outgoing changes")
+		assert.Equal(t, 0, runTalisman(git, prompter), "Expected run() to return 0 if no input is available on stdin. This happens when there are no outgoing changes")
 	})
 }
 
 func TestAddingSimpleFileShouldExitZero(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
+
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
-		assert.Equal(t, 0, runTalisman(git), "Expected run() to return 0 and pass as no suspicious files are in the repo")
+		assert.Equal(t, 0, runTalisman(git, prompter), "Expected run() to return 0 and pass as no suspicious files are in the repo")
 	})
 }
 
 func TestAddingSecretKeyShouldExitOne(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(true)
+
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
 		git.AddAndcommit("*", "add private key")
 
-		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 1 and fail as pem file was present in the repo")
+		assert.Equal(t, 1, runTalisman(git, prompter), "Expected run() to return 1 and fail as pem file was present in the repo")
 	})
 }
 
 func TestAddingSecretKeyAsFileContentShouldExitOne(t *testing.T) {
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(false)
 
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("contains_keys.properties", awsAccessKeyIDExample)
 		git.AddAndcommit("*", "add private key as content")
 
-		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 1 and fail as file contains some secrets")
+		assert.Equal(t, 1, runTalisman(git, prompter), "Expected run() to return 1 and fail as file contains some secrets")
 	})
 }
 
 func TestAddingSecretKeyShouldExitZeroIfPEMFileIsIgnored(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
+
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
 		git.CreateFileWithContents(".talismanrc", talismanRCDataWithFileNameAndCorrectChecksum)
 		git.AddAndcommit("private.pem", "add private key")
 
-		assert.Equal(t, 0, runTalisman(git), "Expected run() to return 0 and pass as pem file was ignored")
+		assert.Equal(t, 0, runTalisman(git, prompter), "Expected run() to return 0 and pass as pem file was ignored")
 	})
 }
 
 func TestAddingSecretKeyShouldExitOneIfPEMFileIsPresentInTheGitHistory(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
+
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		_options := options{
 			debug:   false,
@@ -104,11 +143,17 @@ func TestAddingSecretKeyShouldExitOneIfPEMFileIsPresentInTheGitHistory(t *testin
 		git.CreateFileWithContents("private.pem", "secret")
 		git.CreateFileWithContents(".talismanrc", talismanRCDataWithFileNameAndCorrectChecksum)
 		git.AddAndcommit("private.pem", "add private key")
-		assert.Equal(t, 0, runTalismanWithOptions(git, _options), "Expected run() to return 0 and pass as pem file was ignored")
+		assert.Equal(t, 0, runTalismanWithOptions(git, _options, prompter), "Expected run() to return 0 and pass as pem file was ignored")
 	})
 }
 
 func TestScanningSimpleFileShouldExitZero(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
+
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		_options := options{
 			debug:   false,
@@ -116,11 +161,17 @@ func TestScanningSimpleFileShouldExitZero(t *testing.T) {
 			scan:    false,
 		}
 		git.SetupBaselineFiles("simple-file")
-		assert.Equal(t, 0, runTalismanWithOptions(git, _options), "Expected run() to return 0 and pass as pem file was ignored")
+		assert.Equal(t, 0, runTalismanWithOptions(git, _options, prompter), "Expected run() to return 0 and pass as pem file was ignored")
 	})
 }
 
 func TestChecksumCalculatorShouldExitOne(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
+
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		_options := options{
 			debug:    false,
@@ -131,11 +182,17 @@ func TestChecksumCalculatorShouldExitOne(t *testing.T) {
 		git.CreateFileWithContents("private.pem", "secret")
 		git.CreateFileWithContents("another/private.pem", "secret")
 		git.CreateFileWithContents("sample.txt", "password")
-		assert.Equal(t, 1, runTalismanWithOptions(git, _options), "Expected run() to return 0 as given patterns are found and .talsimanrc is suggested")
+		assert.Equal(t, 1, runTalismanWithOptions(git, _options, prompter), "Expected run() to return 0 as given patterns are found and .talsimanrc is suggested")
 	})
 }
 
 func TestShouldExitOneWhenSecretIsCommitted(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(false)
+
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		_options := options{
 			debug:   false,
@@ -145,11 +202,17 @@ func TestShouldExitOneWhenSecretIsCommitted(t *testing.T) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("sample.txt", "password=somepassword \n")
 		git.Add("*")
-		assert.Equal(t, 1, runTalismanWithOptions(git, _options), "Expected run() to return 1 as given patterns are found")
+		assert.Equal(t, 1, runTalismanWithOptions(git, _options, prompter), "Expected run() to return 1 as given patterns are found")
 	})
 }
 
 func TestShouldExitZeroWhenNonSecretIsCommittedButFileContainsSecretPreviously(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
+
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		_options := options{
 			debug:   false,
@@ -162,7 +225,8 @@ func TestShouldExitZeroWhenNonSecretIsCommittedButFileContainsSecretPreviously(t
 
 		git.AppendFileContent("sample.txt", "some text \n")
 		git.Add("*")
-		assert.Equal(t, 0, runTalismanWithOptions(git, _options), "Expected run() to return 1 as given patterns are found")
+
+		assert.Equal(t, 0, runTalismanWithOptions(git, _options, prompter), "Expected run() to return 1 as given patterns are found")
 	})
 }
 
@@ -179,17 +243,29 @@ func TestShouldExitZeroWhenNonSecretIsCommittedButFileContainsSecretPreviously(t
 // }
 
 func TestAddingSecretKeyShouldExitOneIfTheyContainBadContentButOnlyFilenameDetectorWasIgnored(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(false)
+
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", awsAccessKeyIDExample)
 		git.CreateFileWithContents(".talismanrc", talismanRCDataWithIgnoreDetectorWithFilename)
 		git.AddAndcommit("private.pem", "add private key")
 
-		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 1 and fail as only filename was ignored")
+		assert.Equal(t, 1, runTalisman(git, prompter), "Expected run() to return 1 and fail as only filename was ignored")
 	})
 }
 
 func TestAddingSecretKeyShouldExitZeroIfFileIsWithinConfiguredScope(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
+
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("glide.lock", awsAccessKeyIDExample)
@@ -197,11 +273,17 @@ func TestAddingSecretKeyShouldExitZeroIfFileIsWithinConfiguredScope(t *testing.T
 		git.CreateFileWithContents(".talismanrc", talismanRCDataWithScopeAsGo)
 		git.AddAndcommit("*", "add private key")
 
-		assert.Equal(t, 0, runTalisman(git), "Expected run() to return 1 and fail as only filename was ignored")
+		assert.Equal(t, 0, runTalisman(git, prompter), "Expected run() to return 1 and fail as only filename was ignored")
 	})
 }
 
 func TestAddingSecretKeyShouldExitOneIfFileIsNotWithinConfiguredScope(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(false)
+
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("danger.pem", awsAccessKeyIDExample)
@@ -209,22 +291,34 @@ func TestAddingSecretKeyShouldExitOneIfFileIsNotWithinConfiguredScope(t *testing
 		git.CreateFileWithContents(".talismanrc", talismanRCDataWithScopeAsGo)
 		git.AddAndcommit("*", "add private key")
 
-		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 1 and fail as only filename was ignored")
+		assert.Equal(t, 1, runTalisman(git, prompter), "Expected run() to return 1 and fail as only filename was ignored")
 	})
 }
 
 func TestAddingSecretKeyShouldExitOneIfFileNameIsSensitiveButOnlyFilecontentDetectorWasIgnored(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(false)
+
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", awsAccessKeyIDExample)
 		git.CreateFileWithContents(".talismanrc", talismanRCDataWithIgnoreDetectorWithFilecontent)
 		git.AddAndcommit("private.pem", "add private key")
 
-		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 1 and fail as only filename was ignored")
+		assert.Equal(t, 1, runTalisman(git, prompter), "Expected run() to return 1 and fail as only filename was ignored")
 	})
 }
 
 func TestStagingSecretKeyShouldExitOneWhenPreCommitFlagIsSet(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(false)
+
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
@@ -235,11 +329,17 @@ func TestStagingSecretKeyShouldExitOneWhenPreCommitFlagIsSet(t *testing.T) {
 			githook: PreCommit,
 		}
 
-		assert.Equal(t, 1, runTalismanWithOptions(git, _options), "Expected run() to return 1 and fail as pem file was present in the repo")
+		assert.Equal(t, 1, runTalismanWithOptions(git, _options, prompter), "Expected run() to return 1 and fail as pem file was present in the repo")
 	})
 }
 
 func TestPatternFindsSecretKey(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(false)
+
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		_options := options{
 			debug:   false,
@@ -249,11 +349,17 @@ func TestPatternFindsSecretKey(t *testing.T) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
 
-		assert.Equal(t, 1, runTalismanWithOptions(git, _options), "Expected run() to return 1 and fail as pem file was present in the repo")
+		assert.Equal(t, 1, runTalismanWithOptions(git, _options, prompter), "Expected run() to return 1 and fail as pem file was present in the repo")
 	})
 }
 
 func TestPatternFindsNestedSecretKey(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(false)
+
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		_options := options{
 			debug:   false,
@@ -263,11 +369,17 @@ func TestPatternFindsNestedSecretKey(t *testing.T) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("some-dir/private.pem", "secret")
 
-		assert.Equal(t, 1, runTalismanWithOptions(git, _options), "Expected run() to return 1 and fail as nested pem file was present in the repo")
+		assert.Equal(t, 1, runTalismanWithOptions(git, _options, prompter), "Expected run() to return 1 and fail as nested pem file was present in the repo")
 	})
 }
 
 func TestPatternFindsSecretInNestedFile(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(false)
+
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		_options := options{
 			debug:   false,
@@ -277,23 +389,23 @@ func TestPatternFindsSecretInNestedFile(t *testing.T) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("some-dir/some-file.txt", awsAccessKeyIDExample)
 
-		assert.Equal(t, 1, runTalismanWithOptions(git, _options), "Expected run() to return 1 and fail as nested pem file was present in the repo")
+		assert.Equal(t, 1, runTalismanWithOptions(git, _options, prompter), "Expected run() to return 1 and fail as nested pem file was present in the repo")
 	})
 }
 
-func runTalisman(git *git_testing.GitTesting) int {
+func runTalisman(git *git_testing.GitTesting, prompter prompt.Prompt) int {
 	_options := options{
 		debug:   false,
 		githook: PrePush,
 	}
-	return runTalismanWithOptions(git, _options)
+	return runTalismanWithOptions(git, _options, prompter)
 }
 
-func runTalismanWithOptions(git *git_testing.GitTesting, _options options) int {
+func runTalismanWithOptions(git *git_testing.GitTesting, _options options, prompter prompt.Prompt) int {
 	wd, _ := os.Getwd()
 	os.Chdir(git.GetRoot())
 	defer func() { os.Chdir(wd) }()
-	return run(mockStdIn(git.EarliestCommit(), git.LatestCommit()), _options)
+	return run(mockStdIn(git.EarliestCommit(), git.LatestCommit()), _options, prompter)
 }
 
 type Operation func(dirName string)
