@@ -92,14 +92,13 @@ func (repo GitRepo) GetDiffForStagedFiles() []Addition {
 	stagedChanges := repo.extractAdditions(additionContentBuffer.String())
 	if stagedChanges != nil {
 		addition := NewAddition(additionFilename, stagedChanges)
-		result = append(
-			result, addition,
-		)
+		result = append(result, addition)
 	}
 
 	log.WithFields(log.Fields{
 		"additions": result,
 	}).Debug("Generating staged additions.")
+
 	return result
 }
 

@@ -1,6 +1,7 @@
 package detector
 
 import (
+	"fmt"
 	"strings"
 	"talisman/gitrepo"
 	"testing"
@@ -64,10 +65,13 @@ func TestShouldFlagPotentialAWSSecretKeys(t *testing.T) {
 	content := []byte(awsSecretAccessKey)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
+	filePath := additions[0].Path
 
 	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
+	expectedMessage := fmt.Sprintf("Expected file to not to contain base64 encoded texts such as: %s", awsSecretAccessKey)
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
-
+	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
+	assert.Len(t, results.Results, 1)
 }
 
 func TestShouldFlagPotentialJWT(t *testing.T) {
@@ -76,9 +80,13 @@ func TestShouldFlagPotentialJWT(t *testing.T) {
 	content := []byte(jwt)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
+	filePath := additions[0].Path
 
 	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
+	expectedMessage := fmt.Sprintf("Expected file to not to contain base64 encoded texts such as: %s", jwt)
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
+	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
+	assert.Len(t, results.Results, 1)
 }
 
 func TestShouldFlagPotentialSecretsWithinJavaCode(t *testing.T) {
@@ -87,9 +95,13 @@ func TestShouldFlagPotentialSecretsWithinJavaCode(t *testing.T) {
 	content := []byte(dangerousJavaCode)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
+	filePath := additions[0].Path
 
 	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
+	expectedMessage := "Expected file to not to contain base64 encoded texts such as: accessKey=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\";"
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
+	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
+	assert.Len(t, results.Results, 1)
 }
 
 func TestShouldNotFlagPotentialSecretsWithinSafeJavaCode(t *testing.T) {
@@ -125,6 +137,7 @@ func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
 	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	expectedMessage := "Expected file to not to contain hex encoded texts such as: " + hex
 	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
+	assert.Len(t, results.Results, 1)
 }
 
 func TestResultsShouldContainHexTextsIfHexAndBase64ExistInFile(t *testing.T) {
@@ -141,6 +154,7 @@ func TestResultsShouldContainHexTextsIfHexAndBase64ExistInFile(t *testing.T) {
 	expectedMessage := "Expected file to not to contain hex encoded texts such as: " + hex
 	messageReceived := strings.Join(getFailureMessages(results, filePath), " ")
 	assert.Regexp(t, expectedMessage, messageReceived, "Should contain hex detection message")
+	assert.Len(t, results.Results, 1)
 }
 
 func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) {
@@ -157,6 +171,7 @@ func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) 
 	expectedMessage := "Expected file to not to contain base64 encoded texts such as: " + base64
 	messageReceived := strings.Join(getFailureMessages(results, filePath), " ")
 	assert.Regexp(t, expectedMessage, messageReceived, "Should contain base64 detection message")
+	assert.Len(t, results.Results, 1)
 }
 
 func TestResultsShouldContainCreditCardNumberIfCreditCardNumberExistInFile(t *testing.T) {
@@ -170,6 +185,7 @@ func TestResultsShouldContainCreditCardNumberIfCreditCardNumberExistInFile(t *te
 	NewFileContentDetector().Test(additions, TalismanRCIgnore{}, results)
 	expectedMessage := "Expected file to not to contain credit card numbers such as: " + creditCardNumber
 	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
+	assert.Len(t, results.Results, 1)
 }
 
 func getFailureMessages(results *DetectionResults, filePath gitrepo.FilePath) []string {
