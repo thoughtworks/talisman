@@ -39,6 +39,7 @@ func shouldPassDetectionOfSecretPattern(filename string, content []byte, t *test
 	NewPatternDetector().Test(additions, TalismanRCIgnore{}, results)
 	expected := "Potential secret pattern : " + string(content)
 	assert.Equal(t, expected, getFailureMessage(results, additions))
+	assert.Len(t, results.Results, 1)
 }
 
 func getFailureMessage(results *DetectionResults, additions []gitrepo.Addition) string {

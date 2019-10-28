@@ -44,11 +44,17 @@ func (detector PatternDetector) Test(additions []gitrepo.Addition, ignoreConfig 
 	for ignoredChanHasMore, matchChanHasMore := true, true; ignoredChanHasMore || matchChanHasMore; {
 		select {
 		case match, hasMore := <-matches:
+			if !hasMore {
+				matchChanHasMore = false
+				continue
+			}
 			detector.processMatch(match, result)
-			matchChanHasMore = hasMore
 		case ignore, hasMore := <-ignoredFilePaths:
+			if !hasMore {
+				ignoredChanHasMore = false
+				continue
+			}
 			detector.processIgnore(ignore, result)
-			ignoredChanHasMore = hasMore
 		}
 	}
 }

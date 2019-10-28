@@ -129,11 +129,17 @@ func (fc *FileContentDetector) Test(additions []gitrepo.Addition, ignoreConfig T
 	for ignoredChanHasMore, contentChanHasMore := true, true; ignoredChanHasMore || contentChanHasMore; {
 		select {
 		case ignoredFilePath, hasMore := <-ignoredFilePaths:
+			if !hasMore {
+				ignoredChanHasMore = false
+				continue
+			}
 			processIgnoredFilepath(ignoredFilePath, result)
-			ignoredChanHasMore = hasMore
 		case c, hasMore := <-contents:
+			if !hasMore {
+				contentChanHasMore = false
+				continue
+			}
 			processContent(c, result)
-			contentChanHasMore = hasMore
 		}
 	}
 }
