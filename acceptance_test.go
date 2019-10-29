@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/golang/mock/gomock"
 	"io"
 	"io/ioutil"
 	"os"
@@ -50,9 +49,6 @@ func init() {
 }
 
 func TestNotHavingAnyOutgoingChangesShouldNotFail(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		assert.Equal(t, 0, runTalisman(git), "Expected run() to return 0 if no input is available on stdin. This happens when there are no outgoing changes")
@@ -60,9 +56,6 @@ func TestNotHavingAnyOutgoingChangesShouldNotFail(t *testing.T) {
 }
 
 func TestAddingSimpleFileShouldExitZero(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		assert.Equal(t, 0, runTalisman(git), "Expected run() to return 0 and pass as no suspicious files are in the repo")
@@ -70,9 +63,6 @@ func TestAddingSimpleFileShouldExitZero(t *testing.T) {
 }
 
 func TestAddingSecretKeyShouldExitOne(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
@@ -84,9 +74,6 @@ func TestAddingSecretKeyShouldExitOne(t *testing.T) {
 
 func TestAddingSecretKeyAsFileContentShouldExitOne(t *testing.T) {
 
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("contains_keys.properties", awsAccessKeyIDExample)
@@ -97,9 +84,6 @@ func TestAddingSecretKeyAsFileContentShouldExitOne(t *testing.T) {
 }
 
 func TestAddingSecretKeyShouldExitZeroIfPEMFileIsIgnored(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
@@ -111,9 +95,6 @@ func TestAddingSecretKeyShouldExitZeroIfPEMFileIsIgnored(t *testing.T) {
 }
 
 func TestAddingSecretKeyShouldExitOneIfPEMFileIsPresentInTheGitHistory(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		_options := options{
 			debug:   false,
@@ -129,9 +110,6 @@ func TestAddingSecretKeyShouldExitOneIfPEMFileIsPresentInTheGitHistory(t *testin
 }
 
 func TestScanningSimpleFileShouldExitZero(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		_options := options{
 			debug:   false,
@@ -144,9 +122,6 @@ func TestScanningSimpleFileShouldExitZero(t *testing.T) {
 }
 
 func TestChecksumCalculatorShouldExitOne(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		_options := options{
 			debug:    false,
@@ -162,9 +137,6 @@ func TestChecksumCalculatorShouldExitOne(t *testing.T) {
 }
 
 func TestShouldExitOneWhenSecretIsCommitted(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		_options := options{
 			debug:   false,
@@ -179,9 +151,6 @@ func TestShouldExitOneWhenSecretIsCommitted(t *testing.T) {
 }
 
 func TestShouldExitZeroWhenNonSecretIsCommittedButFileContainsSecretPreviously(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		_options := options{
 			debug:   false,
@@ -212,9 +181,6 @@ func TestShouldExitZeroWhenNonSecretIsCommittedButFileContainsSecretPreviously(t
 // }
 
 func TestAddingSecretKeyShouldExitOneIfTheyContainBadContentButOnlyFilenameDetectorWasIgnored(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", awsAccessKeyIDExample)
@@ -226,9 +192,6 @@ func TestAddingSecretKeyShouldExitOneIfTheyContainBadContentButOnlyFilenameDetec
 }
 
 func TestAddingSecretKeyShouldExitZeroIfFileIsWithinConfiguredScope(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("glide.lock", awsAccessKeyIDExample)
@@ -241,9 +204,6 @@ func TestAddingSecretKeyShouldExitZeroIfFileIsWithinConfiguredScope(t *testing.T
 }
 
 func TestAddingSecretKeyShouldExitOneIfFileIsNotWithinConfiguredScope(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("danger.pem", awsAccessKeyIDExample)
@@ -256,9 +216,6 @@ func TestAddingSecretKeyShouldExitOneIfFileIsNotWithinConfiguredScope(t *testing
 }
 
 func TestAddingSecretKeyShouldExitOneIfFileNameIsSensitiveButOnlyFilecontentDetectorWasIgnored(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", awsAccessKeyIDExample)
@@ -270,9 +227,6 @@ func TestAddingSecretKeyShouldExitOneIfFileNameIsSensitiveButOnlyFilecontentDete
 }
 
 func TestStagingSecretKeyShouldExitOneWhenPreCommitFlagIsSet(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
@@ -288,9 +242,6 @@ func TestStagingSecretKeyShouldExitOneWhenPreCommitFlagIsSet(t *testing.T) {
 }
 
 func TestPatternFindsSecretKey(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		_options := options{
 			debug:   false,
@@ -305,9 +256,6 @@ func TestPatternFindsSecretKey(t *testing.T) {
 }
 
 func TestPatternFindsNestedSecretKey(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		_options := options{
 			debug:   false,
@@ -322,9 +270,6 @@ func TestPatternFindsNestedSecretKey(t *testing.T) {
 }
 
 func TestPatternFindsSecretInNestedFile(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		_options := options{
 			debug:   false,
