@@ -15,6 +15,18 @@ func NewPrompt() Prompt {
 
 type prompt struct{}
 
+func NewPromptContext(interactive bool, prompt Prompt) PromptContext{
+	return PromptContext{
+		Interactive: interactive,
+		Prompt: prompt,
+	}
+}
+
+type PromptContext struct {
+	Interactive bool
+	Prompt Prompt
+}
+
 func (p prompt) Confirm(message string) bool {
 	if message == "" {
 		message = "Confirm?"
@@ -34,5 +46,3 @@ func (p prompt) Confirm(message string) bool {
 
 	return confirmation
 }
-
-

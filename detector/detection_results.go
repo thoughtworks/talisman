@@ -273,7 +273,7 @@ func (r *DetectionResults) ReportWarnings() string {
 }
 
 //Report returns a string documenting the various failures and ignored files for the current run
-func (r *DetectionResults) Report(fs afero.Fs, ignoreFile string, prompter prompt.Prompt) string {
+func (r *DetectionResults) Report(fs afero.Fs, ignoreFile string, promptContext prompt.PromptContext) string {
 	var result string
 	var filePathsForIgnoresAndFailures []string
 	var data [][]string
@@ -296,20 +296,40 @@ func (r *DetectionResults) Report(fs afero.Fs, ignoreFile string, prompter promp
 		fmt.Printf("\n\x1b[1m\x1b[31mTalisman Report:\x1b[0m\x1b[0m\n")
 		table.AppendBulk(data)
 		table.Render()
-		r.suggestTalismanRC(fs, ignoreFile, filePathsForIgnoresAndFailures, prompter)
+		r.suggestTalismanRC(fs, ignoreFile, filePathsForIgnoresAndFailures, promptContext)
 	}
 	return result
 }
 
-func (r *DetectionResults) suggestTalismanRC(fs afero.Fs, ignoreFile string, filePaths []string, prompter prompt.Prompt) {
+func (r *DetectionResults) suggestTalismanRC(fs afero.Fs, ignoreFile string, filePaths []string, promptContext prompt.PromptContext) {
 	var entriesToAdd []FileIgnoreConfig
+
 	for _, filePath := range filePaths {
 		currentChecksum := utility.CollectiveSHA256Hash([]string{filePath})
 		fileIgnoreConfig := FileIgnoreConfig{filePath, currentChecksum, []string{}}
-		if confirm(fileIgnoreConfig, prompter) {
+		if promptContext.Interactive{
+			if confirm(fileIgnoreConfig, promptContext) {
+				entriesToAdd = append(entriesToAdd, fileIgnoreConfig)
+			}
+			addToTalismanIgnoreFile(entriesToAdd, fs, ignoreFile)
+		} else {
 			entriesToAdd = append(entriesToAdd, fileIgnoreConfig)
+			printTalismanIgnoreSuggestion(entriesToAdd)
 		}
 	}
+}
+
+func printTalismanIgnoreSuggestion(entriesToAdd []FileIgnoreConfig) {
+	talismanRcIgnoreConfig := TalismanRCIgnore{FileIgnoreConfig: entriesToAdd}
+	ignoreEntries, _ := yaml.Marshal(&talismanRcIgnoreConfig)
+	suggestString := fmt.Sprintf("\n\x1b[33mIf you are absolutely sure that you want to ignore the " +
+		"above files from talisman detectors, consider pasting the following format in .talismanrc file" +
+		" in the project root\x1b[0m\n")
+	fmt.Println(suggestString)
+	fmt.Println(string(ignoreEntries))
+}
+
+func addToTalismanIgnoreFile(entriesToAdd []FileIgnoreConfig, fs afero.Fs, ignoreFile string) {
 
 	if len(entriesToAdd) > 0 {
 		talismanRcIgnoreConfig := TalismanRCIgnore{FileIgnoreConfig: entriesToAdd}
@@ -333,7 +353,7 @@ func (r *DetectionResults) suggestTalismanRC(fs afero.Fs, ignoreFile string, fil
 	}
 }
 
-func confirm(config FileIgnoreConfig, prompter prompt.Prompt) bool {
+func confirm(config FileIgnoreConfig, promptContext prompt.PromptContext) bool {
 	bytes, err := yaml.Marshal(&config)
 	if err != nil {
 		log.Printf("error marshalling file ignore config: %s", err)
@@ -343,7 +363,7 @@ func confirm(config FileIgnoreConfig, prompter prompt.Prompt) bool {
 
 	confirmationString := "Do you want to add this entry in talismanrc ?"
 
-	return prompter.Confirm(confirmationString)
+	return promptContext.Prompt.Confirm(confirmationString)
 }
 
 //ReportFileFailures adds a string to table documenting the various failures detected on the supplied FilePath by all detectors in the current run

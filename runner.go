@@ -37,9 +37,9 @@ func NewRunner(additions []gitrepo.Addition) *Runner {
 }
 
 //RunWithoutErrors will validate the commit range for errors and return either COMPLETED_SUCCESSFULLY or COMPLETED_WITH_ERRORS
-func (r *Runner) RunWithoutErrors(prompter prompt.Prompt) int {
+func (r *Runner) RunWithoutErrors(promptContext prompt.PromptContext) int {
 	r.doRun()
-	r.printReport(prompter)
+	r.printReport(promptContext)
 	return r.exitStatus()
 }
 
@@ -88,13 +88,13 @@ func getScopeConfig() map[string][]string {
 	return scopeConfig
 }
 
-func (r *Runner) printReport(prompter prompt.Prompt) {
+func (r *Runner) printReport(promptContext prompt.PromptContext) {
 	if r.results.HasWarnings() {
 		fmt.Println(r.results.ReportWarnings())
 	}
 	if r.results.HasIgnores() || r.results.HasFailures() {
 		fs := afero.NewOsFs()
-		r.results.Report(fs, detector.DefaultRCFileName, prompter)
+		r.results.Report(fs, detector.DefaultRCFileName, promptContext)
 	}
 }
 

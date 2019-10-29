@@ -27,6 +27,7 @@ var (
 	checksum        string
 	reportdirectory string
 	scanWithHtml    bool
+	interactive     bool
 )
 
 const (
@@ -60,6 +61,7 @@ func main() {
 	flag.StringVarP(&checksum, "checksum", "c", "", "checksum calculator calculates checksum and suggests .talsimarc format")
 	flag.StringVarP(&reportdirectory, "reportdirectory", "r", "", "directory where the scan reports will be stored")
 	flag.BoolVarP(&scanWithHtml, "scanWithHtml", "w", false, "generate html report (**Make sure you have installed talisman_html_report to use this, as mentioned in Readme**)")
+	flag.BoolVarP(&interactive, "interactive", "i", false, "to be interactive or not")
 
 	flag.Parse()
 
@@ -75,7 +77,7 @@ func main() {
 
 	if githook != "" {
 		if !(githook == PreCommit || githook == PrePush) {
-			fmt.Println(fmt.Errorf("githook should be %s or %s, but got %s",PreCommit, PrePush, githook))
+			fmt.Println(fmt.Errorf("githook should be %s or %s, but got %s", PreCommit, PrePush, githook))
 			os.Exit(1)
 		}
 	}
@@ -88,14 +90,16 @@ func main() {
 		checksum:        checksum,
 		reportdirectory: reportdirectory,
 		scanWithHtml:    scanWithHtml,
+
 	}
 
 	prompter := prompt.NewPrompt()
+	promptContext := prompt.NewPromptContext(interactive, prompter)
 
-	os.Exit(run(os.Stdin, _options, prompter))
+	os.Exit(run(os.Stdin, _options, promptContext))
 }
 
-func run(stdin io.Reader, _options options, prompter prompt.Prompt) (returnCode int) {
+func run(stdin io.Reader, _options options, promptContext prompt.PromptContext) (returnCode int) {
 	if _options.debug {
 		log.SetLevel(log.DebugLevel)
 	} else {
@@ -130,7 +134,7 @@ func run(stdin io.Reader, _options options, prompter prompt.Prompt) (returnCode 
 		additions = prePushHook.GetRepoAdditions()
 	}
 
-	return NewRunner(additions).RunWithoutErrors(prompter)
+	return NewRunner(additions).RunWithoutErrors(promptContext)
 }
 
 func readRefAndSha(file io.Reader) (string, string, string, string) {
