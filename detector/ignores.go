@@ -12,13 +12,19 @@ import (
 
 const (
 	//LinePattern represents a line in the ignorefile with an optional comment
-	LinePattern string = "^([^#]+)?\\s*(#(.*))?$"
+	LinePattern string = `^([^#]+)?\s*(#(.*))?$`
 
 	//IgnoreDetectorCommentPattern represents a special comment that ignores only certain detectors
-	IgnoreDetectorCommentPattern string = "^ignore:([^\\s]+).*$"
+	IgnoreDetectorCommentPattern string = `^ignore:([^\s]+).*$`
 
 	//DefaultRCFileName represents the name of default file in which all the ignore patterns are configured in new version
 	DefaultRCFileName string = ".talismanrc"
+)
+
+var (
+	commentPattern     = regexp.MustCompile(LinePattern)
+	ignorePattern      = regexp.MustCompile(IgnoreDetectorCommentPattern)
+	emptyStringPattern = regexp.MustCompile(`^\s*$`)
 )
 
 //Ignores represents a set of patterns that have been configured to be ignored by the Detectors.
@@ -74,7 +80,6 @@ func NewTalismanRCIgnore(fileContents []byte) (TalismanRCIgnore) {
 
 func NewIgnore(pattern string, comment string) Ignore {
 	var ignoredDetectors []string
-	ignorePattern := regexp.MustCompile(IgnoreDetectorCommentPattern)
 	match := ignorePattern.FindStringSubmatch(comment)
 	if match != nil {
 		ignoredDetectors = strings.Split(match[1], ",")
@@ -92,14 +97,13 @@ func (i FileIgnoreConfig) isEffective(detectorName string) bool {
 		contains(i.IgnoreDetectors, detectorName)
 }
 
-
 //NewIgnores builds a new Ignores with the patterns specified in the ignoreSpecs
 //Empty lines and comments are ignored.
 func NewIgnores(lines ...string) Ignores {
+	var groups []string
 	var ignores []Ignore
 	for _, line := range lines {
-		var commentPattern = regexp.MustCompile(LinePattern)
-		groups := commentPattern.FindStringSubmatch(line)
+		groups = commentPattern.FindStringSubmatch(line)
 		if len(groups) == 4 {
 			ignores = append(ignores, NewIgnore(strings.TrimSpace(groups[1]), strings.TrimSpace(groups[3])))
 		}
@@ -160,7 +164,6 @@ func (i TalismanRCIgnore) effectiveRules(detectorName string) []string {
 }
 
 func isEmptyString(str string) bool {
-	var emptyStringPattern = regexp.MustCompile("^\\s*$")
 	return emptyStringPattern.MatchString(str)
 }
 func contains(s []string, e string) bool {
