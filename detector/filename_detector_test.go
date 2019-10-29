@@ -5,6 +5,7 @@ package detector
 
 import (
 	"testing"
+	"regexp"
 
 	"talisman/gitrepo"
 
@@ -156,7 +157,8 @@ func shouldNotFailWithDefaultDetectorAndIgnores(fileName, ignore string, t *test
 
 func shouldFailWithSpecificPattern(fileName, pattern string, t *testing.T) {
 	results := NewDetectionResults()
-	NewFileNameDetector(pattern).Test(additionsNamed(fileName), TalismanRCIgnore{}, results)
+	pt := regexp.MustCompile(pattern)
+	NewFileNameDetector([]*regexp.Regexp{pt}).Test(additionsNamed(fileName), TalismanRCIgnore{}, results)
 	assert.True(t, results.HasFailures(), "Expected file %s to fail the check against the %s pattern", fileName, pattern)
 }
 
