@@ -7,8 +7,8 @@ import (
 )
 
 var (
-	testRegexpPassword = regexp.MustCompile(`(?i)(['|"|_]?password['|"]? *[:|=][^,|;]{8,})`)
-	testRegexpPw       = regexp.MustCompile(`(?i)(['|"|_]?pw['|"]? *[:|=][^,|;]{8,})`)
+	testRegexpPassword = regexp.MustCompile(`(?i)(['"_]?password['"]? *[:=][^,;]{8,})`)
+	testRegexpPw       = regexp.MustCompile(`(?i)(['"_]?pw['"]? *[:=][^,;]{8,})`)
 )
 
 func TestShouldReturnEmptyStringWhenDoesNotMatchAnyRegex(t *testing.T) {
