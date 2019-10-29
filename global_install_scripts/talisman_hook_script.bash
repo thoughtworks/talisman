@@ -70,7 +70,7 @@ fi
 DEBUG_OPTS=""
 [[ -n "${TALISMAN_DEBUG}" ]] && DEBUG_OPTS="-d"
 INTERACTIVE=""
-[[ -z "${TALISMAN_INTERACTIVE}" ]] && INTERACTIVE="-i"
+[[ -n "${TALISMAN_INTERACTIVE}" ]] && INTERACTIVE="-i"
 
 CMD="${TALISMAN_BINARY} ${DEBUG_OPTS} --githook ${HOOKNAME} ${INTERACTIVE}"
 echo_debug "ARGS are $@"
