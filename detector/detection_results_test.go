@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/afero"
 	"strings"
 	mock "talisman/internal/mock/prompt"
+	"talisman/prompt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -89,9 +90,10 @@ scopeconfig: []
 	// The tests below depend on the upper configuration which is shared across all three of them. Hence the order in
 	// which they run matters.
 	t.Run("should not prompt if there are no failures", func(t *testing.T) {
+		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
 
-		results.Report(fs, ignoreFile, prompter)
+		results.Report(fs, ignoreFile, promptContext)
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
@@ -99,10 +101,23 @@ scopeconfig: []
 	})
 
 	t.Run("when user declines, entry should not be added to talismanrc", func(t *testing.T) {
+		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(false)
 		results.Fail("some_file.pem", "filecontent", "Bomb", []string{})
 
-		results.Report(fs, ignoreFile, prompter)
+		results.Report(fs, ignoreFile, promptContext)
+		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
+
+		assert.NoError(t, err)
+		assert.Equal(t, existingContent, string(bytesFromFile))
+	})
+
+	t.Run("when interactive flag is set to false, it should not ask user", func(t *testing.T) {
+		promptContext := prompt.NewPromptContext(false, prompter)
+		prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
+		results.Fail("some_file.pem", "filecontent", "Bomb", []string{})
+
+		results.Report(fs, ignoreFile, promptContext)
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
@@ -110,6 +125,7 @@ scopeconfig: []
 	})
 
 	t.Run("when user confirms, entry should be appended to given ignore file", func(t *testing.T) {
+		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(true)
 
 		results.Fail("some_file.pem", "filecontent", "Bomb", []string{})
@@ -125,7 +141,7 @@ fileignoreconfig:
   ignore_detectors: []
 scopeconfig: []
 `
-		results.Report(fs, ignoreFile, prompter)
+		results.Report(fs, ignoreFile, promptContext)
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
