@@ -307,16 +307,27 @@ func (r *DetectionResults) suggestTalismanRC(fs afero.Fs, ignoreFile string, fil
 	for _, filePath := range filePaths {
 		currentChecksum := utility.CollectiveSHA256Hash([]string{filePath})
 		fileIgnoreConfig := FileIgnoreConfig{filePath, currentChecksum, []string{}}
-		if promptContext.Interactive{
-			if confirm(fileIgnoreConfig, promptContext) {
-				entriesToAdd = append(entriesToAdd, fileIgnoreConfig)
-			}
-			addToTalismanIgnoreFile(entriesToAdd, fs, ignoreFile)
-		} else {
-			entriesToAdd = append(entriesToAdd, fileIgnoreConfig)
-			printTalismanIgnoreSuggestion(entriesToAdd)
+		entriesToAdd = append(entriesToAdd, fileIgnoreConfig)
+	}
+
+	if promptContext.Interactive {
+		confirmedEntries := getUserConfirmation(entriesToAdd, promptContext)
+		addToTalismanIgnoreFile(confirmedEntries, fs, ignoreFile)
+	} else {
+		printTalismanIgnoreSuggestion(entriesToAdd)
+		return
+	}
+
+}
+
+func getUserConfirmation(configs []FileIgnoreConfig, promptContext prompt.PromptContext) []FileIgnoreConfig {
+	confirmed := []FileIgnoreConfig{}
+	for _, config := range configs {
+		if confirm(config, promptContext) {
+			confirmed = append(confirmed, config)
 		}
 	}
+	return confirmed
 }
 
 func printTalismanIgnoreSuggestion(entriesToAdd []FileIgnoreConfig) {

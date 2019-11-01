@@ -148,6 +148,34 @@ scopeconfig: []
 		assert.Equal(t, expectedFileContent, string(bytesFromFile))
 	})
 
+	t.Run("when user confirms for multiple entries, they should be appended to given ignore file", func(t *testing.T) {
+		// Clearing file contents from previous tests
+		err := afero.WriteFile(fs, ignoreFile, []byte{}, 0666)
+		assert.NoError(t, err)
+
+		promptContext := prompt.NewPromptContext(true, prompter)
+		prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(true).Times(2)
+
+		results.Fail("some_file.pem", "filecontent", "Bomb", []string{})
+		results.Fail("another.pem", "filecontent", "password", []string{})
+
+		expectedFileContent := `fileignoreconfig:
+- filename: some_file.pem
+  checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
+  ignore_detectors: []
+- filename: another.pem
+  checksum: 117e23557c02cbd472854ebce4933d6daec1fd207971286f6ffc9f1774c1a83b
+  ignore_detectors: []
+scopeconfig: []
+`
+		results.Report(fs, ignoreFile, promptContext)
+		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expectedFileContent, string(bytesFromFile))
+	})
+
+
 	err = fs.Remove(ignoreFile)
 	assert.NoError(t, err)
 }
