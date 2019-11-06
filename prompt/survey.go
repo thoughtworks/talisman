@@ -1,5 +1,7 @@
 package prompt
 
+//go:generate mockgen -destination ../internal/mock/prompt/survey.go -package mock -source survey.go
+
 import (
 	"github.com/AlecAivazis/survey/v2"
 	"log"
