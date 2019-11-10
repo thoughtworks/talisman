@@ -314,7 +314,7 @@ func (r *DetectionResults) suggestTalismanRC(fs afero.Fs, ignoreFile string, fil
 
 	if promptContext.Interactive {
 		confirmedEntries := getUserConfirmation(entriesToAdd, promptContext)
-		addToTalismanIgnoreFile(confirmedEntries, fs, ignoreFile)
+		talismanrc.Get().AddFileIgnores(confirmedEntries)
 	} else {
 		printTalismanIgnoreSuggestion(entriesToAdd)
 		return
@@ -340,30 +340,6 @@ func printTalismanIgnoreSuggestion(entriesToAdd []talismanrc.FileIgnoreConfig) {
 		" in the project root\x1b[0m\n")
 	fmt.Println(suggestString)
 	fmt.Println(string(ignoreEntries))
-}
-
-func addToTalismanIgnoreFile(entriesToAdd []talismanrc.FileIgnoreConfig, fs afero.Fs, ignoreFile string) {
-
-	if len(entriesToAdd) > 0 {
-		talismanRcIgnoreConfig := talismanrc.TalismanRCIgnore{FileIgnoreConfig: entriesToAdd}
-		ignoreEntries, _ := yaml.Marshal(&talismanRcIgnoreConfig)
-		file, err := fs.OpenFile(ignoreFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			log.Printf("error opening %s: %s", ignoreFile, err)
-		}
-		defer func() {
-			err := file.Close()
-			if err != nil {
-				log.Printf("error closing %s: %s", ignoreFile, err)
-			}
-
-		}()
-
-		_, err = file.WriteString(string(ignoreEntries))
-		if err != nil {
-			log.Printf("error writing to %s: %s", ignoreFile, err)
-		}
-	}
 }
 
 func confirm(config talismanrc.FileIgnoreConfig, promptContext prompt.PromptContext) bool {

@@ -76,6 +76,13 @@ func TestIgnoringDetectors(t *testing.T) {
 	assertAcceptsDetector("foo", "someDetector", "foo", "someOtherDetector", t)
 }
 
+func TestAddIgnoreFiles(t *testing.T) {
+	talismanRCIgnoreConfig := CreateTalismanRCIgnoreWithScopeIgnore([]string{})
+	talismanRCIgnoreConfig.AddFileIgnores([]FileIgnoreConfig{FileIgnoreConfig{"Foo", "SomeCheckSum", []string{}}})
+	talismanRCIgnoreConfig = Get()
+	assert.Equal(t, 1, len(talismanRCIgnoreConfig.FileIgnoreConfig))
+}
+
 func assertDenies(line, ignoreDetector string, path string, t *testing.T) {
 	assertDeniesDetector(line, ignoreDetector, path, "filename", t)
 }

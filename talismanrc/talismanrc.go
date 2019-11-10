@@ -2,10 +2,14 @@ package talismanrc
 
 import (
 	"log"
+	"os"
 	"reflect"
 	"regexp"
+	"sort"
 	"strings"
 
+	logr "github.com/Sirupsen/logrus"
+	"github.com/spf13/afero"
 	"gopkg.in/yaml.v2"
 
 	"talisman/gitrepo"
@@ -26,6 +30,9 @@ var (
 	commentPattern     = regexp.MustCompile(LinePattern)
 	ignorePattern      = regexp.MustCompile(IgnoreDetectorCommentPattern)
 	emptyStringPattern = regexp.MustCompile(`^\s*$`)
+	fs                 = afero.NewOsFs()
+	currentRCFileName  = DefaultRCFileName
+	cachedConfig       TalismanRCIgnore
 )
 
 //Ignores represents a set of patterns that have been configured to be ignored by the Detectors.
@@ -56,16 +63,34 @@ type TalismanRCIgnore struct {
 	ScopeConfig      []ScopeConfig      `yaml:"scopeconfig"`
 }
 
+func SetFs(_fs afero.Fs) {
+	fs = _fs
+}
+
+func SetRcFilename(rcFileName string) {
+	currentRCFileName = rcFileName
+}
+
+func Get() *TalismanRCIgnore {
+	return ReadConfigFromRCFile(readRepoFile())
+}
+
 func (ignore *TalismanRCIgnore) IsEmpty() bool {
 	return reflect.DeepEqual(TalismanRCIgnore{}, ignore)
 }
 
 func ReadConfigFromRCFile(repoFileRead func(string) ([]byte, error)) *TalismanRCIgnore {
-	fileContents, error := repoFileRead(DefaultRCFileName)
+	fileContents, error := repoFileRead(currentRCFileName)
 	if error != nil {
 		panic(error)
 	}
 	return NewTalismanRCIgnore(fileContents)
+}
+
+func readRepoFile() func(string) ([]byte, error) {
+	wd, _ := os.Getwd()
+	repo := gitrepo.RepoLocatedAt(wd)
+	return repo.ReadRepoFileOrNothing
 }
 
 func NewTalismanRCIgnore(fileContents []byte) *TalismanRCIgnore {
@@ -142,6 +167,57 @@ func (rcConfigIgnores *TalismanRCIgnore) IgnoreAdditionsByScope(additions []gitr
 		if !isFilePresentInScope {
 			result = append(result, addition)
 		}
+	}
+	return result
+}
+
+func (rcConfigIgnores *TalismanRCIgnore) AddFileIgnores(entriesToAdd []FileIgnoreConfig) {
+	if len(entriesToAdd) > 0 {
+		logr.Debugf("Adding entries: %v", entriesToAdd)
+		talismanRcIgnoreConfig := Get()
+		talismanRcIgnoreConfig.FileIgnoreConfig = combineFileIgnores(talismanRcIgnoreConfig.FileIgnoreConfig, entriesToAdd)
+		ignoreEntries, _ := yaml.Marshal(&talismanRcIgnoreConfig)
+		file, err := fs.OpenFile(currentRCFileName, os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Printf("error opening %s: %s", currentRCFileName, err)
+		}
+		defer func() {
+			err := file.Close()
+			if err != nil {
+				log.Printf("error closing %s: %s", currentRCFileName, err)
+			}
+
+		}()
+		logr.Debugf("Writing talismanrc: %v", string(ignoreEntries))
+		_, err = file.WriteString(string(ignoreEntries))
+		if err != nil {
+			log.Printf("error writing to %s: %s", currentRCFileName, err)
+		}
+	}
+}
+
+func combineFileIgnores(exsiting, incoming []FileIgnoreConfig) []FileIgnoreConfig {
+	existingMap := make(map[string]FileIgnoreConfig)
+	for _, fIC := range exsiting {
+		existingMap[fIC.FileName] = fIC
+	}
+	for _, fIC := range incoming {
+		existingMap[fIC.FileName] = fIC
+	}
+	result := make([]FileIgnoreConfig, len(existingMap))
+	resultKeys := make([]string, len(existingMap))
+	index := 0
+	//sort keys in alpabetical order
+	for k, _ := range existingMap {
+		resultKeys[index] = k
+		index++
+	}
+	sort.Strings(resultKeys)
+	//add result entries based on sortedkeys
+	index = 0
+	for _, k := range resultKeys {
+		result[index] = existingMap[k]
+		index++
 	}
 	return result
 }

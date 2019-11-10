@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
 	"talisman/checksumcalculator"
 	"talisman/detector"
 	"talisman/gitrepo"
@@ -76,7 +75,7 @@ func (r *Runner) RunChecksumCalculator(fileNamePatterns []string) int {
 }
 
 func (r *Runner) doRun() {
-	rcConfigIgnores := talismanrc.ReadConfigFromRCFile(readRepoFile())
+	rcConfigIgnores := talismanrc.Get()
 	scopeMap := getScopeConfig()
 	additionsToScan := rcConfigIgnores.IgnoreAdditionsByScope(r.additions, scopeMap)
 	detector.DefaultChain().Test(additionsToScan, rcConfigIgnores, r.results)
@@ -105,10 +104,4 @@ func (r *Runner) exitStatus() int {
 		return CompletedWithErrors
 	}
 	return CompletedSuccessfully
-}
-
-func readRepoFile() func(string) ([]byte, error) {
-	wd, _ := os.Getwd()
-	repo := gitrepo.RepoLocatedAt(wd)
-	return repo.ReadRepoFileOrNothing
 }
