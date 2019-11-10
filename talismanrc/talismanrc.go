@@ -1,11 +1,12 @@
-package detector
+package talismanrc
 
 import (
-	"gopkg.in/yaml.v2"
 	"log"
 	"reflect"
 	"regexp"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 
 	"talisman/gitrepo"
 )
@@ -32,16 +33,17 @@ var (
 type Ignores struct {
 	patterns []Ignore
 }
+
 //Ignore represents a single pattern and its comment
 type Ignore struct {
-	pattern string
-	comment string
+	pattern          string
+	comment          string
 	ignoredDetectors []string
 }
 
 type FileIgnoreConfig struct {
-	FileName        string `yaml:"filename"`
-	Checksum        string `yaml:"checksum"`
+	FileName        string   `yaml:"filename"`
+	Checksum        string   `yaml:"checksum"`
 	IgnoreDetectors []string `yaml:"ignore_detectors"`
 }
 
@@ -54,11 +56,11 @@ type TalismanRCIgnore struct {
 	ScopeConfig      []ScopeConfig      `yaml:"scopeconfig"`
 }
 
-func (ignore TalismanRCIgnore) IsEmpty() bool {
+func (ignore *TalismanRCIgnore) IsEmpty() bool {
 	return reflect.DeepEqual(TalismanRCIgnore{}, ignore)
 }
 
-func ReadConfigFromRCFile(repoFileRead func(string) ([]byte, error)) TalismanRCIgnore {
+func ReadConfigFromRCFile(repoFileRead func(string) ([]byte, error)) *TalismanRCIgnore {
 	fileContents, error := repoFileRead(DefaultRCFileName)
 	if error != nil {
 		panic(error)
@@ -66,16 +68,15 @@ func ReadConfigFromRCFile(repoFileRead func(string) ([]byte, error)) TalismanRCI
 	return NewTalismanRCIgnore(fileContents)
 }
 
-
-func NewTalismanRCIgnore(fileContents []byte) (TalismanRCIgnore) {
+func NewTalismanRCIgnore(fileContents []byte) *TalismanRCIgnore {
 	talismanRCIgnore := TalismanRCIgnore{}
 	err := yaml.Unmarshal([]byte(fileContents), &talismanRCIgnore)
 	if err != nil {
 		log.Println("Unable to parse .talismanrc")
 		log.Printf("error: %v", err)
-		return talismanRCIgnore
+		return &talismanRCIgnore
 	}
-	return talismanRCIgnore
+	return &talismanRCIgnore
 }
 
 func NewIgnore(pattern string, comment string) Ignore {
@@ -86,8 +87,8 @@ func NewIgnore(pattern string, comment string) Ignore {
 	}
 
 	return Ignore{
-		pattern: pattern,
-		comment: comment,
+		pattern:          pattern,
+		comment:          comment,
 		ignoredDetectors: ignoredDetectors,
 	}
 }
@@ -112,16 +113,16 @@ func NewIgnores(lines ...string) Ignores {
 }
 
 //AcceptsAll returns true if there are no rules specified
-func (i TalismanRCIgnore) AcceptsAll() bool {
+func (i *TalismanRCIgnore) AcceptsAll() bool {
 	return len(i.effectiveRules("any-detector")) == 0
 }
 
 //Accept answers true if the Addition.Path is configured to be checked by the detectors
-func (i TalismanRCIgnore) Accept(addition gitrepo.Addition, detectorName string) bool {
+func (i *TalismanRCIgnore) Accept(addition gitrepo.Addition, detectorName string) bool {
 	return !i.Deny(addition, detectorName)
 }
 
-func IgnoreAdditionsByScope(additions []gitrepo.Addition, rcConfigIgnores TalismanRCIgnore, scopeMap map[string][]string) []gitrepo.Addition {
+func (rcConfigIgnores *TalismanRCIgnore) IgnoreAdditionsByScope(additions []gitrepo.Addition, scopeMap map[string][]string) []gitrepo.Addition {
 	var applicableScopeFileNames []string
 	if rcConfigIgnores.ScopeConfig != nil {
 		for _, scope := range rcConfigIgnores.ScopeConfig {
@@ -144,8 +145,9 @@ func IgnoreAdditionsByScope(additions []gitrepo.Addition, rcConfigIgnores Talism
 	}
 	return result
 }
+
 //Deny answers true if the Addition.Path is configured to be ignored and not checked by the detectors
-func (i TalismanRCIgnore) Deny(addition gitrepo.Addition, detectorName string) bool {
+func (i *TalismanRCIgnore) Deny(addition gitrepo.Addition, detectorName string) bool {
 	result := false
 	for _, pattern := range i.effectiveRules(detectorName) {
 		result = result || addition.Matches(pattern)
@@ -153,7 +155,7 @@ func (i TalismanRCIgnore) Deny(addition gitrepo.Addition, detectorName string) b
 	return result
 }
 
-func (i TalismanRCIgnore) effectiveRules(detectorName string) []string {
+func (i *TalismanRCIgnore) effectiveRules(detectorName string) []string {
 	var result []string
 	for _, ignore := range i.FileIgnoreConfig {
 		if ignore.isEffective(detectorName) {

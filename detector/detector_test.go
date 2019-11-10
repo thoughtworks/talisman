@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"talisman/gitrepo"
+	"talisman/talismanrc"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -11,7 +12,7 @@ import (
 func TestEmptyValidationChainPassesAllValidations(t *testing.T) {
 	v := NewChain()
 	results := NewDetectionResults()
-	v.Test(nil, TalismanRCIgnore{}, results)
+	v.Test(nil, &talismanrc.TalismanRCIgnore{}, results)
 	assert.False(t, results.HasFailures(), "Empty validation chain is expected to always pass")
 }
 
@@ -20,18 +21,18 @@ func TestValidationChainWithFailingValidationAlwaysFails(t *testing.T) {
 	v.AddDetector(PassingDetection{})
 	v.AddDetector(FailingDetection{})
 	results := NewDetectionResults()
-	v.Test(nil, TalismanRCIgnore{}, results)
+	v.Test(nil, &talismanrc.TalismanRCIgnore{}, results)
 
 	assert.False(t, results.Successful(), "Expected validation chain with a failure to fail.")
 }
 
 type FailingDetection struct{}
 
-func (v FailingDetection) Test(additions []gitrepo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
+func (v FailingDetection) Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRCIgnore, result *DetectionResults) {
 	result.Fail("some_file", "filecontent", "FAILED BY DESIGN", []string{})
 }
 
 type PassingDetection struct{}
 
-func (p PassingDetection) Test(additions []gitrepo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
+func (p PassingDetection) Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRCIgnore, result *DetectionResults) {
 }

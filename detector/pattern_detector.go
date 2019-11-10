@@ -2,10 +2,12 @@ package detector
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
 	"regexp"
 	"sync"
 	"talisman/gitrepo"
+	"talisman/talismanrc"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 type PatternDetector struct {
@@ -39,7 +41,7 @@ type match struct {
 }
 
 //Test tests the contents of the Additions to ensure that they don't look suspicious
-func (detector PatternDetector) Test(additions []gitrepo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
+func (detector PatternDetector) Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRCIgnore, result *DetectionResults) {
 	cc := NewChecksumCompare(additions, ignoreConfig)
 	matches := make(chan match, 512)
 	ignoredFilePaths := make(chan gitrepo.FilePath, 512)
@@ -89,7 +91,7 @@ func (detector PatternDetector) processIgnore(ignoredFilePath gitrepo.FilePath, 
 func (detector PatternDetector) processMatch(match match, result *DetectionResults) {
 	for _, detection := range match.detections {
 		if detection != "" {
-			if string(match.name) == DefaultRCFileName {
+			if string(match.name) == talismanrc.DefaultRCFileName {
 				log.WithFields(log.Fields{
 					"filePath": match.path,
 					"pattern":  detection,

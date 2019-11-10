@@ -2,14 +2,16 @@ package detector
 
 import (
 	"fmt"
-	"github.com/spf13/afero"
-	"gopkg.in/yaml.v2"
 	"log"
 	"os"
 	"strings"
 	"talisman/gitrepo"
 	"talisman/prompt"
+	"talisman/talismanrc"
 	"talisman/utility"
+
+	"github.com/spf13/afero"
+	"gopkg.in/yaml.v2"
 
 	"github.com/olekukonko/tablewriter"
 )
@@ -302,11 +304,11 @@ func (r *DetectionResults) Report(fs afero.Fs, ignoreFile string, promptContext 
 }
 
 func (r *DetectionResults) suggestTalismanRC(fs afero.Fs, ignoreFile string, filePaths []string, promptContext prompt.PromptContext) {
-	var entriesToAdd []FileIgnoreConfig
+	var entriesToAdd []talismanrc.FileIgnoreConfig
 
 	for _, filePath := range filePaths {
 		currentChecksum := utility.CollectiveSHA256Hash([]string{filePath})
-		fileIgnoreConfig := FileIgnoreConfig{filePath, currentChecksum, []string{}}
+		fileIgnoreConfig := talismanrc.FileIgnoreConfig{filePath, currentChecksum, []string{}}
 		entriesToAdd = append(entriesToAdd, fileIgnoreConfig)
 	}
 
@@ -320,8 +322,8 @@ func (r *DetectionResults) suggestTalismanRC(fs afero.Fs, ignoreFile string, fil
 
 }
 
-func getUserConfirmation(configs []FileIgnoreConfig, promptContext prompt.PromptContext) []FileIgnoreConfig {
-	confirmed := []FileIgnoreConfig{}
+func getUserConfirmation(configs []talismanrc.FileIgnoreConfig, promptContext prompt.PromptContext) []talismanrc.FileIgnoreConfig {
+	confirmed := []talismanrc.FileIgnoreConfig{}
 	for _, config := range configs {
 		if confirm(config, promptContext) {
 			confirmed = append(confirmed, config)
@@ -330,8 +332,8 @@ func getUserConfirmation(configs []FileIgnoreConfig, promptContext prompt.Prompt
 	return confirmed
 }
 
-func printTalismanIgnoreSuggestion(entriesToAdd []FileIgnoreConfig) {
-	talismanRcIgnoreConfig := TalismanRCIgnore{FileIgnoreConfig: entriesToAdd}
+func printTalismanIgnoreSuggestion(entriesToAdd []talismanrc.FileIgnoreConfig) {
+	talismanRcIgnoreConfig := talismanrc.TalismanRCIgnore{FileIgnoreConfig: entriesToAdd}
 	ignoreEntries, _ := yaml.Marshal(&talismanRcIgnoreConfig)
 	suggestString := fmt.Sprintf("\n\x1b[33mIf you are absolutely sure that you want to ignore the " +
 		"above files from talisman detectors, consider pasting the following format in .talismanrc file" +
@@ -340,10 +342,10 @@ func printTalismanIgnoreSuggestion(entriesToAdd []FileIgnoreConfig) {
 	fmt.Println(string(ignoreEntries))
 }
 
-func addToTalismanIgnoreFile(entriesToAdd []FileIgnoreConfig, fs afero.Fs, ignoreFile string) {
+func addToTalismanIgnoreFile(entriesToAdd []talismanrc.FileIgnoreConfig, fs afero.Fs, ignoreFile string) {
 
 	if len(entriesToAdd) > 0 {
-		talismanRcIgnoreConfig := TalismanRCIgnore{FileIgnoreConfig: entriesToAdd}
+		talismanRcIgnoreConfig := talismanrc.TalismanRCIgnore{FileIgnoreConfig: entriesToAdd}
 		ignoreEntries, _ := yaml.Marshal(&talismanRcIgnoreConfig)
 		file, err := fs.OpenFile(ignoreFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
@@ -364,7 +366,7 @@ func addToTalismanIgnoreFile(entriesToAdd []FileIgnoreConfig, fs afero.Fs, ignor
 	}
 }
 
-func confirm(config FileIgnoreConfig, promptContext prompt.PromptContext) bool {
+func confirm(config talismanrc.FileIgnoreConfig, promptContext prompt.PromptContext) bool {
 	bytes, err := yaml.Marshal(&config)
 	if err != nil {
 		log.Printf("error marshalling file ignore config: %s", err)

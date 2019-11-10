@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 	"talisman/gitrepo"
+	"talisman/talismanrc"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -71,7 +72,7 @@ type content struct {
 	results     []string
 }
 
-func (fc *FileContentDetector) Test(additions []gitrepo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
+func (fc *FileContentDetector) Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRCIgnore, result *DetectionResults) {
 	contentTypes := []struct {
 		contentType
 		fn
@@ -105,7 +106,7 @@ func (fc *FileContentDetector) Test(additions []gitrepo.Addition, ignoreConfig T
 				return
 			}
 
-			if string(addition.Name) == DefaultRCFileName {
+			if string(addition.Name) == talismanrc.DefaultRCFileName {
 				content := re.ReplaceAllString(string(addition.Data), "")
 				data := []byte(content)
 				addition.Data = data
@@ -157,7 +158,7 @@ func processContent(c content, result *DetectionResults) {
 			log.WithFields(log.Fields{
 				"filePath": c.path,
 			}).Info(c.contentType.getInfo())
-			if string(c.name) == DefaultRCFileName {
+			if string(c.name) == talismanrc.DefaultRCFileName {
 				result.Warn(c.path, "filecontent", fmt.Sprintf(c.contentType.getMessageFormat(), res), []string{})
 			} else {
 				result.Fail(c.path, "filecontent", fmt.Sprintf(c.contentType.getMessageFormat(), res), []string{})

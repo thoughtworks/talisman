@@ -14,6 +14,8 @@ import (
 
 var Logger *logrus.Entry
 
+const gitConfigFile = "/tmp/talismanTestingGitConfig"
+
 type GitTesting struct {
 	gitRoot string
 }
@@ -22,6 +24,9 @@ func Init(gitRoot string) *GitTesting {
 	os.MkdirAll(gitRoot, 0777)
 	testingRepo := &GitTesting{gitRoot}
 	testingRepo.ExecCommand("git", "init", ".")
+	testingRepo.CreateFileWithContents(gitConfigFile, `[user]
+	email = talisman-test-user@example.com
+	name = Talisman Test User`)
 	return testingRepo
 }
 
@@ -142,6 +147,7 @@ func (git *GitTesting) ExecCommand(commandName string, args ...string) string {
 	var output []byte
 	git.doInGitRoot(func() {
 		result := exec.Command(commandName, args...)
+		result.Env = []string{"GIT_CONFIG=" + gitConfigFile}
 		var err error
 		output, err = result.Output()
 		git.die(fmt.Sprintf("when executing command %s %v in %s", commandName, args, git.gitRoot), err)

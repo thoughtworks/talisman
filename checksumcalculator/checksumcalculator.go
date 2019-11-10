@@ -3,8 +3,8 @@ package checksumcalculator
 import (
 	"fmt"
 	"os"
-	"talisman/detector"
 	"talisman/gitrepo"
+	"talisman/talismanrc"
 	"talisman/utility"
 
 	yaml "gopkg.in/yaml.v2"
@@ -27,18 +27,18 @@ func (cc *ChecksumCalculator) SuggestTalismanRC() string {
 	gitTrackedFilesAsAdditions := repo.TrackedFilesAsAdditions()
 	//Adding staged files for calculation
 	gitTrackedFilesAsAdditions = append(gitTrackedFilesAsAdditions, repo.StagedAdditions()...)
-	var fileIgnoreConfigs []detector.FileIgnoreConfig
+	var fileIgnoreConfigs []talismanrc.FileIgnoreConfig
 	result := ""
 	for _, pattern := range cc.fileNamePatterns {
 		collectiveChecksum := cc.calculateCollectiveChecksumForPattern(pattern, gitTrackedFilesAsAdditions)
 		if collectiveChecksum != "" {
-			fileIgnoreConfig := detector.FileIgnoreConfig{FileName: pattern, Checksum: collectiveChecksum, IgnoreDetectors: []string{}}
+			fileIgnoreConfig := talismanrc.FileIgnoreConfig{FileName: pattern, Checksum: collectiveChecksum, IgnoreDetectors: []string{}}
 			fileIgnoreConfigs = append(fileIgnoreConfigs, fileIgnoreConfig)
 		}
 	}
 	if len(fileIgnoreConfigs) != 0 {
 		result = result + fmt.Sprintf("\n\x1b[33m.talismanrc format for given file names / patterns\x1b[0m\n")
-		talismanRCIgnoreConfig := detector.TalismanRCIgnore{FileIgnoreConfig: fileIgnoreConfigs}
+		talismanRCIgnoreConfig := talismanrc.TalismanRCIgnore{FileIgnoreConfig: fileIgnoreConfigs}
 		m, _ := yaml.Marshal(&talismanRCIgnoreConfig)
 		result = result + string(m)
 	}
