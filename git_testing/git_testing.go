@@ -13,8 +13,7 @@ import (
 )
 
 var Logger *logrus.Entry
-
-const gitConfigFile = "/tmp/talismanTestingGitConfig"
+var gitConfigFile string
 
 type GitTesting struct {
 	gitRoot string
@@ -24,6 +23,8 @@ func Init(gitRoot string) *GitTesting {
 	os.MkdirAll(gitRoot, 0777)
 	testingRepo := &GitTesting{gitRoot}
 	testingRepo.ExecCommand("git", "init", ".")
+	gitConfigFileObject, _ := ioutil.TempFile("/tmp", "gitConfigForTalismanTests")
+	gitConfigFile = gitConfigFileObject.Name()
 	testingRepo.CreateFileWithContents(gitConfigFile, `[user]
 	email = talisman-test-user@example.com
 	name = Talisman Test User`)
@@ -143,11 +144,14 @@ func (git *GitTesting) GetBlobDetails(fileName string) string {
 	return object_hash_and_filename
 }
 
+
+//ExecCommand executes a command with given arguments in the git repo directory
 func (git *GitTesting) ExecCommand(commandName string, args ...string) string {
 	var output []byte
 	git.doInGitRoot(func() {
 		result := exec.Command(commandName, args...)
-		result.Env = []string{"GIT_CONFIG=" + gitConfigFile}
+		//Passes locally, but fails on CI
+		//result.Env = []string{"GIT_CONFIG=" + gitConfigFile}
 		var err error
 		output, err = result.Output()
 		git.die(fmt.Sprintf("when executing command %s %v in %s", commandName, args, git.gitRoot), err)

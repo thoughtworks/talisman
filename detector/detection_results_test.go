@@ -1,12 +1,14 @@
 package detector
 
 import (
-	"github.com/golang/mock/gomock"
-	"github.com/spf13/afero"
 	"strings"
 	mock "talisman/internal/mock/prompt"
 	"talisman/prompt"
+	"talisman/talismanrc"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	"github.com/spf13/afero"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -78,6 +80,9 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 	assert.NoError(t, err)
 	ignoreFile := file.Name()
 
+	talismanrc.SetFs(fs)
+	talismanrc.SetRcFilename(ignoreFile)
+
 	existingContent := `fileignoreconfig:
 - filename: existing.pem
   checksum: 123444ddssa75333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
@@ -100,6 +105,7 @@ scopeconfig: []
 		assert.Equal(t, existingContent, string(bytesFromFile))
 	})
 
+	_ = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
 	t.Run("when user declines, entry should not be added to talismanrc", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(false)
@@ -112,6 +118,7 @@ scopeconfig: []
 		assert.Equal(t, existingContent, string(bytesFromFile))
 	})
 
+	_ = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
 	t.Run("when interactive flag is set to false, it should not ask user", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(false, prompter)
 		prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
@@ -124,6 +131,7 @@ scopeconfig: []
 		assert.Equal(t, existingContent, string(bytesFromFile))
 	})
 
+	_ = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
 	t.Run("when user confirms, entry should be appended to given ignore file", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(true)
@@ -131,11 +139,6 @@ scopeconfig: []
 		results.Fail("some_file.pem", "filecontent", "Bomb", []string{})
 
 		expectedFileContent := `fileignoreconfig:
-- filename: existing.pem
-  checksum: 123444ddssa75333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
-  ignore_detectors: []
-scopeconfig: []
-fileignoreconfig:
 - filename: some_file.pem
   checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
   ignore_detectors: []
@@ -148,11 +151,29 @@ scopeconfig: []
 		assert.Equal(t, expectedFileContent, string(bytesFromFile))
 	})
 
-	t.Run("when user confirms for multiple entries, they should be appended to given ignore file", func(t *testing.T) {
-		// Clearing file contents from previous tests
-		err := afero.WriteFile(fs, ignoreFile, []byte{}, 0666)
-		assert.NoError(t, err)
+	_ = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
+	t.Run("when user confirms, entry for existing file should updated", func(t *testing.T) {
+		promptContext := prompt.NewPromptContext(true, prompter)
+		prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(true)
+		results := NewDetectionResults()
+		results.Fail("existing.pem", "filecontent", "This will bomb!", []string{})
 
+		expectedFileContent := `fileignoreconfig:
+- filename: existing.pem
+  checksum: 5bc0b0692a316bb2919263addaef0ffba3a21b9e1cca62a1028390e97e861e4e
+  ignore_detectors: []
+scopeconfig: []
+
+`
+		results.Report(fs, ignoreFile, promptContext)
+		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expectedFileContent, string(bytesFromFile))
+	})
+
+	_ = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
+	t.Run("when user confirms for multiple entries, they should be appended to given ignore file", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(true).Times(2)
 
@@ -160,11 +181,11 @@ scopeconfig: []
 		results.Fail("another.pem", "filecontent", "password", []string{})
 
 		expectedFileContent := `fileignoreconfig:
-- filename: some_file.pem
-  checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
-  ignore_detectors: []
 - filename: another.pem
   checksum: 117e23557c02cbd472854ebce4933d6daec1fd207971286f6ffc9f1774c1a83b
+  ignore_detectors: []
+- filename: some_file.pem
+  checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
   ignore_detectors: []
 scopeconfig: []
 `
@@ -174,7 +195,6 @@ scopeconfig: []
 		assert.NoError(t, err)
 		assert.Equal(t, expectedFileContent, string(bytesFromFile))
 	})
-
 
 	err = fs.Remove(ignoreFile)
 	assert.NoError(t, err)
