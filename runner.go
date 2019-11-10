@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/spf13/afero"
 	"log"
 	"os"
 	"talisman/checksumcalculator"
@@ -11,7 +10,10 @@ import (
 	"talisman/prompt"
 	"talisman/report"
 	"talisman/scanner"
+	"talisman/talismanrc"
 	"talisman/utility"
+
+	"github.com/spf13/afero"
 )
 
 const (
@@ -49,7 +51,7 @@ func (r *Runner) Scan(reportDirectory string) int {
 	fmt.Printf("\n\n")
 	utility.CreateArt("Running Scan..")
 	additions := scanner.GetAdditions()
-	ignores := detector.TalismanRCIgnore{}
+	ignores := &talismanrc.TalismanRCIgnore{}
 	detector.DefaultChain().Test(additions, ignores, r.results)
 	reportsPath, err := report.GenerateReport(r.results, reportDirectory)
 	if err != nil {
@@ -74,9 +76,9 @@ func (r *Runner) RunChecksumCalculator(fileNamePatterns []string) int {
 }
 
 func (r *Runner) doRun() {
-	rcConfigIgnores := detector.ReadConfigFromRCFile(readRepoFile())
+	rcConfigIgnores := talismanrc.ReadConfigFromRCFile(readRepoFile())
 	scopeMap := getScopeConfig()
-	additionsToScan := detector.IgnoreAdditionsByScope(r.additions, rcConfigIgnores, scopeMap);
+	additionsToScan := rcConfigIgnores.IgnoreAdditionsByScope(r.additions, scopeMap)
 	detector.DefaultChain().Test(additionsToScan, rcConfigIgnores, r.results)
 }
 
@@ -94,7 +96,7 @@ func (r *Runner) printReport(promptContext prompt.PromptContext) {
 	}
 	if r.results.HasIgnores() || r.results.HasFailures() {
 		fs := afero.NewOsFs()
-		r.results.Report(fs, detector.DefaultRCFileName, promptContext)
+		r.results.Report(fs, talismanrc.DefaultRCFileName, promptContext)
 	}
 }
 

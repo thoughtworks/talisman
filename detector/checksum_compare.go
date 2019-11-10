@@ -2,16 +2,17 @@ package detector
 
 import (
 	"talisman/gitrepo"
+	"talisman/talismanrc"
 	"talisman/utility"
 )
 
 type ChecksumCompare struct {
 	additions    []gitrepo.Addition
-	ignoreConfig TalismanRCIgnore
+	ignoreConfig *talismanrc.TalismanRCIgnore
 }
 
 //NewChecksumCompare returns new instance of the ChecksumCompare
-func NewChecksumCompare(gitAdditions []gitrepo.Addition, talismanRCIgnoreConfig TalismanRCIgnore) *ChecksumCompare {
+func NewChecksumCompare(gitAdditions []gitrepo.Addition, talismanRCIgnoreConfig *talismanrc.TalismanRCIgnore) *ChecksumCompare {
 	cc := ChecksumCompare{additions: gitAdditions, ignoreConfig: talismanRCIgnoreConfig}
 	return &cc
 }
@@ -30,17 +31,17 @@ func (cc *ChecksumCompare) IsScanNotRequired(addition gitrepo.Addition) bool {
 
 }
 
-//FilterIgnoresBasedOnChecksums filters the file ignores from the TalismanRCIgnore which doesn't have any checksum value or having mismatched checksum value from the .talsimanrc
-func (cc *ChecksumCompare) FilterIgnoresBasedOnChecksums() TalismanRCIgnore {
-	finalIgnores := []FileIgnoreConfig{}
+//FilterIgnoresBasedOnChecksums filters the file ignores from the talismanrc.TalismanRCIgnore which doesn't have any checksum value or having mismatched checksum value from the .talsimanrc
+func (cc *ChecksumCompare) FilterIgnoresBasedOnChecksums() talismanrc.TalismanRCIgnore {
+	finalIgnores := []talismanrc.FileIgnoreConfig{}
 	for _, ignore := range cc.ignoreConfig.FileIgnoreConfig {
 		currentCollectiveChecksum := cc.calculateCollectiveChecksumForPattern(ignore.FileName, cc.additions)
-		// Compare with previous checksum from FileIgnoreConfig
+		// Compare with previous checksum from talismanrc.FileIgnoreConfig
 		if ignore.Checksum == currentCollectiveChecksum {
 			finalIgnores = append(finalIgnores, ignore)
 		}
 	}
-	rc := TalismanRCIgnore{}
+	rc := talismanrc.TalismanRCIgnore{}
 	rc.FileIgnoreConfig = finalIgnores
 	return rc
 }

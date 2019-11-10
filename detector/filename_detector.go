@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"talisman/gitrepo"
+	"talisman/talismanrc"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -60,6 +61,7 @@ var (
 		regexp.MustCompile(`^\.?gnucash$`),
 	}
 )
+
 //FileNameDetector represents tests performed against the fileName of the Additions.
 //The Paths of the supplied Additions are tested against the configured patterns and if any of them match, it is logged as a failure during the run
 type FileNameDetector struct {
@@ -77,10 +79,10 @@ func NewFileNameDetector(patterns []*regexp.Regexp) Detector {
 }
 
 //Test tests the fileNames of the Additions to ensure that they don't look suspicious
-func (fd FileNameDetector) Test(additions []gitrepo.Addition, ignoreConfig TalismanRCIgnore, result *DetectionResults) {
+func (fd FileNameDetector) Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRCIgnore, result *DetectionResults) {
 	cc := NewChecksumCompare(additions, ignoreConfig)
 	for _, addition := range additions {
-		if ignoreConfig.Deny(addition, "filename") || cc.IsScanNotRequired(addition){
+		if ignoreConfig.Deny(addition, "filename") || cc.IsScanNotRequired(addition) {
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
 			}).Info("Ignoring addition as it was specified to be ignored.")

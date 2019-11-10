@@ -1,0 +1,7 @@
+fileignoreconfig:
+- filename: detector/pattern_detector_test.go
+  checksum: e5d892e5b313a6cf6b0edbcf2eb02ede69b11b6c715f133da937b805a018a55a
+  ignore_detectors: 
+  - filecontent
+scopeconfig:
+- scope: go

@@ -2,6 +2,7 @@ package detector
 
 import (
 	"talisman/gitrepo"
+	"talisman/talismanrc"
 	"talisman/utility"
 	"testing"
 
@@ -36,7 +37,7 @@ fileignoreconfig:
 `
 
 func TestShouldConsiderBothFilesForDetection(t *testing.T) {
-	rc := NewTalismanRCIgnore([]byte(talismanRCWithInCorrectChecksum))
+	rc := talismanrc.NewTalismanRCIgnore([]byte(talismanRCWithInCorrectChecksum))
 	addition1 := gitrepo.NewAddition("some_file.pem", make([]byte, 0))
 	addition2 := gitrepo.NewAddition("test/some_file.pem", make([]byte, 0))
 	cc := NewChecksumCompare([]gitrepo.Addition{addition1, addition2}, rc)
@@ -49,7 +50,7 @@ func TestShouldConsiderBothFilesForDetection(t *testing.T) {
 func TestShouldNotConsiderBothFilesForDetection(t *testing.T) {
 	addition1 := gitrepo.NewAddition("some_file.pem", make([]byte, 0))
 	addition2 := gitrepo.NewAddition("test/some_file.pem", make([]byte, 0))
-	rc := NewTalismanRCIgnore([]byte(talismanRCWithCorrectChecksum))
+	rc := talismanrc.NewTalismanRCIgnore([]byte(talismanRCWithCorrectChecksum))
 	cc := NewChecksumCompare([]gitrepo.Addition{addition1, addition2}, rc)
 
 	filteredRC := cc.FilterIgnoresBasedOnChecksums()
@@ -60,7 +61,7 @@ func TestShouldNotConsiderBothFilesForDetection(t *testing.T) {
 func TestShouldConsiderOneFileForDetection(t *testing.T) {
 	addition1 := gitrepo.NewAddition("some_file.pem", make([]byte, 0))
 	addition2 := gitrepo.NewAddition("test/some1_file.pem", make([]byte, 0))
-	rc := NewTalismanRCIgnore([]byte(talismanRCWithOneCorrectChecksum))
+	rc := talismanrc.NewTalismanRCIgnore([]byte(talismanRCWithOneCorrectChecksum))
 	cc := NewChecksumCompare([]gitrepo.Addition{addition1, addition2}, rc)
 
 	filteredRC := cc.FilterIgnoresBasedOnChecksums()
@@ -71,7 +72,7 @@ func TestShouldConsiderOneFileForDetection(t *testing.T) {
 func TestShouldConsiderBothFilesForDetectionIfTalismanRCIsEmpty(t *testing.T) {
 	addition1 := gitrepo.NewAddition("some_file.pem", make([]byte, 0))
 	addition2 := gitrepo.NewAddition("test/some_file.pem", make([]byte, 0))
-	rc := NewTalismanRCIgnore([]byte{})
+	rc := talismanrc.NewTalismanRCIgnore([]byte{})
 	cc := NewChecksumCompare([]gitrepo.Addition{addition1, addition2}, rc)
 
 	filteredRC := cc.FilterIgnoresBasedOnChecksums()

@@ -4,10 +4,11 @@ package detector
 //https://github.com/jandre/safe-commit-hook
 
 import (
-	"testing"
 	"regexp"
+	"testing"
 
 	"talisman/gitrepo"
+	"talisman/talismanrc"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -143,12 +144,12 @@ func shouldIgnoreFilesWhichWouldOtherwiseTriggerErrors(fileName, ignore string, 
 func shouldNotFailWithDefaultDetectorAndIgnores(fileName, ignore string, t *testing.T) {
 	results := NewDetectionResults()
 
-	fileIgnoreConfig := FileIgnoreConfig{}
+	fileIgnoreConfig := talismanrc.FileIgnoreConfig{}
 	fileIgnoreConfig.FileName = ignore
 	fileIgnoreConfig.IgnoreDetectors = make([]string, 1)
 	fileIgnoreConfig.IgnoreDetectors[0] = "filename"
-	talismanRCIgnore := TalismanRCIgnore{}
-	talismanRCIgnore.FileIgnoreConfig = make([]FileIgnoreConfig, 1)
+	talismanRCIgnore := &talismanrc.TalismanRCIgnore{}
+	talismanRCIgnore.FileIgnoreConfig = make([]talismanrc.FileIgnoreConfig, 1)
 	talismanRCIgnore.FileIgnoreConfig[0] = fileIgnoreConfig
 
 	DefaultFileNameDetector().Test(additionsNamed(fileName), talismanRCIgnore, results)
@@ -158,13 +159,13 @@ func shouldNotFailWithDefaultDetectorAndIgnores(fileName, ignore string, t *test
 func shouldFailWithSpecificPattern(fileName, pattern string, t *testing.T) {
 	results := NewDetectionResults()
 	pt := regexp.MustCompile(pattern)
-	NewFileNameDetector([]*regexp.Regexp{pt}).Test(additionsNamed(fileName), TalismanRCIgnore{}, results)
+	NewFileNameDetector([]*regexp.Regexp{pt}).Test(additionsNamed(fileName), talismanRCIgnore, results)
 	assert.True(t, results.HasFailures(), "Expected file %s to fail the check against the %s pattern", fileName, pattern)
 }
 
 func shouldFailWithDefaultDetector(fileName, pattern string, t *testing.T) {
 	results := NewDetectionResults()
-	DefaultFileNameDetector().Test(additionsNamed(fileName), TalismanRCIgnore{}, results)
+	DefaultFileNameDetector().Test(additionsNamed(fileName), talismanRCIgnore, results)
 	assert.True(t, results.HasFailures(), "Expected file %s to fail the check against default detector. Missing pattern %s?", fileName, pattern)
 }
 
