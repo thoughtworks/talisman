@@ -1,0 +1,25 @@
+name: Go
+on: [push]
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    env:
+      GO111MODULE: on
+    steps:
+
+    - name: Set up Go 1.13
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.13
+      id: go
+
+    - name: Get dependencies
+      run: go get -v -t -d ./...
+    
+    - name: Run tests
+      run: go test -v ./...
+
+    - name: Build
+      run: ./build
