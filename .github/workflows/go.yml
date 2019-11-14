@@ -22,7 +22,10 @@ jobs:
       run: go get -v -t -d ./...
 
     - name: Run tests
-      run: go test -v ./...
+      run: |
+        git config --global user.name 'Talisman Test User'
+        git config --global user.email 'talisman-test-user@example.com'
+        go test -v ./...
 
     - name: Build
       run: ./build
