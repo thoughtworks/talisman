@@ -159,12 +159,19 @@ func processContent(c content, result *DetectionResults) {
 				"filePath": c.path,
 			}).Info(c.contentType.getInfo())
 			if string(c.name) == talismanrc.DefaultRCFileName {
-				result.Warn(c.path, "filecontent", fmt.Sprintf(c.contentType.getMessageFormat(), res), []string{})
+				result.Warn(c.path, "filecontent", fmt.Sprintf(c.contentType.getMessageFormat(), formatForReporting(res)), []string{})
 			} else {
-				result.Fail(c.path, "filecontent", fmt.Sprintf(c.contentType.getMessageFormat(), res), []string{})
+				result.Fail(c.path, "filecontent", fmt.Sprintf(c.contentType.getMessageFormat(), formatForReporting(res)), []string{})
 			}
 		}
 	}
+}
+
+func formatForReporting(input string) string {
+	if len(input) > 50 {
+		return input[:47] + "..."
+	}
+	return input
 }
 
 func (fc *FileContentDetector) detectFile(data []byte, getResult fn) []string {

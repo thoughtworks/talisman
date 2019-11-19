@@ -75,6 +75,21 @@ func TestShouldFlagPotentialAWSSecretKeys(t *testing.T) {
 	assert.Len(t, results.Results, 1)
 }
 
+func TestShouldFlagPotentialSecretWithoutTrimmingWhenLengthLessThan50Characters(t *testing.T) {
+	const secret string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9asdfa"
+	results := NewDetectionResults()
+	content := []byte(secret)
+	filename := "filename"
+	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
+	filePath := additions[0].Path
+
+	NewFileContentDetector().Test(additions, talismanRCIgnore, results)
+	expectedMessage := fmt.Sprintf("Expected file to not to contain base64 encoded texts such as: %s", secret)
+	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
+	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
+	assert.Len(t, results.Results, 1)
+}
+
 func TestShouldFlagPotentialJWT(t *testing.T) {
 	const jwt string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzY290Y2guaW8iLCJleHAiOjEzMDA4MTkzODAsIm5hbWUiOiJDaHJpcyBTZXZpbGxlamEiLCJhZG1pbiI6dHJ1ZX0.03f329983b86f7d9a9f5fef85305880101d5e302afafa20154d094b229f757"
 	results := NewDetectionResults()
@@ -84,7 +99,7 @@ func TestShouldFlagPotentialJWT(t *testing.T) {
 	filePath := additions[0].Path
 
 	NewFileContentDetector().Test(additions, talismanRCIgnore, results)
-	expectedMessage := fmt.Sprintf("Expected file to not to contain base64 encoded texts such as: %s", jwt)
+	expectedMessage := fmt.Sprintf("Expected file to not to contain base64 encoded texts such as: %s", jwt[:47]+"...")
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
 	assert.Len(t, results.Results, 1)
@@ -99,7 +114,7 @@ func TestShouldFlagPotentialSecretsWithinJavaCode(t *testing.T) {
 	filePath := additions[0].Path
 
 	NewFileContentDetector().Test(additions, talismanRCIgnore, results)
-	expectedMessage := "Expected file to not to contain base64 encoded texts such as: accessKey=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\";"
+	expectedMessage := "Expected file to not to contain base64 encoded texts such as: accessKey=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPL..."
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
 	assert.Len(t, results.Results, 1)
