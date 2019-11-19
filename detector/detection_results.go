@@ -362,7 +362,7 @@ func (r *DetectionResults) ReportFileFailures(filePath gitrepo.FilePath) [][]str
 	if len(failureList) > 0 {
 		for _, detail := range failureList {
 			if len(detail.Message) > 150 {
-				detail.Message = detail.Message[:150] + "\n" + detail.Message[150:]
+				detail.Message = detail.Message[:75] + "\n" + detail.Message[75:147] + "..."
 			}
 			data = append(data, []string{string(filePath), detail.Message})
 		}
@@ -376,7 +376,7 @@ func (r *DetectionResults) ReportFileWarnings(filePath gitrepo.FilePath) [][]str
 	if len(warningList) > 0 {
 		for _, detail := range warningList {
 			if len(detail.Message) > 150 {
-				detail.Message = detail.Message[:150] + "\n" + detail.Message[150:]
+				detail.Message = detail.Message[:75] + "\n" + detail.Message[75:147] + "..."
 			}
 			data = append(data, []string{string(filePath), detail.Message})
 		}
