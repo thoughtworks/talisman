@@ -1,52 +1,29 @@
 package talismanrc
 
 import (
+	logr "github.com/Sirupsen/logrus"
+	"github.com/spf13/afero"
+	"gopkg.in/yaml.v2"
 	"log"
 	"os"
 	"reflect"
 	"regexp"
 	"sort"
-	"strings"
-
-	logr "github.com/Sirupsen/logrus"
-	"github.com/spf13/afero"
-	"gopkg.in/yaml.v2"
 
 	"talisman/gitrepo"
 )
 
 const (
-	//LinePattern represents a line in the ignorefile with an optional comment
-	LinePattern string = `^([^#]+)?\s*(#(.*))?$`
-
-	//IgnoreDetectorCommentPattern represents a special comment that ignores only certain detectors
-	IgnoreDetectorCommentPattern string = `^ignore:([^\s]+).*$`
-
 	//DefaultRCFileName represents the name of default file in which all the ignore patterns are configured in new version
 	DefaultRCFileName string = ".talismanrc"
 )
 
 var (
-	commentPattern     = regexp.MustCompile(LinePattern)
-	ignorePattern      = regexp.MustCompile(IgnoreDetectorCommentPattern)
 	emptyStringPattern = regexp.MustCompile(`^\s*$`)
 	fs                 = afero.NewOsFs()
 	currentRCFileName  = DefaultRCFileName
-	cachedConfig       TalismanRC
 )
 
-//Ignores represents a set of patterns that have been configured to be ignored by the Detectors.
-//Detectors are expected to honor these ignores.
-type Ignores struct {
-	patterns []Ignore
-}
-
-//Ignore represents a single pattern and its comment
-type Ignore struct {
-	pattern          string
-	comment          string
-	ignoredDetectors []string
-}
 
 type FileIgnoreConfig struct {
 	FileName        string   `yaml:"filename"`
@@ -84,7 +61,7 @@ func ReadConfigFromRCFile(repoFileRead func(string) ([]byte, error)) *TalismanRC
 	if error != nil {
 		panic(error)
 	}
-	return NewtalismanRC(fileContents)
+	return NewTalismanRC(fileContents)
 }
 
 func readRepoFile() func(string) ([]byte, error) {
@@ -93,7 +70,7 @@ func readRepoFile() func(string) ([]byte, error) {
 	return repo.ReadRepoFileOrNothing
 }
 
-func NewtalismanRC(fileContents []byte) *TalismanRC {
+func NewTalismanRC(fileContents []byte) *TalismanRC {
 	talismanRC := TalismanRC{}
 	err := yaml.Unmarshal([]byte(fileContents), &talismanRC)
 	if err != nil {
@@ -104,37 +81,9 @@ func NewtalismanRC(fileContents []byte) *TalismanRC {
 	return &talismanRC
 }
 
-func NewIgnore(pattern string, comment string) Ignore {
-	var ignoredDetectors []string
-	match := ignorePattern.FindStringSubmatch(comment)
-	if match != nil {
-		ignoredDetectors = strings.Split(match[1], ",")
-	}
-
-	return Ignore{
-		pattern:          pattern,
-		comment:          comment,
-		ignoredDetectors: ignoredDetectors,
-	}
-}
-
 func (i FileIgnoreConfig) isEffective(detectorName string) bool {
 	return !isEmptyString(i.FileName) &&
 		contains(i.IgnoreDetectors, detectorName)
-}
-
-//NewIgnores builds a new Ignores with the patterns specified in the ignoreSpecs
-//Empty lines and comments are ignored.
-func NewIgnores(lines ...string) Ignores {
-	var groups []string
-	var ignores []Ignore
-	for _, line := range lines {
-		groups = commentPattern.FindStringSubmatch(line)
-		if len(groups) == 4 {
-			ignores = append(ignores, NewIgnore(strings.TrimSpace(groups[1]), strings.TrimSpace(groups[3])))
-		}
-	}
-	return Ignores{ignores}
 }
 
 //AcceptsAll returns true if there are no rules specified
@@ -207,13 +156,13 @@ func combineFileIgnores(exsiting, incoming []FileIgnoreConfig) []FileIgnoreConfi
 	result := make([]FileIgnoreConfig, len(existingMap))
 	resultKeys := make([]string, len(existingMap))
 	index := 0
-	//sort keys in alpabetical order
+	//sort keys in alphabetical order
 	for k, _ := range existingMap {
 		resultKeys[index] = k
 		index++
 	}
 	sort.Strings(resultKeys)
-	//add result entries based on sortedkeys
+	//add result entries based on sorted keys
 	index = 0
 	for _, k := range resultKeys {
 		result[index] = existingMap[k]

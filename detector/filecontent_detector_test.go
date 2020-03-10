@@ -31,7 +31,7 @@ func TestShouldIgnoreFileIfNeeded(t *testing.T) {
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 
-	NewFileContentDetector().Test(additions, talismanrc.NewtalismanRC([]byte(talismanRCContents)), results)
+	NewFileContentDetector().Test(additions, talismanrc.NewTalismanRC([]byte(talismanRCContents)), results)
 	assert.True(t, results.Successful(), "Expected file %s to be ignored by pattern", filename)
 }
 

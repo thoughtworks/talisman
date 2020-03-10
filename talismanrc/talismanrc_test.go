@@ -10,32 +10,14 @@ import (
 
 func TestShouldIgnoreEmptyLinesInTheFile(t *testing.T) {
 	for _, s := range []string{"", " ", "  "} {
-		assert.True(t, NewtalismanRC([]byte(s)).AcceptsAll(), "Expected '%s' to result in no ignore patterns.", s)
+		assert.True(t, NewTalismanRC([]byte(s)).AcceptsAll(), "Expected '%s' to result in no ignore patterns.", s)
 	}
 }
 
 func TestShouldIgnoreUnformattedFiles(t *testing.T) {
 	for _, s := range []string{"#", "#monkey", "# this monkey likes bananas  "} {
-		assert.True(t, NewtalismanRC([]byte(s)).AcceptsAll(), "Expected commented line '%s' to result in no ignore patterns", s)
+		assert.True(t, NewTalismanRC([]byte(s)).AcceptsAll(), "Expected commented line '%s' to result in no ignore patterns", s)
 	}
-}
-
-func TestShouldParseIgnoreLinesProperly(t *testing.T) {
-	assert.Equal(t, NewIgnores("foo* # comment"), SingleIgnore("foo*", "comment"))
-	assert.Equal(t, NewIgnores("foo* # comment with multiple words"), SingleIgnore("foo*", "comment with multiple words"))
-	assert.Equal(t, NewIgnores("foo* # comment with#multiple#words"), SingleIgnore("foo*", "comment with#multiple#words"))
-	assert.Equal(t, NewIgnores("foo*# comment"), SingleIgnore("foo*", "comment"))
-
-	assert.Equal(t, NewIgnores("# comment"), SingleIgnore("", "comment"))
-	assert.Equal(t, NewIgnores("#comment"), SingleIgnore("", "comment"))
-
-	assert.Equal(t, NewIgnores(""), SingleIgnore("", ""))
-	assert.Equal(t, NewIgnores(" "), SingleIgnore("", ""))
-
-	assert.Equal(t, NewIgnores("foo # ignore:some-detector"), SingleIgnore("foo", "ignore:some-detector", "some-detector"))
-	assert.Equal(t, NewIgnores("foo # ignore:some-detector,some-other-detector"), SingleIgnore("foo", "ignore:some-detector,some-other-detector", "some-detector", "some-other-detector"))
-	assert.Equal(t, NewIgnores("foo # ignore:some-detector because of some reason"), SingleIgnore("foo", "ignore:some-detector because of some reason", "some-detector"))
-
 }
 
 func TestDirectoryPatterns(t *testing.T) {
@@ -126,12 +108,4 @@ func CreatetalismanRCWithScopeIgnore(scopesToIgnore []string) *TalismanRC {
 
 	talismanRC := TalismanRC{ScopeConfig: scopeConfigs}
 	return &talismanRC
-}
-
-func SingleIgnore(pattern string, comment string, ignoredDetectors ...string) Ignores {
-	return Ignores{patterns: []Ignore{{
-		pattern:          pattern,
-		comment:          comment,
-		ignoredDetectors: ignoredDetectors,
-	}}}
 }
