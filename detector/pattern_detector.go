@@ -109,6 +109,10 @@ func (detector PatternDetector) processMatch(match match, result *DetectionResul
 }
 
 //NewPatternDetector returns a PatternDetector that tests Additions against the pre-configured patterns
-func NewPatternDetector() *PatternDetector {
-	return &PatternDetector{NewSecretsPatternDetector(detectorPatterns)}
+func NewPatternDetector(custom []talismanrc.PatternString) *PatternDetector {
+	matcher := NewPatternMatcher(detectorPatterns)
+	for _, pattern := range custom {
+		matcher.add(pattern)
+	}
+	return &PatternDetector{matcher}
 }

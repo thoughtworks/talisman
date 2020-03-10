@@ -40,7 +40,7 @@ type PatternString string
 type TalismanRC struct {
 	FileIgnoreConfig []FileIgnoreConfig `yaml:"fileignoreconfig,omitempty"`
 	ScopeConfig      []ScopeConfig      `yaml:"scopeconfig,omitempty"`
-	CustomPatterns   []PatternString    `yaml:"custompatterns,omitempty"`
+	CustomPatterns   []PatternString    `yaml:"custom_patterns,omitempty"`
 }
 
 func SetFs(_fs afero.Fs) {
@@ -75,7 +75,7 @@ func readRepoFile() func(string) ([]byte, error) {
 
 func NewTalismanRC(fileContents []byte) *TalismanRC {
 	talismanRC := TalismanRC{}
-	err := yaml.Unmarshal([]byte(fileContents), &talismanRC)
+	err := yaml.Unmarshal(fileContents, &talismanRC)
 	if err != nil {
 		log.Println("Unable to parse .talismanrc")
 		log.Printf("error: %v", err)

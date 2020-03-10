@@ -8,6 +8,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	customPatterns []talismanrc.PatternString
+)
+
 func TestShouldDetectPasswordPatterns(t *testing.T) {
 	filename := "secret.txt"
 
@@ -30,14 +34,14 @@ func TestShouldIgnorePasswordPatterns(t *testing.T) {
 	fileIgnoreConfig := talismanrc.FileIgnoreConfig{filename, "833b6c24c8c2c5c7e1663226dc401b29c005492dc76a1150fc0e0f07f29d4cc3", []string{"filecontent"}}
 	ignores := &talismanrc.TalismanRC{FileIgnoreConfig: []talismanrc.FileIgnoreConfig{fileIgnoreConfig}}
 
-	NewPatternDetector().Test(additions, ignores, results)
+	NewPatternDetector(customPatterns).Test(additions, ignores, results)
 	assert.True(t, results.Successful(), "Expected file %s to be ignored by pattern", filename)
 }
 
 func shouldPassDetectionOfSecretPattern(filename string, content []byte, t *testing.T) {
 	results := NewDetectionResults()
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
-	NewPatternDetector().Test(additions, talismanRC, results)
+	NewPatternDetector(customPatterns).Test(additions, talismanRC, results)
 	expected := "Potential secret pattern : " + string(content)
 	assert.Equal(t, expected, getFailureMessage(results, additions))
 	assert.Len(t, results.Results, 1)

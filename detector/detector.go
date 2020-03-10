@@ -27,11 +27,11 @@ func NewChain() *Chain {
 }
 
 //DefaultChain returns a DetectorChain with pre-configured detectors
-func DefaultChain() *Chain {
+func DefaultChain(tRC *talismanrc.TalismanRC) *Chain {
 	result := NewChain()
 	result.AddDetector(DefaultFileNameDetector())
 	result.AddDetector(NewFileContentDetector())
-	result.AddDetector(NewPatternDetector())
+	result.AddDetector(NewPatternDetector(tRC.CustomPatterns))
 	return result
 }
 
