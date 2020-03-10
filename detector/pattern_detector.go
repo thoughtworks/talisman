@@ -41,7 +41,7 @@ type match struct {
 }
 
 //Test tests the contents of the Additions to ensure that they don't look suspicious
-func (detector PatternDetector) Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRCIgnore, result *DetectionResults) {
+func (detector PatternDetector) Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
 	cc := NewChecksumCompare(additions, ignoreConfig)
 	matches := make(chan match, 512)
 	ignoredFilePaths := make(chan gitrepo.FilePath, 512)

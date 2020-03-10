@@ -37,7 +37,7 @@ fileignoreconfig:
 `
 
 func TestShouldConsiderBothFilesForDetection(t *testing.T) {
-	rc := talismanrc.NewTalismanRCIgnore([]byte(talismanRCWithInCorrectChecksum))
+	rc := talismanrc.NewtalismanRC([]byte(talismanRCWithInCorrectChecksum))
 	addition1 := gitrepo.NewAddition("some_file.pem", make([]byte, 0))
 	addition2 := gitrepo.NewAddition("test/some_file.pem", make([]byte, 0))
 	cc := NewChecksumCompare([]gitrepo.Addition{addition1, addition2}, rc)
@@ -50,7 +50,7 @@ func TestShouldConsiderBothFilesForDetection(t *testing.T) {
 func TestShouldNotConsiderBothFilesForDetection(t *testing.T) {
 	addition1 := gitrepo.NewAddition("some_file.pem", make([]byte, 0))
 	addition2 := gitrepo.NewAddition("test/some_file.pem", make([]byte, 0))
-	rc := talismanrc.NewTalismanRCIgnore([]byte(talismanRCWithCorrectChecksum))
+	rc := talismanrc.NewtalismanRC([]byte(talismanRCWithCorrectChecksum))
 	cc := NewChecksumCompare([]gitrepo.Addition{addition1, addition2}, rc)
 
 	filteredRC := cc.FilterIgnoresBasedOnChecksums()
@@ -61,7 +61,7 @@ func TestShouldNotConsiderBothFilesForDetection(t *testing.T) {
 func TestShouldConsiderOneFileForDetection(t *testing.T) {
 	addition1 := gitrepo.NewAddition("some_file.pem", make([]byte, 0))
 	addition2 := gitrepo.NewAddition("test/some1_file.pem", make([]byte, 0))
-	rc := talismanrc.NewTalismanRCIgnore([]byte(talismanRCWithOneCorrectChecksum))
+	rc := talismanrc.NewtalismanRC([]byte(talismanRCWithOneCorrectChecksum))
 	cc := NewChecksumCompare([]gitrepo.Addition{addition1, addition2}, rc)
 
 	filteredRC := cc.FilterIgnoresBasedOnChecksums()
@@ -72,7 +72,7 @@ func TestShouldConsiderOneFileForDetection(t *testing.T) {
 func TestShouldConsiderBothFilesForDetectionIfTalismanRCIsEmpty(t *testing.T) {
 	addition1 := gitrepo.NewAddition("some_file.pem", make([]byte, 0))
 	addition2 := gitrepo.NewAddition("test/some_file.pem", make([]byte, 0))
-	rc := talismanrc.NewTalismanRCIgnore([]byte{})
+	rc := talismanrc.NewtalismanRC([]byte{})
 	cc := NewChecksumCompare([]gitrepo.Addition{addition1, addition2}, rc)
 
 	filteredRC := cc.FilterIgnoresBasedOnChecksums()

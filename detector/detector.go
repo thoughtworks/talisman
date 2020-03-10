@@ -10,7 +10,7 @@ import (
 //Detectors are expected to honor the ignores that are passed in and log them in the results
 //Detectors are expected to signal any errors to the results
 type Detector interface {
-	Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRCIgnore, result *DetectionResults)
+	Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults)
 }
 
 //Chain represents a chain of Detectors.
@@ -43,7 +43,7 @@ func (dc *Chain) AddDetector(d Detector) *Chain {
 
 //Test validates the additions against each detector in the chain.
 //The results are passed in from detector to detector and thus collect all errors from all detectors
-func (dc *Chain) Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRCIgnore, result *DetectionResults) {
+func (dc *Chain) Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
 	wd, _ := os.Getwd()
 	repo := gitrepo.RepoLocatedAt(wd)
 	gitTrackedFilesAsAdditions := repo.TrackedFilesAsAdditions()

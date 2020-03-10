@@ -50,7 +50,7 @@ func (r *Runner) Scan(reportDirectory string) int {
 	fmt.Printf("\n\n")
 	utility.CreateArt("Running Scan..")
 	additions := scanner.GetAdditions()
-	ignores := &talismanrc.TalismanRCIgnore{}
+	ignores := &talismanrc.TalismanRC{}
 	detector.DefaultChain().Test(additions, ignores, r.results)
 	reportsPath, err := report.GenerateReport(r.results, reportDirectory)
 	if err != nil {

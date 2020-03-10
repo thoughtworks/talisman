@@ -21,7 +21,7 @@ func NewFileSizeDetector(size int) Detector {
 	return FileSizeDetector{size}
 }
 
-func (fd FileSizeDetector) Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRCIgnore, result *DetectionResults) {
+func (fd FileSizeDetector) Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
 	cc := NewChecksumCompare(additions, ignoreConfig)
 	for _, addition := range additions {
 		if ignoreConfig.Deny(addition, "filesize") || cc.IsScanNotRequired(addition) {

@@ -32,7 +32,7 @@ var (
 	emptyStringPattern = regexp.MustCompile(`^\s*$`)
 	fs                 = afero.NewOsFs()
 	currentRCFileName  = DefaultRCFileName
-	cachedConfig       TalismanRCIgnore
+	cachedConfig       TalismanRC
 )
 
 //Ignores represents a set of patterns that have been configured to be ignored by the Detectors.
@@ -58,7 +58,7 @@ type ScopeConfig struct {
 	ScopeName string `yaml:"scope"`
 }
 
-type TalismanRCIgnore struct {
+type TalismanRC struct {
 	FileIgnoreConfig []FileIgnoreConfig `yaml:"fileignoreconfig"`
 	ScopeConfig      []ScopeConfig      `yaml:"scopeconfig"`
 }
@@ -71,20 +71,20 @@ func SetRcFilename(rcFileName string) {
 	currentRCFileName = rcFileName
 }
 
-func Get() *TalismanRCIgnore {
+func Get() *TalismanRC {
 	return ReadConfigFromRCFile(readRepoFile())
 }
 
-func (ignore *TalismanRCIgnore) IsEmpty() bool {
-	return reflect.DeepEqual(TalismanRCIgnore{}, ignore)
+func (ignore *TalismanRC) IsEmpty() bool {
+	return reflect.DeepEqual(TalismanRC{}, ignore)
 }
 
-func ReadConfigFromRCFile(repoFileRead func(string) ([]byte, error)) *TalismanRCIgnore {
+func ReadConfigFromRCFile(repoFileRead func(string) ([]byte, error)) *TalismanRC {
 	fileContents, error := repoFileRead(currentRCFileName)
 	if error != nil {
 		panic(error)
 	}
-	return NewTalismanRCIgnore(fileContents)
+	return NewtalismanRC(fileContents)
 }
 
 func readRepoFile() func(string) ([]byte, error) {
@@ -93,15 +93,15 @@ func readRepoFile() func(string) ([]byte, error) {
 	return repo.ReadRepoFileOrNothing
 }
 
-func NewTalismanRCIgnore(fileContents []byte) *TalismanRCIgnore {
-	talismanRCIgnore := TalismanRCIgnore{}
-	err := yaml.Unmarshal([]byte(fileContents), &talismanRCIgnore)
+func NewtalismanRC(fileContents []byte) *TalismanRC {
+	talismanRC := TalismanRC{}
+	err := yaml.Unmarshal([]byte(fileContents), &talismanRC)
 	if err != nil {
 		log.Println("Unable to parse .talismanrc")
 		log.Printf("error: %v", err)
-		return &talismanRCIgnore
+		return &talismanRC
 	}
-	return &talismanRCIgnore
+	return &talismanRC
 }
 
 func NewIgnore(pattern string, comment string) Ignore {
@@ -138,16 +138,16 @@ func NewIgnores(lines ...string) Ignores {
 }
 
 //AcceptsAll returns true if there are no rules specified
-func (i *TalismanRCIgnore) AcceptsAll() bool {
+func (i *TalismanRC) AcceptsAll() bool {
 	return len(i.effectiveRules("any-detector")) == 0
 }
 
 //Accept answers true if the Addition.Path is configured to be checked by the detectors
-func (i *TalismanRCIgnore) Accept(addition gitrepo.Addition, detectorName string) bool {
+func (i *TalismanRC) Accept(addition gitrepo.Addition, detectorName string) bool {
 	return !i.Deny(addition, detectorName)
 }
 
-func (rcConfigIgnores *TalismanRCIgnore) IgnoreAdditionsByScope(additions []gitrepo.Addition, scopeMap map[string][]string) []gitrepo.Addition {
+func (rcConfigIgnores *TalismanRC) IgnoreAdditionsByScope(additions []gitrepo.Addition, scopeMap map[string][]string) []gitrepo.Addition {
 	var applicableScopeFileNames []string
 	if rcConfigIgnores.ScopeConfig != nil {
 		for _, scope := range rcConfigIgnores.ScopeConfig {
@@ -171,12 +171,12 @@ func (rcConfigIgnores *TalismanRCIgnore) IgnoreAdditionsByScope(additions []gitr
 	return result
 }
 
-func (rcConfigIgnores *TalismanRCIgnore) AddFileIgnores(entriesToAdd []FileIgnoreConfig) {
+func (rcConfigIgnores *TalismanRC) AddFileIgnores(entriesToAdd []FileIgnoreConfig) {
 	if len(entriesToAdd) > 0 {
 		logr.Debugf("Adding entries: %v", entriesToAdd)
-		talismanRcIgnoreConfig := Get()
-		talismanRcIgnoreConfig.FileIgnoreConfig = combineFileIgnores(talismanRcIgnoreConfig.FileIgnoreConfig, entriesToAdd)
-		ignoreEntries, _ := yaml.Marshal(&talismanRcIgnoreConfig)
+		talismanRCConfig := Get()
+		talismanRCConfig.FileIgnoreConfig = combineFileIgnores(talismanRCConfig.FileIgnoreConfig, entriesToAdd)
+		ignoreEntries, _ := yaml.Marshal(&talismanRCConfig)
 		file, err := fs.OpenFile(currentRCFileName, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Printf("error opening %s: %s", currentRCFileName, err)
@@ -223,7 +223,7 @@ func combineFileIgnores(exsiting, incoming []FileIgnoreConfig) []FileIgnoreConfi
 }
 
 //Deny answers true if the Addition.Path is configured to be ignored and not checked by the detectors
-func (i *TalismanRCIgnore) Deny(addition gitrepo.Addition, detectorName string) bool {
+func (i *TalismanRC) Deny(addition gitrepo.Addition, detectorName string) bool {
 	result := false
 	for _, pattern := range i.effectiveRules(detectorName) {
 		result = result || addition.Matches(pattern)
@@ -231,7 +231,7 @@ func (i *TalismanRCIgnore) Deny(addition gitrepo.Addition, detectorName string) 
 	return result
 }
 
-func (i *TalismanRCIgnore) effectiveRules(detectorName string) []string {
+func (i *TalismanRC) effectiveRules(detectorName string) []string {
 	var result []string
 	for _, ignore := range i.FileIgnoreConfig {
 		if ignore.isEffective(detectorName) {

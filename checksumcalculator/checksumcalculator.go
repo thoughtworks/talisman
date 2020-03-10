@@ -38,8 +38,8 @@ func (cc *ChecksumCalculator) SuggestTalismanRC() string {
 	}
 	if len(fileIgnoreConfigs) != 0 {
 		result = result + fmt.Sprintf("\n\x1b[33m.talismanrc format for given file names / patterns\x1b[0m\n")
-		talismanRCIgnoreConfig := talismanrc.TalismanRCIgnore{FileIgnoreConfig: fileIgnoreConfigs}
-		m, _ := yaml.Marshal(&talismanRCIgnoreConfig)
+		talismanRCConfig := talismanrc.TalismanRC{FileIgnoreConfig: fileIgnoreConfigs}
+		m, _ := yaml.Marshal(&talismanRCConfig)
 		result = result + string(m)
 	}
 	return result

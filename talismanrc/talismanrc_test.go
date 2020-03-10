@@ -10,13 +10,13 @@ import (
 
 func TestShouldIgnoreEmptyLinesInTheFile(t *testing.T) {
 	for _, s := range []string{"", " ", "  "} {
-		assert.True(t, NewTalismanRCIgnore([]byte(s)).AcceptsAll(), "Expected '%s' to result in no ignore patterns.", s)
+		assert.True(t, NewtalismanRC([]byte(s)).AcceptsAll(), "Expected '%s' to result in no ignore patterns.", s)
 	}
 }
 
 func TestShouldIgnoreUnformattedFiles(t *testing.T) {
 	for _, s := range []string{"#", "#monkey", "# this monkey likes bananas  "} {
-		assert.True(t, NewTalismanRCIgnore([]byte(s)).AcceptsAll(), "Expected commented line '%s' to result in no ignore patterns", s)
+		assert.True(t, NewtalismanRC([]byte(s)).AcceptsAll(), "Expected commented line '%s' to result in no ignore patterns", s)
 	}
 }
 
@@ -55,14 +55,14 @@ func TestIgnoreAdditionsByScope(t *testing.T) {
 	additions := []gitrepo.Addition{file1, file2, file3, file4, file5}
 
 	scopesToIgnore := []string{"node", "go"}
-	talismanRCIgnoreConfig := CreateTalismanRCIgnoreWithScopeIgnore(scopesToIgnore)
+	talismanRCConfig := CreatetalismanRCWithScopeIgnore(scopesToIgnore)
 
 	nodeIgnores := []string{"node.lock", "*yarn.lock"}
 	javaIgnores := []string{"java.lock"}
 	goIgnores := []string{"go.lock", "Gopkg.lock", "vendors/"}
 	scopesMap := map[string][]string{"node": nodeIgnores, "java": javaIgnores, "go": goIgnores}
 
-	filteredAdditions := talismanRCIgnoreConfig.IgnoreAdditionsByScope(additions, scopesMap)
+	filteredAdditions := talismanRCConfig.IgnoreAdditionsByScope(additions, scopesMap)
 
 	assert.NotContains(t, filteredAdditions, file1)
 	assert.NotContains(t, filteredAdditions, file2)
@@ -77,10 +77,10 @@ func TestIgnoringDetectors(t *testing.T) {
 }
 
 func TestAddIgnoreFiles(t *testing.T) {
-	talismanRCIgnoreConfig := CreateTalismanRCIgnoreWithScopeIgnore([]string{})
-	talismanRCIgnoreConfig.AddFileIgnores([]FileIgnoreConfig{FileIgnoreConfig{"Foo", "SomeCheckSum", []string{}}})
-	talismanRCIgnoreConfig = Get()
-	assert.Equal(t, 1, len(talismanRCIgnoreConfig.FileIgnoreConfig))
+	talismanRCConfig := CreatetalismanRCWithScopeIgnore([]string{})
+	talismanRCConfig.AddFileIgnores([]FileIgnoreConfig{FileIgnoreConfig{"Foo", "SomeCheckSum", []string{}}})
+	talismanRCConfig = Get()
+	assert.Equal(t, 1, len(talismanRCConfig.FileIgnoreConfig))
 }
 
 func assertDenies(line, ignoreDetector string, path string, t *testing.T) {
@@ -88,7 +88,7 @@ func assertDenies(line, ignoreDetector string, path string, t *testing.T) {
 }
 
 func assertDeniesDetector(line, ignoreDetector string, path string, detectorName string, t *testing.T) {
-	assert.True(t, CreateTalismanRCIgnoreWithFileName(line, ignoreDetector).Deny(testAddition(path), detectorName), "%s is expected to deny a file named %s.", line, path)
+	assert.True(t, CreatetalismanRCWithFileName(line, ignoreDetector).Deny(testAddition(path), detectorName), "%s is expected to deny a file named %s.", line, path)
 }
 
 func assertAccepts(line, ignoreDetector string, path string, t *testing.T, detectorNames ...string) {
@@ -96,27 +96,27 @@ func assertAccepts(line, ignoreDetector string, path string, t *testing.T, detec
 }
 
 func assertAcceptsDetector(line, ignoreDetector string, path string, detectorName string, t *testing.T) {
-	assert.True(t, CreateTalismanRCIgnoreWithFileName(line, ignoreDetector).Accept(testAddition(path), detectorName), "%s is expected to accept a file named %s.", line, path)
+	assert.True(t, CreatetalismanRCWithFileName(line, ignoreDetector).Accept(testAddition(path), detectorName), "%s is expected to accept a file named %s.", line, path)
 }
 
 func testAddition(path string) gitrepo.Addition {
 	return gitrepo.NewAddition(path, make([]byte, 0))
 }
 
-func CreateTalismanRCIgnoreWithFileName(filename string, detector string) *TalismanRCIgnore {
+func CreatetalismanRCWithFileName(filename string, detector string) *TalismanRC {
 	fileIgnoreConfig := FileIgnoreConfig{}
 	fileIgnoreConfig.FileName = filename
 	if detector != "" {
 		fileIgnoreConfig.IgnoreDetectors = make([]string, 1)
 		fileIgnoreConfig.IgnoreDetectors[0] = detector
 	}
-	talismanRCIgnore := TalismanRCIgnore{}
-	talismanRCIgnore.FileIgnoreConfig = make([]FileIgnoreConfig, 1)
-	talismanRCIgnore.FileIgnoreConfig[0] = fileIgnoreConfig
-	return &talismanRCIgnore
+	talismanRC := TalismanRC{}
+	talismanRC.FileIgnoreConfig = make([]FileIgnoreConfig, 1)
+	talismanRC.FileIgnoreConfig[0] = fileIgnoreConfig
+	return &talismanRC
 }
 
-func CreateTalismanRCIgnoreWithScopeIgnore(scopesToIgnore []string) *TalismanRCIgnore {
+func CreatetalismanRCWithScopeIgnore(scopesToIgnore []string) *TalismanRC {
 	var scopeConfigs []ScopeConfig
 	for _, scopeIgnore := range scopesToIgnore {
 		scopeIgnoreConfig := ScopeConfig{}
@@ -124,8 +124,8 @@ func CreateTalismanRCIgnoreWithScopeIgnore(scopesToIgnore []string) *TalismanRCI
 		scopeConfigs = append(scopeConfigs, scopeIgnoreConfig)
 	}
 
-	talismanRCIgnore := TalismanRCIgnore{ScopeConfig: scopeConfigs}
-	return &talismanRCIgnore
+	talismanRC := TalismanRC{ScopeConfig: scopeConfigs}
+	return &talismanRC
 }
 
 func SingleIgnore(pattern string, comment string, ignoredDetectors ...string) Ignores {
