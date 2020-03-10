@@ -52,8 +52,8 @@ func Get() *TalismanRC {
 	return ReadConfigFromRCFile(readRepoFile())
 }
 
-func (ignore *TalismanRC) IsEmpty() bool {
-	return reflect.DeepEqual(TalismanRC{}, ignore)
+func (tRC *TalismanRC) IsEmpty() bool {
+	return reflect.DeepEqual(TalismanRC{}, tRC)
 }
 
 func ReadConfigFromRCFile(repoFileRead func(string) ([]byte, error)) *TalismanRC {
@@ -87,19 +87,19 @@ func (i FileIgnoreConfig) isEffective(detectorName string) bool {
 }
 
 //AcceptsAll returns true if there are no rules specified
-func (i *TalismanRC) AcceptsAll() bool {
-	return len(i.effectiveRules("any-detector")) == 0
+func (tRC *TalismanRC) AcceptsAll() bool {
+	return len(tRC.effectiveRules("any-detector")) == 0
 }
 
 //Accept answers true if the Addition.Path is configured to be checked by the detectors
-func (i *TalismanRC) Accept(addition gitrepo.Addition, detectorName string) bool {
-	return !i.Deny(addition, detectorName)
+func (tRC *TalismanRC) Accept(addition gitrepo.Addition, detectorName string) bool {
+	return !tRC.Deny(addition, detectorName)
 }
 
-func (rcConfigIgnores *TalismanRC) IgnoreAdditionsByScope(additions []gitrepo.Addition, scopeMap map[string][]string) []gitrepo.Addition {
+func (tRC *TalismanRC) IgnoreAdditionsByScope(additions []gitrepo.Addition, scopeMap map[string][]string) []gitrepo.Addition {
 	var applicableScopeFileNames []string
-	if rcConfigIgnores.ScopeConfig != nil {
-		for _, scope := range rcConfigIgnores.ScopeConfig {
+	if tRC.ScopeConfig != nil {
+		for _, scope := range tRC.ScopeConfig {
 			if len(scopeMap[scope.ScopeName]) > 0 {
 				applicableScopeFileNames = append(applicableScopeFileNames, scopeMap[scope.ScopeName]...)
 			}
@@ -120,7 +120,7 @@ func (rcConfigIgnores *TalismanRC) IgnoreAdditionsByScope(additions []gitrepo.Ad
 	return result
 }
 
-func (rcConfigIgnores *TalismanRC) AddFileIgnores(entriesToAdd []FileIgnoreConfig) {
+func (tRC *TalismanRC) AddFileIgnores(entriesToAdd []FileIgnoreConfig) {
 	if len(entriesToAdd) > 0 {
 		logr.Debugf("Adding entries: %v", entriesToAdd)
 		talismanRCConfig := Get()
@@ -172,17 +172,17 @@ func combineFileIgnores(exsiting, incoming []FileIgnoreConfig) []FileIgnoreConfi
 }
 
 //Deny answers true if the Addition.Path is configured to be ignored and not checked by the detectors
-func (i *TalismanRC) Deny(addition gitrepo.Addition, detectorName string) bool {
+func (tRC *TalismanRC) Deny(addition gitrepo.Addition, detectorName string) bool {
 	result := false
-	for _, pattern := range i.effectiveRules(detectorName) {
+	for _, pattern := range tRC.effectiveRules(detectorName) {
 		result = result || addition.Matches(pattern)
 	}
 	return result
 }
 
-func (i *TalismanRC) effectiveRules(detectorName string) []string {
+func (tRC *TalismanRC) effectiveRules(detectorName string) []string {
 	var result []string
-	for _, ignore := range i.FileIgnoreConfig {
+	for _, ignore := range tRC.FileIgnoreConfig {
 		if ignore.isEffective(detectorName) {
 			result = append(result, ignore.FileName)
 		}
