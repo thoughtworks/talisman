@@ -263,7 +263,7 @@ For example, if your `init-env.sh` filename triggers a warning, you can only dis
 this warning while still being alerted if other things go wrong (e.g. file content):
 
 
-```bash
+```yaml
 fileignoreconfig:
 - filename: init-env.sh
   checksum: cf97abd34cebe895417eb4d97fbd7374aa138dcb65b1fe7f6b6cc1238aaf4d48
@@ -295,7 +295,7 @@ If any of the files are modified, talisman will scan the files again, unless you
 
 You can choose to ignore files by specifying the language scope for your project in your talismanrc.
 
-```
+```yaml
 scopeconfig:
   - scope: go
   - scope: node
@@ -306,6 +306,16 @@ Talisman is configured to ignore certain files based on the specified scope. For
 You can specify multiple scopes.
 
 Currently .talismanrc only supports scopeconfig support for go and node. Other scopes will be added shortly.
+
+### Custom search patterns
+
+You can specify custom regex patterns to look for in the current repository
+
+```yaml
+custom_patterns:
+- pattern1
+- pattern2
+```
 
 <br/><i>
 **Note**: The use of .talismanignore has been deprecated. File .talismanrc replaces it because:
@@ -319,9 +329,10 @@ Currently .talismanrc only supports scopeconfig support for go and node. Other s
 If you execute `talisman` on the command line, you will be able to view all the parameter options you can pass
 
 ```
-  -c, --checksum string          checksum calculator calculates checksum and suggests .talsimarc format
+  -c, --checksum string          checksum calculator calculates checksum and suggests .talismanrc format
   -d, --debug                    enable debug mode (warning: very verbose)
   -g, --githook string           either pre-push or pre-commit (default "pre-push")
+  -i, --interactive              interactively update talismanrc (only makes sense with -g/--githook)
   -p, --pattern string           pattern (glob-like) of files to scan (ignores githooks)
   -r, --reportdirectory string   directory where the scan reports will be stored
   -s, --scan                     scanner scans the git commit history for potential secrets
