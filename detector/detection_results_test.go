@@ -86,8 +86,6 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 	existingContent := `fileignoreconfig:
 - filename: existing.pem
   checksum: 123444ddssa75333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
-  ignore_detectors: []
-scopeconfig: []
 `
 	err = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
 	assert.NoError(t, err)
@@ -141,8 +139,6 @@ scopeconfig: []
 		expectedFileContent := `fileignoreconfig:
 - filename: some_file.pem
   checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
-  ignore_detectors: []
-scopeconfig: []
 `
 		results.Report(fs, ignoreFile, promptContext)
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
@@ -161,8 +157,6 @@ scopeconfig: []
 		expectedFileContent := `fileignoreconfig:
 - filename: existing.pem
   checksum: 5bc0b0692a316bb2919263addaef0ffba3a21b9e1cca62a1028390e97e861e4e
-  ignore_detectors: []
-scopeconfig: []
 
 `
 		results.Report(fs, ignoreFile, promptContext)
@@ -183,11 +177,8 @@ scopeconfig: []
 		expectedFileContent := `fileignoreconfig:
 - filename: another.pem
   checksum: 117e23557c02cbd472854ebce4933d6daec1fd207971286f6ffc9f1774c1a83b
-  ignore_detectors: []
 - filename: some_file.pem
   checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
-  ignore_detectors: []
-scopeconfig: []
 `
 		results.Report(fs, ignoreFile, promptContext)
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)

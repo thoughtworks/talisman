@@ -28,16 +28,19 @@ var (
 type FileIgnoreConfig struct {
 	FileName        string   `yaml:"filename"`
 	Checksum        string   `yaml:"checksum"`
-	IgnoreDetectors []string `yaml:"ignore_detectors"`
+	IgnoreDetectors []string `yaml:"ignore_detectors,omitempty"`
 }
 
 type ScopeConfig struct {
 	ScopeName string `yaml:"scope"`
 }
 
+type PatternString string
+
 type TalismanRC struct {
-	FileIgnoreConfig []FileIgnoreConfig `yaml:"fileignoreconfig"`
-	ScopeConfig      []ScopeConfig      `yaml:"scopeconfig"`
+	FileIgnoreConfig []FileIgnoreConfig `yaml:"fileignoreconfig,omitempty"`
+	ScopeConfig      []ScopeConfig      `yaml:"scopeconfig,omitempty"`
+	CustomPatterns   []PatternString    `yaml:"custompatterns,omitempty"`
 }
 
 func SetFs(_fs afero.Fs) {
