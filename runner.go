@@ -50,8 +50,8 @@ func (r *Runner) Scan(reportDirectory string) int {
 	fmt.Printf("\n\n")
 	utility.CreateArt("Running Scan..")
 	additions := scanner.GetAdditions()
-	ignores := &talismanrc.TalismanRCIgnore{}
-	detector.DefaultChain().Test(additions, ignores, r.results)
+	ignores := &talismanrc.TalismanRC{}
+	detector.DefaultChain(ignores).Test(additions, ignores, r.results)
 	reportsPath, err := report.GenerateReport(r.results, reportDirectory)
 	if err != nil {
 		log.Printf("error while generating report: %v", err)
@@ -78,7 +78,7 @@ func (r *Runner) doRun() {
 	rcConfigIgnores := talismanrc.Get()
 	scopeMap := getScopeConfig()
 	additionsToScan := rcConfigIgnores.IgnoreAdditionsByScope(r.additions, scopeMap)
-	detector.DefaultChain().Test(additionsToScan, rcConfigIgnores, r.results)
+	detector.DefaultChain(rcConfigIgnores).Test(additionsToScan, rcConfigIgnores, r.results)
 }
 
 func getScopeConfig() map[string][]string {

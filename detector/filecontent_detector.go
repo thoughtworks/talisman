@@ -72,7 +72,7 @@ type content struct {
 	results     []string
 }
 
-func (fc *FileContentDetector) Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRCIgnore, result *DetectionResults) {
+func (fc *FileContentDetector) Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
 	contentTypes := []struct {
 		contentType
 		fn

@@ -3,5 +3,8 @@ fileignoreconfig:
   checksum: 69fed055782cddfe0f0d23ea440cef9f9dd0b9e8a3c8a73856741bb26257b223
   ignore_detectors:
   - filecontent
+- filename: detector/match_pattern_test.go
+  checksum: d68aa0e06355e3b848941727d1fcb32cf47e3d615f9921f0db39855325010446
+  ignore_detectors: []
 scopeconfig:
 - scope: go

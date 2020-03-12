@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var talismanRCIgnore = &talismanrc.TalismanRCIgnore{}
+var talismanRC = &talismanrc.TalismanRC{}
 
 func TestShouldFlagPotentialAWSAccessKeysInAggressiveMode(t *testing.T) {
 	const awsAccessKeyIDExample string = "AKIAIOSFODNN7EXAMPLE\n"
@@ -18,7 +18,7 @@ func TestShouldFlagPotentialAWSAccessKeysInAggressiveMode(t *testing.T) {
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 
-	NewFileContentDetector().AggressiveMode().Test(additions, talismanRCIgnore, results)
+	NewFileContentDetector().AggressiveMode().Test(additions, talismanRC, results)
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
 
@@ -29,7 +29,7 @@ func TestShouldFlagPotentialAWSAccessKeysAtPropertyDefinitionInAggressiveMode(t 
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 
-	NewFileContentDetector().AggressiveMode().Test(additions, talismanRCIgnore, results)
+	NewFileContentDetector().AggressiveMode().Test(additions, talismanRC, results)
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
 
@@ -40,7 +40,7 @@ func TestShouldNotFlagPotentialSecretsWithinSafeJavaCodeEvenInAggressiveMode(t *
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 
-	NewFileContentDetector().AggressiveMode().Test(additions, talismanRCIgnore, results)
+	NewFileContentDetector().AggressiveMode().Test(additions, talismanRC, results)
 	if results == nil {
 		additions = nil
 	}
