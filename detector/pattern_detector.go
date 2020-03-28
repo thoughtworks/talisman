@@ -16,15 +16,8 @@ type PatternDetector struct {
 
 var (
 	detectorPatterns = []*regexp.Regexp{
-		regexp.MustCompile(`(?i)(['"_]?password['"]? *[:=][^,;\n]{8,})`),
+		regexp.MustCompile(`(?i)((.*)(password|passphrase|secret|key|pwd|pword|pass)(.*) *[:=>][^,;\n]{8,})`),
 		regexp.MustCompile(`(?i)(['"_]?pw['"]? *[:=][^,;\n]{8,})`),
-		regexp.MustCompile(`(?i)(['"_]?pwd['"]? *[:=][^,;\n]{8,})`),
-		regexp.MustCompile(`(?i)(['"_]?pass['"]? *[:=][^,;\n]{8,})`),
-		regexp.MustCompile(`(?i)(['"_]?pword['"]? *[:=][^,;\n]{8,})`),
-		regexp.MustCompile(`(?i)(['"_]?adminPassword['"]? *[:=\n][^,;]{8,})`),
-		regexp.MustCompile(`(?i)(['"_]?passphrase['"]? *[:=\n][^,;]{8,})`),
-		regexp.MustCompile(`(<[^(><.)]?password[^(><.)]*?>[^(><.)]+</[^(><.)]?password[^(><.)]*?>)`),
-		regexp.MustCompile(`(<[^(><.)]?passphrase[^(><.)]*?>[^(><.)]+</[^(><.)]?passphrase[^(><.)]*?>)`),
 		regexp.MustCompile(`(?i)(<ConsumerKey>\S*</ConsumerKey>)`),
 		regexp.MustCompile(`(?i)(<ConsumerSecret>\S*</ConsumerSecret>)`),
 		regexp.MustCompile(`(?i)(AWS[ \w]+key[ \w]+[:=])`),

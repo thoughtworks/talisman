@@ -1,4 +1,6 @@
 fileignoreconfig:
+- filename: detector/pattern_detector_test.go
+  checksum: fbb55705e75e1fcba609b10c454e277e5c67c930bd5aedd514055570e2b868b4
 - filename: detector/detection_results_test.go
   checksum: 69fed055782cddfe0f0d23ea440cef9f9dd0b9e8a3c8a73856741bb26257b223
   ignore_detectors:
