@@ -1,6 +1,7 @@
 package detector
 
 import (
+	"strings"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
 	"testing"
@@ -14,16 +15,32 @@ var (
 
 func TestShouldDetectPasswordPatterns(t *testing.T) {
 	filename := "secret.txt"
+	values := [7]string {"password","secret", "key", "pwd","pass","pword","passphrase"}
+	for i := 0; i < len(values); i++ {
+		shouldPassDetectionOfSecretPattern(filename, []byte(strings.ToTitle(values[i])+":UnsafeString"), t)
+		shouldPassDetectionOfSecretPattern(filename, []byte(values[i]+"=UnsafeString"), t)
+		shouldPassDetectionOfSecretPattern(filename, []byte("\"SERVER_"+strings.ToUpper(values[i])+"\" : UnsafeString"), t)
+		shouldPassDetectionOfSecretPattern(filename, []byte(values[i]+"2-string : UnsafeString"), t)
+		shouldPassDetectionOfSecretPattern(filename, []byte("<"+values[i]+" data=123> randomStringGoesHere </"+values[i]+">"), t)
+		shouldPassDetectionOfSecretPattern(filename, []byte("<admin "+values[i]+"> randomStringGoesHere </my"+values[i]+">"), t)
+	}
 
-	shouldPassDetectionOfSecretPattern(filename, []byte("\"password\" : UnsafePassword"), t)
-	shouldPassDetectionOfSecretPattern(filename, []byte("<password data=123> jdghfakjkdha</password>"), t)
-	shouldPassDetectionOfSecretPattern(filename, []byte("<passphrase data=123> AasdfYlLKHKLasdKHAFKHSKmlahsdfLK</passphrase>"), t)
+	shouldPassDetectionOfSecretPattern(filename, []byte("\"pw\" : UnsafeString"), t)
+	shouldPassDetectionOfSecretPattern(filename, []byte("Pw=UnsafeString"), t)
+
 	shouldPassDetectionOfSecretPattern(filename, []byte("<ConsumerKey>alksjdhfkjaklsdhflk12345adskjf</ConsumerKey>"), t)
 	shouldPassDetectionOfSecretPattern(filename, []byte("AWS key :"), t)
 	shouldPassDetectionOfSecretPattern(filename, []byte(`BEGIN RSA PRIVATE KEY-----
 	aghjdjadslgjagsfjlsgjalsgjaghjldasja
 	-----END RSA PRIVATE KEY`), t)
 	shouldPassDetectionOfSecretPattern(filename, []byte(`PWD=appropriate`), t)
+	shouldPassDetectionOfSecretPattern(filename, []byte(`pass=appropriate`), t)
+	shouldPassDetectionOfSecretPattern(filename, []byte(`adminpwd=appropriate`), t)
+
+	shouldFailDetectionOfSecretPattern(filename, []byte("\"pAsSWoRD\" :1234567"), t)
+	shouldFailDetectionOfSecretPattern(filename, []byte(`setPassword("12345678")`), t)
+	shouldFailDetectionOfSecretPattern(filename, []byte(`setenv(password, "12345678")`), t)
+	shouldFailDetectionOfSecretPattern(filename, []byte(`random=12345678)`), t)
 }
 
 func TestShouldIgnorePasswordPatterns(t *testing.T) {
@@ -38,13 +55,24 @@ func TestShouldIgnorePasswordPatterns(t *testing.T) {
 	assert.True(t, results.Successful(), "Expected file %s to be ignored by pattern", filename)
 }
 
-func shouldPassDetectionOfSecretPattern(filename string, content []byte, t *testing.T) {
+func DetectionOfSecretPattern(filename string, content []byte) (*DetectionResults, []gitrepo.Addition, string) {
 	results := NewDetectionResults()
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 	NewPatternDetector(customPatterns).Test(additions, talismanRC, results)
 	expected := "Potential secret pattern : " + string(content)
+	return results, additions, expected
+}
+
+func shouldPassDetectionOfSecretPattern(filename string, content []byte, t *testing.T) {
+	results, additions, expected := DetectionOfSecretPattern(filename, content)
 	assert.Equal(t, expected, getFailureMessage(results, additions))
 	assert.Len(t, results.Results, 1)
+}
+
+func shouldFailDetectionOfSecretPattern(filename string, content []byte, t *testing.T) {
+	results, additions, expected := DetectionOfSecretPattern(filename, content)
+	assert.NotEqual(t, expected, getFailureMessage(results, additions))
+	assert.Len(t, results.Results, 0)
 }
 
 func getFailureMessage(results *DetectionResults, additions []gitrepo.Addition) string {

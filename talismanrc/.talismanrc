@@ -1,0 +1,5 @@
+fileignoreconfig:
+- filename: Foo
+  checksum: SomeCheckSum
+  ignore_detectors: []
+scopeconfig: []

@@ -14,3 +14,4 @@ detector/.talismanrc
 .vscode/**
 coverage.out
 coverage.txt
+.talismanrc
