@@ -14,14 +14,15 @@ import (
 type fn func(fc *FileContentDetector, word string) string
 
 type FileContentDetector struct {
-	base64Detector     *Base64Detector
-	hexDetector        *HexDetector
-	creditCardDetector *CreditCardDetector
+	base64Detector         *Base64Detector
+	hexDetector            *HexDetector
+	creditCardDetector     *CreditCardDetector
+	base64EntropyThreshold float64
 }
 
-func NewFileContentDetector() *FileContentDetector {
+func NewFileContentDetector(tRC *talismanrc.TalismanRC) *FileContentDetector {
 	fc := FileContentDetector{}
-	fc.base64Detector = NewBase64Detector()
+	fc.base64Detector = NewBase64Detector(tRC)
 	fc.hexDetector = NewHexDetector()
 	fc.creditCardDetector = NewCreditCardDetector()
 	return &fc

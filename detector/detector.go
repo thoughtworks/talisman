@@ -30,7 +30,7 @@ func NewChain() *Chain {
 func DefaultChain(tRC *talismanrc.TalismanRC) *Chain {
 	result := NewChain()
 	result.AddDetector(DefaultFileNameDetector())
-	result.AddDetector(NewFileContentDetector())
+	result.AddDetector(NewFileContentDetector(tRC))
 	result.AddDetector(NewPatternDetector(tRC.CustomPatterns))
 	return result
 }
