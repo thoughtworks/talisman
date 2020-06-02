@@ -298,17 +298,18 @@ func (r *DetectionResults) Report(fs afero.Fs, ignoreFile string, promptContext 
 		fmt.Printf("\n\x1b[1m\x1b[31mTalisman Report:\x1b[0m\x1b[0m\n")
 		table.AppendBulk(data)
 		table.Render()
-		r.suggestTalismanRC(fs, ignoreFile, filePathsForIgnoresAndFailures, promptContext)
+		fmt.Println()
+		r.suggestTalismanRC(filePathsForIgnoresAndFailures, promptContext)
 	}
 	return result
 }
 
-func (r *DetectionResults) suggestTalismanRC(fs afero.Fs, ignoreFile string, filePaths []string, promptContext prompt.PromptContext) {
+func (r *DetectionResults) suggestTalismanRC(filePaths []string, promptContext prompt.PromptContext) {
 	var entriesToAdd []talismanrc.FileIgnoreConfig
 
 	for _, filePath := range filePaths {
 		currentChecksum := utility.CollectiveSHA256Hash([]string{filePath})
-		fileIgnoreConfig := talismanrc.FileIgnoreConfig{filePath, currentChecksum, []string{}}
+		fileIgnoreConfig := talismanrc.FileIgnoreConfig{FileName: filePath, Checksum: currentChecksum, IgnoreDetectors: []string{}}
 		entriesToAdd = append(entriesToAdd, fileIgnoreConfig)
 	}
 
@@ -324,6 +325,9 @@ func (r *DetectionResults) suggestTalismanRC(fs afero.Fs, ignoreFile string, fil
 
 func getUserConfirmation(configs []talismanrc.FileIgnoreConfig, promptContext prompt.PromptContext) []talismanrc.FileIgnoreConfig {
 	confirmed := []talismanrc.FileIgnoreConfig{}
+	if len(configs) != 0 {
+		fmt.Println("==== Interactively adding to talismanrc ====")
+	}
 	for _, config := range configs {
 		if confirm(config, promptContext) {
 			confirmed = append(confirmed, config)
@@ -348,9 +352,10 @@ func confirm(config talismanrc.FileIgnoreConfig, promptContext prompt.PromptCont
 		log.Printf("error marshalling file ignore config: %s", err)
 	}
 
+	fmt.Println()
 	fmt.Println(string(bytes))
 
-	confirmationString := "Do you want to add this entry in talismanrc ?"
+	confirmationString := fmt.Sprintf("Do you want to add %s with above checksum in talismanrc ?", config.FileName)
 
 	return promptContext.Prompt.Confirm(confirmationString)
 }
