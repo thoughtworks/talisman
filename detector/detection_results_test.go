@@ -106,7 +106,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 	_ = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
 	t.Run("when user declines, entry should not be added to talismanrc", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
-		prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(false)
+		prompter.EXPECT().Confirm("Do you want to add some_file.pem with above checksum in talismanrc ?").Return(false)
 		results.Fail("some_file.pem", "filecontent", "Bomb", []string{})
 
 		results.Report(fs, ignoreFile, promptContext)
@@ -132,7 +132,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 	_ = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
 	t.Run("when user confirms, entry should be appended to given ignore file", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
-		prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(true)
+		prompter.EXPECT().Confirm("Do you want to add some_file.pem with above checksum in talismanrc ?").Return(true)
 
 		results.Fail("some_file.pem", "filecontent", "Bomb", []string{})
 
@@ -150,7 +150,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 	_ = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
 	t.Run("when user confirms, entry for existing file should updated", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
-		prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(true)
+		prompter.EXPECT().Confirm("Do you want to add existing.pem with above checksum in talismanrc ?").Return(true)
 		results := NewDetectionResults()
 		results.Fail("existing.pem", "filecontent", "This will bomb!", []string{})
 
@@ -169,7 +169,8 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 	_ = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
 	t.Run("when user confirms for multiple entries, they should be appended to given ignore file", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
-		prompter.EXPECT().Confirm("Do you want to add this entry in talismanrc ?").Return(true).Times(2)
+		prompter.EXPECT().Confirm("Do you want to add some_file.pem with above checksum in talismanrc ?").Return(true)
+		prompter.EXPECT().Confirm("Do you want to add another.pem with above checksum in talismanrc ?").Return(true)
 
 		results.Fail("some_file.pem", "filecontent", "Bomb", []string{})
 		results.Fail("another.pem", "filecontent", "password", []string{})
