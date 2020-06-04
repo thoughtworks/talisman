@@ -72,7 +72,7 @@ type content struct {
 	results     []string
 }
 
-func (fc *FileContentDetector) Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
+func (fc *FileContentDetector) Test(allAdditions []gitrepo.Addition, additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
 	contentTypes := []struct {
 		contentType
 		fn
@@ -90,7 +90,7 @@ func (fc *FileContentDetector) Test(additions []gitrepo.Addition, ignoreConfig *
 			fn:          checkCreditCardNumber,
 		},
 	}
-	cc := NewChecksumCompare(additions, ignoreConfig)
+	cc := NewChecksumCompare(allAdditions, additions, ignoreConfig)
 	re := regexp.MustCompile(`(?i)checksum[ \t]*:[ \t]*[0-9a-fA-F]+`)
 
 	contents := make(chan content, 512)
