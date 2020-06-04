@@ -2,7 +2,6 @@ package checksumcalculator
 
 import (
 	"fmt"
-	"os"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
 	"talisman/utility"
@@ -11,26 +10,21 @@ import (
 )
 
 type ChecksumCalculator struct {
-	fileNamePatterns []string
+	gitAdditions []gitrepo.Addition
 }
 
 //NewChecksumCalculator returns new instance of the CheckSumDetector
-func NewChecksumCalculator(patterns []string) *ChecksumCalculator {
-	cc := ChecksumCalculator{fileNamePatterns: patterns}
+func NewChecksumCalculator(gitAdditions []gitrepo.Addition) *ChecksumCalculator {
+	cc := ChecksumCalculator{gitAdditions: gitAdditions}
 	return &cc
 }
 
 //SuggestTalismanRC returns the suggestion for .talismanrc format
-func (cc *ChecksumCalculator) SuggestTalismanRC() string {
-	wd, _ := os.Getwd()
-	repo := gitrepo.RepoLocatedAt(wd)
-	gitTrackedFilesAsAdditions := repo.TrackedFilesAsAdditions()
-	//Adding staged files for calculation
-	gitTrackedFilesAsAdditions = append(gitTrackedFilesAsAdditions, repo.StagedAdditions()...)
+func (cc *ChecksumCalculator) SuggestTalismanRC(fileNamePatterns []string) string {
 	var fileIgnoreConfigs []talismanrc.FileIgnoreConfig
 	result := ""
-	for _, pattern := range cc.fileNamePatterns {
-		collectiveChecksum := cc.calculateCollectiveChecksumForPattern(pattern, gitTrackedFilesAsAdditions)
+	for _, pattern := range fileNamePatterns {
+		collectiveChecksum := cc.CalculateCollectiveChecksumForPattern(pattern)
 		if collectiveChecksum != "" {
 			fileIgnoreConfig := talismanrc.FileIgnoreConfig{FileName: pattern, Checksum: collectiveChecksum, IgnoreDetectors: []string{}}
 			fileIgnoreConfigs = append(fileIgnoreConfigs, fileIgnoreConfig)
@@ -45,18 +39,18 @@ func (cc *ChecksumCalculator) SuggestTalismanRC() string {
 	return result
 }
 
-func (cc *ChecksumCalculator) calculateCollectiveChecksumForPattern(fileNamePattern string, additions []gitrepo.Addition) string {
-	var patternpaths []string
+func (cc *ChecksumCalculator) CalculateCollectiveChecksumForPattern(fileNamePattern string) string {
+	var patternPaths []string
 	currentCollectiveChecksum := ""
-	for _, addition := range additions {
+	for _, addition := range cc.gitAdditions {
 		if addition.Matches(fileNamePattern) {
-			patternpaths = append(patternpaths, string(addition.Path))
+			patternPaths = append(patternPaths, string(addition.Path))
 		}
 	}
 	// Calculate current collective checksum
-	patternpaths = utility.UniqueItems(patternpaths)
-	if len(patternpaths) != 0 {
-		currentCollectiveChecksum = utility.CollectiveSHA256Hash(patternpaths)
+	patternPaths = utility.UniqueItems(patternPaths)
+	if len(patternPaths) != 0 {
+		currentCollectiveChecksum = utility.CollectiveSHA256Hash(patternPaths)
 	}
 	return currentCollectiveChecksum
 }

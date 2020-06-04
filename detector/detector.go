@@ -1,7 +1,6 @@
 package detector
 
 import (
-	"os"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
 )
@@ -44,10 +43,6 @@ func (dc *Chain) AddDetector(d Detector) *Chain {
 //Test validates the additions against each detector in the chain.
 //The results are passed in from detector to detector and thus collect all errors from all detectors
 func (dc *Chain) Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
-	wd, _ := os.Getwd()
-	repo := gitrepo.RepoLocatedAt(wd)
-	gitTrackedFilesAsAdditions := repo.TrackedFilesAsAdditions()
-	gitTrackedFilesAsAdditions = append(gitTrackedFilesAsAdditions, additions...)
 	for _, v := range dc.detectors {
 		v.Test(additions, ignoreConfig, result)
 	}
