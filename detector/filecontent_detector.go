@@ -5,7 +5,6 @@ import (
 	"regexp"
 	"strings"
 	"sync"
-	"talisman/checksumcalculator"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
 
@@ -73,7 +72,7 @@ type content struct {
 	results     []string
 }
 
-func (fc *FileContentDetector) Test(allAdditions []gitrepo.Addition, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
+func (fc *FileContentDetector) Test(comparator ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
 	contentTypes := []struct {
 		contentType
 		fn
@@ -91,8 +90,6 @@ func (fc *FileContentDetector) Test(allAdditions []gitrepo.Addition, currentAddi
 			fn:          checkCreditCardNumber,
 		},
 	}
-	calculator := checksumcalculator.NewChecksumCalculator(append(allAdditions, currentAdditions...))
-	cc := NewChecksumCompare(calculator, ignoreConfig)
 	re := regexp.MustCompile(`(?i)checksum[ \t]*:[ \t]*[0-9a-fA-F]+`)
 
 	contents := make(chan content, 512)
@@ -103,7 +100,7 @@ func (fc *FileContentDetector) Test(allAdditions []gitrepo.Addition, currentAddi
 	for _, addition := range currentAdditions {
 		go func(addition gitrepo.Addition) {
 			defer waitGroup.Done()
-			if ignoreConfig.Deny(addition, "filecontent") || cc.IsScanNotRequired(addition) {
+			if ignoreConfig.Deny(addition, "filecontent") || comparator.IsScanNotRequired(addition) {
 				ignoredFilePaths <- addition.Path
 				return
 			}

@@ -2,6 +2,7 @@ package detector
 
 import (
 	"os"
+	"talisman/checksumcalculator"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
 )
@@ -10,7 +11,7 @@ import (
 //Detectors are expected to honor the ignores that are passed in and log them in the results
 //Detectors are expected to signal any errors to the results
 type Detector interface {
-	Test(allAdditions []gitrepo.Addition, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults)
+	Test(comparator ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults)
 }
 
 //Chain represents a chain of Detectors.
@@ -47,7 +48,9 @@ func (dc *Chain) Test(currentAdditions []gitrepo.Addition, ignoreConfig *talisma
 	wd, _ := os.Getwd()
 	repo := gitrepo.RepoLocatedAt(wd)
 	allAdditions := repo.TrackedFilesAsAdditions()
+	calculator := checksumcalculator.NewChecksumCalculator(append(allAdditions, currentAdditions...))
+	cc := NewChecksumCompare(calculator, ignoreConfig)
 	for _, v := range dc.detectors {
-		v.Test(allAdditions, currentAdditions, ignoreConfig, result)
+		v.Test(*cc, currentAdditions, ignoreConfig, result)
 	}
 }

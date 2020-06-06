@@ -152,20 +152,20 @@ func shouldNotFailWithDefaultDetectorAndIgnores(fileName, ignore string, t *test
 	talismanRC.FileIgnoreConfig = make([]talismanrc.FileIgnoreConfig, 1)
 	talismanRC.FileIgnoreConfig[0] = fileIgnoreConfig
 
-	DefaultFileNameDetector().Test([]gitrepo.Addition{}, additionsNamed(fileName), talismanRC, results)
+	DefaultFileNameDetector().Test(ChecksumCompare{calculator: nil, ignoreConfig: talismanrc.NewTalismanRC(nil)}, additionsNamed(fileName), talismanRC, results)
 	assert.True(t, results.Successful(), "Expected file %s to be ignored by pattern", fileName, ignore)
 }
 
 func shouldFailWithSpecificPattern(fileName, pattern string, t *testing.T) {
 	results := NewDetectionResults()
 	pt := regexp.MustCompile(pattern)
-	NewFileNameDetector([]*regexp.Regexp{pt}).Test([]gitrepo.Addition{}, additionsNamed(fileName), talismanRC, results)
+	NewFileNameDetector([]*regexp.Regexp{pt}).Test(ChecksumCompare{calculator: nil, ignoreConfig: talismanrc.NewTalismanRC(nil)}, additionsNamed(fileName), talismanRC, results)
 	assert.True(t, results.HasFailures(), "Expected file %s to fail the check against the %s pattern", fileName, pattern)
 }
 
 func shouldFailWithDefaultDetector(fileName, pattern string, t *testing.T) {
 	results := NewDetectionResults()
-	DefaultFileNameDetector().Test([]gitrepo.Addition{}, additionsNamed(fileName), talismanRC, results)
+	DefaultFileNameDetector().Test(ChecksumCompare{calculator: nil, ignoreConfig: talismanrc.NewTalismanRC(nil)}, additionsNamed(fileName), talismanRC, results)
 	assert.True(t, results.HasFailures(), "Expected file %s to fail the check against default detector. Missing pattern %s?", fileName, pattern)
 }
 

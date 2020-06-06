@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"regexp"
 	"sync"
-	"talisman/checksumcalculator"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
 
@@ -35,9 +34,7 @@ type match struct {
 }
 
 //Test tests the contents of the Additions to ensure that they don't look suspicious
-func (detector PatternDetector) Test(allAdditions []gitrepo.Addition, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
-	calculator := checksumcalculator.NewChecksumCalculator(append(allAdditions, currentAdditions...))
-	cc := NewChecksumCompare(calculator, ignoreConfig)
+func (detector PatternDetector) Test(comparator ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
 	matches := make(chan match, 512)
 	ignoredFilePaths := make(chan gitrepo.FilePath, 512)
 	waitGroup := &sync.WaitGroup{}
@@ -45,7 +42,7 @@ func (detector PatternDetector) Test(allAdditions []gitrepo.Addition, currentAdd
 	for _, addition := range currentAdditions {
 		go func(addition gitrepo.Addition) {
 			defer waitGroup.Done()
-			if ignoreConfig.Deny(addition, "filecontent") || cc.IsScanNotRequired(addition) {
+			if ignoreConfig.Deny(addition, "filecontent") || comparator.IsScanNotRequired(addition) {
 				ignoredFilePaths <- addition.Path
 				return
 			}
