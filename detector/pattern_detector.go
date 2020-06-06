@@ -34,13 +34,13 @@ type match struct {
 }
 
 //Test tests the contents of the Additions to ensure that they don't look suspicious
-func (detector PatternDetector) Test(allAdditions []gitrepo.Addition, additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
-	cc := NewChecksumCompare(allAdditions, additions, ignoreConfig)
+func (detector PatternDetector) Test(allAdditions []gitrepo.Addition, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
+	cc := NewChecksumCompare(allAdditions, currentAdditions, ignoreConfig)
 	matches := make(chan match, 512)
 	ignoredFilePaths := make(chan gitrepo.FilePath, 512)
 	waitGroup := &sync.WaitGroup{}
-	waitGroup.Add(len(additions))
-	for _, addition := range additions {
+	waitGroup.Add(len(currentAdditions))
+	for _, addition := range currentAdditions {
 		go func(addition gitrepo.Addition) {
 			defer waitGroup.Done()
 			if ignoreConfig.Deny(addition, "filecontent") || cc.IsScanNotRequired(addition) {

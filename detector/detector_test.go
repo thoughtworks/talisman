@@ -28,11 +28,11 @@ func TestValidationChainWithFailingValidationAlwaysFails(t *testing.T) {
 
 type FailingDetection struct{}
 
-func (v FailingDetection) Test(allAdditions []gitrepo.Addition, additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
+func (v FailingDetection) Test(allAdditions []gitrepo.Addition, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
 	result.Fail("some_file", "filecontent", "FAILED BY DESIGN", []string{})
 }
 
 type PassingDetection struct{}
 
-func (p PassingDetection) Test(allAdditions []gitrepo.Addition, additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
+func (p PassingDetection) Test(allAdditions []gitrepo.Addition, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
 }
