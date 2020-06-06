@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"talisman/checksumcalculator"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
 
@@ -90,7 +91,8 @@ func (fc *FileContentDetector) Test(allAdditions []gitrepo.Addition, currentAddi
 			fn:          checkCreditCardNumber,
 		},
 	}
-	cc := NewChecksumCompare(allAdditions, currentAdditions, ignoreConfig)
+	calculator := checksumcalculator.NewChecksumCalculator(append(allAdditions, currentAdditions...))
+	cc := NewChecksumCompare(calculator, ignoreConfig)
 	re := regexp.MustCompile(`(?i)checksum[ \t]*:[ \t]*[0-9a-fA-F]+`)
 
 	contents := make(chan content, 512)

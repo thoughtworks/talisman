@@ -11,7 +11,7 @@ func TestChecksumCompare_IsScanNotRequired(t *testing.T) {
 
 	t.Run("should return false if talismanrc is empty", func(t *testing.T) {
 		ignoreConfig := talismanrc.NewTalismanRC(nil)
-		cc := NewChecksumCompare([]gitrepo.Addition{}, []gitrepo.Addition{}, ignoreConfig)
+		cc := NewChecksumCompare(nil, ignoreConfig)
 
 		required := cc.IsScanNotRequired(gitrepo.Addition{})
 
@@ -20,7 +20,7 @@ func TestChecksumCompare_IsScanNotRequired(t *testing.T) {
 
 	t.Run("should return false if talismanrc is empty", func(t *testing.T) {
 		ignoreConfig := talismanrc.NewTalismanRC(nil)
-		cc := NewChecksumCompare([]gitrepo.Addition{}, []gitrepo.Addition{}, ignoreConfig)
+		cc := NewChecksumCompare(nil, ignoreConfig)
 
 		required := cc.IsScanNotRequired(gitrepo.Addition{})
 

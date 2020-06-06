@@ -2,6 +2,7 @@ package detector
 
 import (
 	"fmt"
+	"talisman/checksumcalculator"
 
 	"talisman/gitrepo"
 	"talisman/talismanrc"
@@ -22,7 +23,8 @@ func NewFileSizeDetector(size int) Detector {
 }
 
 func (fd FileSizeDetector) Test(allAdditions []gitrepo.Addition, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
-	cc := NewChecksumCompare(allAdditions, currentAdditions, ignoreConfig)
+	calculator := checksumcalculator.NewChecksumCalculator(append(allAdditions, currentAdditions...))
+	cc := NewChecksumCompare(calculator, ignoreConfig)
 	for _, addition := range currentAdditions {
 		if ignoreConfig.Deny(addition, "filesize") || cc.IsScanNotRequired(addition) {
 			log.WithFields(log.Fields{

@@ -3,6 +3,7 @@ package detector
 import (
 	"fmt"
 	"regexp"
+	"talisman/checksumcalculator"
 
 	"talisman/gitrepo"
 	"talisman/talismanrc"
@@ -80,7 +81,8 @@ func NewFileNameDetector(patterns []*regexp.Regexp) Detector {
 
 //Test tests the fileNames of the Additions to ensure that they don't look suspicious
 func (fd FileNameDetector) Test(allAdditions []gitrepo.Addition, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
-	cc := NewChecksumCompare(allAdditions, currentAdditions, ignoreConfig)
+	calculator := checksumcalculator.NewChecksumCalculator(append(allAdditions, currentAdditions...))
+	cc := NewChecksumCompare(calculator, ignoreConfig)
 	for _, addition := range currentAdditions {
 		if ignoreConfig.Deny(addition, "filename") || cc.IsScanNotRequired(addition) {
 			log.WithFields(log.Fields{

@@ -8,14 +8,13 @@ import (
 )
 
 type ChecksumCompare struct {
-	additions    []gitrepo.Addition
+	calculator   *checksumcalculator.ChecksumCalculator
 	ignoreConfig *talismanrc.TalismanRC
-	allAdditions []gitrepo.Addition
 }
 
 //NewChecksumCompare returns new instance of the ChecksumCompare
-func NewChecksumCompare(allAdditions []gitrepo.Addition, gitAdditions []gitrepo.Addition, talismanRCConfig *talismanrc.TalismanRC) *ChecksumCompare {
-	cc := ChecksumCompare{allAdditions: allAdditions, additions: gitAdditions, ignoreConfig: talismanRCConfig}
+func NewChecksumCompare(calculator *checksumcalculator.ChecksumCalculator, talismanRCConfig *talismanrc.TalismanRC) *ChecksumCompare {
+	cc := ChecksumCompare{calculator: calculator, ignoreConfig: talismanRCConfig}
 	return &cc
 }
 
@@ -24,8 +23,7 @@ func (cc *ChecksumCompare) IsScanNotRequired(addition gitrepo.Addition) bool {
 	declaredCheckSum := ""
 	for _, ignore := range cc.ignoreConfig.FileIgnoreConfig {
 		if addition.Matches(ignore.FileName) {
-			calculator := checksumcalculator.NewChecksumCalculator(cc.allAdditions)
-			currentCollectiveChecksum = calculator.CalculateCollectiveChecksumForPattern(ignore.FileName)
+			currentCollectiveChecksum = cc.calculator.CalculateCollectiveChecksumForPattern(ignore.FileName)
 			declaredCheckSum = ignore.Checksum
 		}
 	}
