@@ -72,7 +72,7 @@ type content struct {
 	results     []string
 }
 
-func (fc *FileContentDetector) Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
+func (fc *FileContentDetector) Test(comparator ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
 	contentTypes := []struct {
 		contentType
 		fn
@@ -90,18 +90,17 @@ func (fc *FileContentDetector) Test(additions []gitrepo.Addition, ignoreConfig *
 			fn:          checkCreditCardNumber,
 		},
 	}
-	cc := NewChecksumCompare(additions, ignoreConfig)
 	re := regexp.MustCompile(`(?i)checksum[ \t]*:[ \t]*[0-9a-fA-F]+`)
 
 	contents := make(chan content, 512)
-	ignoredFilePaths := make(chan gitrepo.FilePath, len(additions))
+	ignoredFilePaths := make(chan gitrepo.FilePath, len(currentAdditions))
 
 	waitGroup := &sync.WaitGroup{}
-	waitGroup.Add(len(additions))
-	for _, addition := range additions {
+	waitGroup.Add(len(currentAdditions))
+	for _, addition := range currentAdditions {
 		go func(addition gitrepo.Addition) {
 			defer waitGroup.Done()
-			if ignoreConfig.Deny(addition, "filecontent") || cc.IsScanNotRequired(addition) {
+			if ignoreConfig.Deny(addition, "filecontent") || comparator.IsScanNotRequired(addition) {
 				ignoredFilePaths <- addition.Path
 				return
 			}

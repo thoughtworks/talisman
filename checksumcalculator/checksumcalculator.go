@@ -9,18 +9,24 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-type ChecksumCalculator struct {
+type ChecksumCalculator interface {
+	SuggestTalismanRC(fileNamePatterns []string) string
+	CalculateCollectiveChecksumForPattern(fileNamePattern string) string
+}
+
+type DefaultChecksumCalculator struct {
 	gitAdditions []gitrepo.Addition
+	hasher       utility.SHA256Hasher
 }
 
 //NewChecksumCalculator returns new instance of the CheckSumDetector
-func NewChecksumCalculator(gitAdditions []gitrepo.Addition) *ChecksumCalculator {
-	cc := ChecksumCalculator{gitAdditions: gitAdditions}
+func NewChecksumCalculator(hasher utility.SHA256Hasher, gitAdditions []gitrepo.Addition) ChecksumCalculator {
+	cc := DefaultChecksumCalculator{hasher: hasher, gitAdditions: gitAdditions}
 	return &cc
 }
 
 //SuggestTalismanRC returns the suggestion for .talismanrc format
-func (cc *ChecksumCalculator) SuggestTalismanRC(fileNamePatterns []string) string {
+func (cc *DefaultChecksumCalculator) SuggestTalismanRC(fileNamePatterns []string) string {
 	var fileIgnoreConfigs []talismanrc.FileIgnoreConfig
 	result := ""
 	for _, pattern := range fileNamePatterns {
@@ -39,7 +45,7 @@ func (cc *ChecksumCalculator) SuggestTalismanRC(fileNamePatterns []string) strin
 	return result
 }
 
-func (cc *ChecksumCalculator) CalculateCollectiveChecksumForPattern(fileNamePattern string) string {
+func (cc *DefaultChecksumCalculator) CalculateCollectiveChecksumForPattern(fileNamePattern string) string {
 	var patternPaths []string
 	currentCollectiveChecksum := ""
 	for _, addition := range cc.gitAdditions {
@@ -50,7 +56,7 @@ func (cc *ChecksumCalculator) CalculateCollectiveChecksumForPattern(fileNamePatt
 	// Calculate current collective checksum
 	patternPaths = utility.UniqueItems(patternPaths)
 	if len(patternPaths) != 0 {
-		currentCollectiveChecksum = utility.CollectiveSHA256Hash(patternPaths)
+		currentCollectiveChecksum = cc.hasher.CollectiveSHA256Hash(patternPaths)
 	}
 	return currentCollectiveChecksum
 }

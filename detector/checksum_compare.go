@@ -1,28 +1,29 @@
 package detector
 
 import (
+	"talisman/checksumcalculator"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
 	"talisman/utility"
 )
 
 type ChecksumCompare struct {
-	additions    []gitrepo.Addition
-	ignoreConfig *talismanrc.TalismanRC
+	calculator checksumcalculator.ChecksumCalculator
+	hasher     utility.SHA256Hasher
+	talismanRC *talismanrc.TalismanRC
 }
 
 //NewChecksumCompare returns new instance of the ChecksumCompare
-func NewChecksumCompare(gitAdditions []gitrepo.Addition, talismanRCConfig *talismanrc.TalismanRC) *ChecksumCompare {
-	cc := ChecksumCompare{additions: gitAdditions, ignoreConfig: talismanRCConfig}
-	return &cc
+func NewChecksumCompare(calculator checksumcalculator.ChecksumCalculator, hasher utility.SHA256Hasher, talismanRCConfig *talismanrc.TalismanRC) ChecksumCompare {
+	return ChecksumCompare{calculator: calculator, hasher: hasher, talismanRC: talismanRCConfig}
 }
 
 func (cc *ChecksumCompare) IsScanNotRequired(addition gitrepo.Addition) bool {
-	currentCollectiveChecksum := utility.CollectiveSHA256Hash([]string{string(addition.Path)})
+	currentCollectiveChecksum := cc.hasher.CollectiveSHA256Hash([]string{string(addition.Path)})
 	declaredCheckSum := ""
-	for _, ignore := range cc.ignoreConfig.FileIgnoreConfig {
+	for _, ignore := range cc.talismanRC.FileIgnoreConfig {
 		if addition.Matches(ignore.FileName) {
-			currentCollectiveChecksum = utility.CollectiveSHA256Hash([]string{ignore.FileName})
+			currentCollectiveChecksum = cc.calculator.CalculateCollectiveChecksumForPattern(ignore.FileName)
 			declaredCheckSum = ignore.Checksum
 		}
 	}
