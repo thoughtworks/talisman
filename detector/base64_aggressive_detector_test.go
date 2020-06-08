@@ -1,6 +1,7 @@
 package detector
 
 import (
+	"talisman/utility"
 	"testing"
 
 	"talisman/gitrepo"
@@ -18,7 +19,7 @@ func TestShouldFlagPotentialAWSAccessKeysInAggressiveMode(t *testing.T) {
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 
-	NewFileContentDetector().AggressiveMode().Test(additions, talismanRC, results)
+	NewFileContentDetector().AggressiveMode().Test(NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additions, talismanRC, results)
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
 
@@ -29,7 +30,7 @@ func TestShouldFlagPotentialAWSAccessKeysAtPropertyDefinitionInAggressiveMode(t 
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 
-	NewFileContentDetector().AggressiveMode().Test(additions, talismanRC, results)
+	NewFileContentDetector().AggressiveMode().Test(NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additions, talismanRC, results)
 	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
 }
 
@@ -40,7 +41,7 @@ func TestShouldNotFlagPotentialSecretsWithinSafeJavaCodeEvenInAggressiveMode(t *
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 
-	NewFileContentDetector().AggressiveMode().Test(additions, talismanRC, results)
+	NewFileContentDetector().AggressiveMode().Test(NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additions, talismanRC, results)
 	if results == nil {
 		additions = nil
 	}

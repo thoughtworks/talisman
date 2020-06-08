@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"talisman/checksumcalculator"
 	"talisman/detector"
 	"talisman/gitrepo"
@@ -65,8 +66,13 @@ func (r *Runner) Scan(reportDirectory string) int {
 //RunChecksumCalculator runs the checksum calculator against the patterns given as input
 func (r *Runner) RunChecksumCalculator(fileNamePatterns []string) int {
 	exitStatus := 1
-	cc := checksumcalculator.NewChecksumCalculator(fileNamePatterns)
-	rcSuggestion := cc.SuggestTalismanRC()
+	wd, _ := os.Getwd()
+	repo := gitrepo.RepoLocatedAt(wd)
+	gitTrackedFilesAsAdditions := repo.TrackedFilesAsAdditions()
+	//Adding staged files for calculation
+	gitTrackedFilesAsAdditions = append(gitTrackedFilesAsAdditions, repo.StagedAdditions()...)
+	cc := checksumcalculator.NewChecksumCalculator(utility.DefaultSHA256Hasher{}, gitTrackedFilesAsAdditions)
+	rcSuggestion := cc.SuggestTalismanRC(fileNamePatterns)
 	if rcSuggestion != "" {
 		fmt.Print(rcSuggestion)
 		exitStatus = 0

@@ -1,8 +1,6 @@
 package utility
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -23,30 +21,6 @@ func UniqueItems(stringSlice []string) []string {
 		}
 	}
 	return list
-}
-
-//CollectiveSHA256Hash return collective sha256 hash of the passed paths
-func CollectiveSHA256Hash(paths []string) string {
-	var finHash = ""
-	for _, path := range paths {
-		sbyte := []byte(finHash)
-		concatBytes := hashByte(&sbyte)
-		nameByte := []byte(path)
-		nameHash := hashByte(&nameByte)
-		fileBytes, _ := ioutil.ReadFile(path)
-		fileHash := hashByte(&fileBytes)
-		finHash = concatBytes + fileHash + nameHash
-	}
-	c := []byte(finHash)
-	m := hashByte(&c)
-	return m
-}
-
-func hashByte(contentPtr *[]byte) string {
-	contents := *contentPtr
-	hasher := sha256.New()
-	hasher.Write(contents)
-	return hex.EncodeToString(hasher.Sum(nil))
 }
 
 //Creates art for console output

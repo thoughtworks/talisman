@@ -79,10 +79,9 @@ func NewFileNameDetector(patterns []*regexp.Regexp) Detector {
 }
 
 //Test tests the fileNames of the Additions to ensure that they don't look suspicious
-func (fd FileNameDetector) Test(additions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
-	cc := NewChecksumCompare(additions, ignoreConfig)
-	for _, addition := range additions {
-		if ignoreConfig.Deny(addition, "filename") || cc.IsScanNotRequired(addition) {
+func (fd FileNameDetector) Test(comparator ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
+	for _, addition := range currentAdditions {
+		if ignoreConfig.Deny(addition, "filename") || comparator.IsScanNotRequired(addition) {
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
 			}).Info("Ignoring addition as it was specified to be ignored.")

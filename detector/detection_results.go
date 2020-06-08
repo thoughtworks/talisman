@@ -308,7 +308,7 @@ func (r *DetectionResults) suggestTalismanRC(filePaths []string, promptContext p
 	var entriesToAdd []talismanrc.FileIgnoreConfig
 
 	for _, filePath := range filePaths {
-		currentChecksum := utility.CollectiveSHA256Hash([]string{filePath})
+		currentChecksum := utility.DefaultSHA256Hasher{}.CollectiveSHA256Hash([]string{filePath})
 		fileIgnoreConfig := talismanrc.FileIgnoreConfig{FileName: filePath, Checksum: currentChecksum, IgnoreDetectors: []string{}}
 		entriesToAdd = append(entriesToAdd, fileIgnoreConfig)
 	}
