@@ -13,7 +13,7 @@ func TestShouldFlagLargeFiles(t *testing.T) {
 	results := NewDetectionResults()
 	content := []byte("more than one byte")
 	additions := []gitrepo.Addition{gitrepo.NewAddition("filename", content)}
-	NewFileSizeDetector(2).Test(ChecksumCompare{calculator: nil, ignoreConfig: talismanrc.NewTalismanRC(nil)}, additions, talismanRC, results)
+	NewFileSizeDetector(2).Test(ChecksumCompare{calculator: nil, talismanRC: talismanrc.NewTalismanRC(nil)}, additions, talismanRC, results)
 	assert.True(t, results.HasFailures(), "Expected file to fail the check against file size detector.")
 }
 
@@ -21,7 +21,7 @@ func TestShouldNotFlagSmallFiles(t *testing.T) {
 	results := NewDetectionResults()
 	content := []byte("m")
 	additions := []gitrepo.Addition{gitrepo.NewAddition("filename", content)}
-	NewFileSizeDetector(2).Test(ChecksumCompare{calculator: nil, ignoreConfig: talismanrc.NewTalismanRC(nil)}, additions, talismanRC, results)
+	NewFileSizeDetector(2).Test(ChecksumCompare{calculator: nil, talismanRC: talismanrc.NewTalismanRC(nil)}, additions, talismanRC, results)
 	assert.False(t, results.HasFailures(), "Expected file to not to fail the check against file size detector.")
 }
 
@@ -39,6 +39,6 @@ func TestShouldNotFlagIgnoredLargeFiles(t *testing.T) {
 	talismanRC.FileIgnoreConfig[0] = fileIgnoreConfig
 
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
-	NewFileSizeDetector(2).Test(ChecksumCompare{calculator: nil, ignoreConfig: talismanrc.NewTalismanRC(nil)}, additions, talismanRC, results)
+	NewFileSizeDetector(2).Test(ChecksumCompare{calculator: nil, talismanRC: talismanrc.NewTalismanRC(nil)}, additions, talismanRC, results)
 	assert.True(t, results.Successful(), "expected file %s to be ignored by file size detector", filename)
 }

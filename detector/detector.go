@@ -44,13 +44,13 @@ func (dc *Chain) AddDetector(d Detector) *Chain {
 
 //Test validates the additions against each detector in the chain.
 //The results are passed in from detector to detector and thus collect all errors from all detectors
-func (dc *Chain) Test(currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *DetectionResults) {
+func (dc *Chain) Test(currentAdditions []gitrepo.Addition, talismanRC *talismanrc.TalismanRC, result *DetectionResults) {
 	wd, _ := os.Getwd()
 	repo := gitrepo.RepoLocatedAt(wd)
 	allAdditions := repo.TrackedFilesAsAdditions()
 	calculator := checksumcalculator.NewChecksumCalculator(append(allAdditions, currentAdditions...))
-	cc := NewChecksumCompare(calculator, ignoreConfig)
+	cc := NewChecksumCompare(calculator, talismanRC)
 	for _, v := range dc.detectors {
-		v.Test(*cc, currentAdditions, ignoreConfig, result)
+		v.Test(*cc, currentAdditions, talismanRC, result)
 	}
 }
