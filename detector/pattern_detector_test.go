@@ -4,6 +4,7 @@ import (
 	"strings"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
+	"talisman/utility"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -51,14 +52,14 @@ func TestShouldIgnorePasswordPatterns(t *testing.T) {
 	fileIgnoreConfig := talismanrc.FileIgnoreConfig{filename, "833b6c24c8c2c5c7e1663226dc401b29c005492dc76a1150fc0e0f07f29d4cc3", []string{"filecontent"}}
 	ignores := &talismanrc.TalismanRC{FileIgnoreConfig: []talismanrc.FileIgnoreConfig{fileIgnoreConfig}}
 
-	NewPatternDetector(customPatterns).Test(ChecksumCompare{calculator: nil, talismanRC: talismanrc.NewTalismanRC(nil)}, additions, ignores, results)
+	NewPatternDetector(customPatterns).Test(NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additions, ignores, results)
 	assert.True(t, results.Successful(), "Expected file %s to be ignored by pattern", filename)
 }
 
 func DetectionOfSecretPattern(filename string, content []byte) (*DetectionResults, []gitrepo.Addition, string) {
 	results := NewDetectionResults()
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
-	NewPatternDetector(customPatterns).Test(ChecksumCompare{calculator: nil, talismanRC: talismanrc.NewTalismanRC(nil)}, additions, talismanRC, results)
+	NewPatternDetector(customPatterns).Test(NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additions, talismanRC, results)
 	expected := "Potential secret pattern : " + string(content)
 	return results, additions, expected
 }

@@ -8,18 +8,18 @@ import (
 )
 
 type ChecksumCompare struct {
-	calculator *checksumcalculator.ChecksumCalculator
+	calculator checksumcalculator.ChecksumCalculator
+	hasher     utility.SHA256Hasher
 	talismanRC *talismanrc.TalismanRC
 }
 
 //NewChecksumCompare returns new instance of the ChecksumCompare
-func NewChecksumCompare(calculator *checksumcalculator.ChecksumCalculator, talismanRCConfig *talismanrc.TalismanRC) *ChecksumCompare {
-	cc := ChecksumCompare{calculator: calculator, talismanRC: talismanRCConfig}
-	return &cc
+func NewChecksumCompare(calculator checksumcalculator.ChecksumCalculator, hasher utility.SHA256Hasher, talismanRCConfig *talismanrc.TalismanRC) ChecksumCompare {
+	return ChecksumCompare{calculator: calculator, hasher: hasher, talismanRC: talismanRCConfig}
 }
 
 func (cc *ChecksumCompare) IsScanNotRequired(addition gitrepo.Addition) bool {
-	currentCollectiveChecksum := utility.CollectiveSHA256Hash([]string{string(addition.Path)})
+	currentCollectiveChecksum := cc.hasher.CollectiveSHA256Hash([]string{string(addition.Path)})
 	declaredCheckSum := ""
 	for _, ignore := range cc.talismanRC.FileIgnoreConfig {
 		if addition.Matches(ignore.FileName) {

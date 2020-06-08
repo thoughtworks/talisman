@@ -307,7 +307,7 @@ func (r *DetectionResults) suggestTalismanRC(fs afero.Fs, ignoreFile string, fil
 	var entriesToAdd []talismanrc.FileIgnoreConfig
 
 	for _, filePath := range filePaths {
-		currentChecksum := utility.CollectiveSHA256Hash([]string{filePath})
+		currentChecksum := utility.DefaultSHA256Hasher{}.CollectiveSHA256Hash([]string{filePath})
 		fileIgnoreConfig := talismanrc.FileIgnoreConfig{filePath, currentChecksum, []string{}}
 		entriesToAdd = append(entriesToAdd, fileIgnoreConfig)
 	}

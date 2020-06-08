@@ -5,6 +5,7 @@ import (
 	"talisman/checksumcalculator"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
+	"talisman/utility"
 )
 
 //Detector represents a single kind of test to be performed against a set of Additions
@@ -48,9 +49,10 @@ func (dc *Chain) Test(currentAdditions []gitrepo.Addition, talismanRC *talismanr
 	wd, _ := os.Getwd()
 	repo := gitrepo.RepoLocatedAt(wd)
 	allAdditions := repo.TrackedFilesAsAdditions()
-	calculator := checksumcalculator.NewChecksumCalculator(append(allAdditions, currentAdditions...))
-	cc := NewChecksumCompare(calculator, talismanRC)
+	hasher := utility.DefaultSHA256Hasher{}
+	calculator := checksumcalculator.NewChecksumCalculator(hasher, append(allAdditions, currentAdditions...))
+	cc := NewChecksumCompare(calculator, hasher, talismanRC)
 	for _, v := range dc.detectors {
-		v.Test(*cc, currentAdditions, talismanRC, result)
+		v.Test(cc, currentAdditions, talismanRC, result)
 	}
 }

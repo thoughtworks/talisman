@@ -71,7 +71,7 @@ func (r *Runner) RunChecksumCalculator(fileNamePatterns []string) int {
 	gitTrackedFilesAsAdditions := repo.TrackedFilesAsAdditions()
 	//Adding staged files for calculation
 	gitTrackedFilesAsAdditions = append(gitTrackedFilesAsAdditions, repo.StagedAdditions()...)
-	cc := checksumcalculator.NewChecksumCalculator(gitTrackedFilesAsAdditions)
+	cc := checksumcalculator.NewChecksumCalculator(utility.DefaultSHA256Hasher{}, gitTrackedFilesAsAdditions)
 	rcSuggestion := cc.SuggestTalismanRC(fileNamePatterns)
 	if rcSuggestion != "" {
 		fmt.Print(rcSuggestion)
