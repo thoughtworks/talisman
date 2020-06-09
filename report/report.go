@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
-	"talisman/detector"
+	"talisman/detector/helpers"
 	"talisman/utility"
 
 	"github.com/fatih/color"
@@ -17,7 +17,7 @@ const jsonFileName string = "report.json"
 const htmlReportDir string = "talisman_html_report"
 
 // GenerateReport generates a talisman scan report in html format
-func GenerateReport(r *detector.DetectionResults, directory string) (path string, err error) {
+func GenerateReport(r *helpers.DetectionResults, directory string) (path string, err error) {
 
 	var jsonFilePath string
 	var homeDir string
