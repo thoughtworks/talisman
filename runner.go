@@ -6,6 +6,7 @@ import (
 	"os"
 	"talisman/checksumcalculator"
 	"talisman/detector"
+	"talisman/detector/helpers"
 	"talisman/gitrepo"
 	"talisman/prompt"
 	"talisman/report"
@@ -27,14 +28,14 @@ const (
 //Runner represents a single run of the validations for a given commit range
 type Runner struct {
 	additions []gitrepo.Addition
-	results   *detector.DetectionResults
+	results   *helpers.DetectionResults
 }
 
 //NewRunner returns a new Runner.
 func NewRunner(additions []gitrepo.Addition) *Runner {
 	return &Runner{
 		additions: additions,
-		results:   detector.NewDetectionResults(),
+		results:   helpers.NewDetectionResults(),
 	}
 }
 
