@@ -35,12 +35,17 @@ type ScopeConfig struct {
 	ScopeName string `yaml:"scope"`
 }
 
+type ExperimentalConfig struct {
+	Base64EntropyThreshold float64 `yaml:"base64EntropyThreshold,omitempty"`
+}
+
 type PatternString string
 
 type TalismanRC struct {
 	FileIgnoreConfig []FileIgnoreConfig `yaml:"fileignoreconfig,omitempty"`
 	ScopeConfig      []ScopeConfig      `yaml:"scopeconfig,omitempty"`
 	CustomPatterns   []PatternString    `yaml:"custom_patterns,omitempty"`
+	Experimental     ExperimentalConfig `yaml:"experimental,omitempty"`
 }
 
 func SetFs(_fs afero.Fs) {
