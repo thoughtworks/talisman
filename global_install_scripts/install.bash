@@ -284,14 +284,29 @@ function run() {
 		done
 	}
 
+  function set_talisman_interactive_mode(){
+    # set interactive mode for talisman if user opts in for it
+    # default to non-interactive mode
+    TALISMAN_INTERACTIVE_OPTION="false"
+    echo -e "\n\nSetting up interaction mode"
+
+    	read -rep $'\nDO YOU WANT TO BE PROMPTED WHEN ADDING EXCEPTIONS TO .talismanrc FILE? \nEnter y to install in interactive mode. Press any key to continue without interactive mode (y/n):' INTERACTIVE_OPT
+      if [[ $INTERACTIVE_OPT =~ ^[Yy]$ ]]
+      then
+        TALISMAN_INTERACTIVE_OPTION="true"
+      fi
+  }
+
 	function set_talisman_home_and_binary_path() {
 		ENV_FILE="$1"
+		set_talisman_interactive_mode
 		echo -e "Setting up TALISMAN_HOME in ${ENV_FILE}"
 		echo -e "\n" >>${ENV_FILE}
 		echo "# >>> talisman >>>" >>${ENV_FILE}
 		echo "# Below environment variables should not be modified unless you know what you are doing" >>${ENV_FILE}
 		echo "export TALISMAN_HOME=${TALISMAN_SETUP_DIR}" >>${ENV_FILE}
 		echo "alias talisman=\$TALISMAN_HOME/${TALISMAN_BINARY_NAME}" >>${ENV_FILE}
+		echo "export TALISMAN_INTERACTIVE=${TALISMAN_INTERACTIVE_OPTION}" >>${ENV_FILE}
 		echo "# <<< talisman <<<" >>${ENV_FILE}
 		printf '\e[1;34m%-6s\e[m' "After the installation is complete, you will need to manually restart the terminal or source ${ENV_FILE} file"
 		echo

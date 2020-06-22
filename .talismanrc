@@ -8,5 +8,7 @@ fileignoreconfig:
 - filename: detector/match_pattern_test.go
   checksum: d68aa0e06355e3b848941727d1fcb32cf47e3d615f9921f0db39855325010446
   ignore_detectors: []
+- filename: global_install_scripts/install.bash
+  checksum: 5d659125ecbe619ea99f5bc71c2d761b586ce3ec9ccab7683ee54f4ebde9f748
 scopeconfig:
 - scope: go
