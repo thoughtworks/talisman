@@ -351,6 +351,21 @@ If you execute `talisman` on the command line, you will be able to view all the 
   -v, --version                  show current version of talisman
 ```
 
+### Interactive mode
+
+When you regularly have too many files that get are flagged by talisman hook, which you know should be fine to check in, you can use this feature to let talisman ease the process for you. The interactive mode will allow Talisman to prompt you to directly add files you want to ignore to .talismanrc from command prompt directly. 
+To enable this feature, you need TALISMAN_INTERACTIVE variable to be set as true in your bash file.
+
+You can invoke talisman in interactive mode by either of the 2 ways:
+1.  Open your bash file, and add   
+```export TALISMAN_INTERACTIVE=true```  
+Don't forget to source the bash file for the variable to take effect!
+
+2.  Alternatively, you can also invoke the interactive mode by using the CLI utility  
+(for using pre-commit hook)  
+```talisman -i -g pre-commit```
+
+*Note*: If you use an IDE's Version Control integration for git operations, this feature will not work. You can still use the suggested filename and checksum to be entered in .talismanrc  file manually.
 
 ### Git history Scanner
 
