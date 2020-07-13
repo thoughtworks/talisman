@@ -252,6 +252,17 @@ fileignoreconfig:
 ```
 Entering this in the `.talismanrc` file will ensure that Talisman will ignore the `danger.pem` file as long as the checksum matches the value mentioned in the `checksum` field.
 
+### Interactive mode
+If it is too much of a hassle to keep copying content to .talismanrc everytime you encounter an error from Talisman, you could enable the interactive mode and let Talisman assist you in prompting the additions of the files to ignore. 
+Just follow the simple steps:
+1. Open your bash profile where your environment variables are set (.bashrc, .bash_profile, .profile or any other location)
+2. You will see `TALISMAN_INTERACTIVE` variable under `# >>> talisman >>>`
+3. If not already set to true, add `export TALISMAN_INTERACTIVE=true`
+4. Don't forget to save and source the file
+
+That's it! Every time Talisman hook finds an error during pre-push/pre-commit, just follow the instructions as Talisman suggests. 
+Be careful to not ignore a file without verifying the content. You must be confident that no secret is getting leaked out.
+
 ### Ignoring specific detectors
 
 Below is a detailed description of the various fields that can be configured into the `.talismanrc` file:
@@ -340,6 +351,21 @@ If you execute `talisman` on the command line, you will be able to view all the 
   -v, --version                  show current version of talisman
 ```
 
+### Interactive mode
+
+When you regularly have too many files that get are flagged by talisman hook, which you know should be fine to check in, you can use this feature to let talisman ease the process for you. The interactive mode will allow Talisman to prompt you to directly add files you want to ignore to .talismanrc from command prompt directly. 
+To enable this feature, you need TALISMAN_INTERACTIVE variable to be set as true in your bash file.
+
+You can invoke talisman in interactive mode by either of the 2 ways:
+1.  Open your bash file, and add   
+```export TALISMAN_INTERACTIVE=true```  
+Don't forget to source the bash file for the variable to take effect!
+
+2.  Alternatively, you can also invoke the interactive mode by using the CLI utility  
+(for using pre-commit hook)  
+```talisman -i -g pre-commit```
+
+*Note*: If you use an IDE's Version Control integration for git operations, this feature will not work. You can still use the suggested filename and checksum to be entered in .talismanrc  file manually.
 
 ### Git history Scanner
 
