@@ -24,8 +24,8 @@
 	- [From a global hook template](#uninstallation-from-a-global-hook-template)
 	- [From a single repository](#uninstallation-from-a-single-repository)
 - [Contributing to Talisman](#contributing-to-talisman)
-	- [Developing locally](#developing-locally)
-	- [Releasing](#releasing)
+	- [Developing locally](https://github.com/thoughtworks/talisman/blob/master/contributing.md#developing-locally)
+	- [Releasing](https://github.com/thoughtworks/talisman/blob/master/contributing.md#releasing)
 
 # What is Talisman?
 Talisman is a tool that installs a hook to your repository to ensure that potential secrets or sensitive information do not leave the developer's workstation.
