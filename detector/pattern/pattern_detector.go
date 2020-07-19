@@ -86,9 +86,9 @@ func processAllowedPatterns(addition gitrepo.Addition, tRC *talismanrc.TalismanR
 	}
 
 	// Processing allowed patterns based on file path
-	for k, v := range tRC.FileIgnoreConfig {
-		if v.FileName == string(addition.Path) {
-			for _, pattern := range v.AllowedPatterns {
+	for _, fileignoreconfig := range tRC.FileIgnoreConfig {
+		if fileignoreconfig.FileName == string(addition.Path) {
+			for _, pattern := range fileignoreconfig.AllowedPatterns {
 				addition.Data = []byte(replaceAllStrings(string(addition.Data), pattern))
 			}
 		}
