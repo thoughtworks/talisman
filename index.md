@@ -47,7 +47,7 @@ Just the Docs is distributed by an [MIT license](https://github.com/thoughtworks
 
 We love contributors who also share the passion of securing code-bases and of open-source. When contributing to this repository, please first discuss the change you wish to make by raising an issue, or any other method with the owners of this repository before making a change. Read more about becoming a contributor in our document for [CONTRIBUTING](https://github.com/thoughtworks/talisman/blob/master/contributing.md).
 
-#### Thank you to the contributors of Just the Docs!
+#### Thank you to the contributors of Talisman!
 
 <ul class="list-style-none">
 {% for contributor in site.github.contributors %}
