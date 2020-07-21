@@ -4,5 +4,4 @@ vendor
 .idea
 .bundle/
 .jekyll-cache
-.talismanrc
 .DS_Store
