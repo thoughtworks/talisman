@@ -2,3 +2,5 @@ _site
 .sass-cache
 vendor
 .idea
+.bundle/
+.jekyll-cache

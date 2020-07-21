@@ -7,7 +7,7 @@
 
 # Site settings
 title: Talisman
-email: your-email@domain.com
+email: talisman-maintainers@thoughtworks.com
 description: > # this means to ignore newlines until "baseurl:"
   Talisman is a tool is to validate code changes that are to be pushed out of a
   local Git repository on a developer's workstation. By hooking into the
@@ -18,7 +18,11 @@ description: > # this means to ignore newlines until "baseurl:"
   documentation can be caught.
 baseurl: "/talisman" # the subpath of your site, e.g. /blog
 url: "https://thoughtworks.github.io" # the base hostname & protocol for your site
-exclude: vendor
+
+exclude:
+  - vendor
 
 # Build settings
 markdown: kramdown
+
+theme: "just-the-docs"
