@@ -52,7 +52,7 @@ func TestShouldIgnorePasswordPatterns(t *testing.T) {
 	content := []byte("\"password\" : UnsafePassword")
 	filename := "secret.txt"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
-	fileIgnoreConfig := talismanrc.FileIgnoreConfig{filename, "833b6c24c8c2c5c7e1663226dc401b29c005492dc76a1150fc0e0f07f29d4cc3", []string{"filecontent"}}
+	fileIgnoreConfig := talismanrc.FileIgnoreConfig{filename, "833b6c24c8c2c5c7e1663226dc401b29c005492dc76a1150fc0e0f07f29d4cc3", []string{"filecontent"}, []string{}}
 	ignores := &talismanrc.TalismanRC{FileIgnoreConfig: []talismanrc.FileIgnoreConfig{fileIgnoreConfig}}
 
 	NewPatternDetector(customPatterns).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additions, ignores, results)

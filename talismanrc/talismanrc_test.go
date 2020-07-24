@@ -60,7 +60,7 @@ func TestIgnoringDetectors(t *testing.T) {
 
 func TestAddIgnoreFiles(t *testing.T) {
 	talismanRCConfig := CreatetalismanRCWithScopeIgnore([]string{})
-	talismanRCConfig.AddFileIgnores([]FileIgnoreConfig{FileIgnoreConfig{"Foo", "SomeCheckSum", []string{}}})
+	talismanRCConfig.AddFileIgnores([]FileIgnoreConfig{FileIgnoreConfig{"Foo", "SomeCheckSum", []string{}, []string{}}})
 	talismanRCConfig = Get()
 	assert.Equal(t, 1, len(talismanRCConfig.FileIgnoreConfig))
 }

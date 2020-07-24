@@ -29,6 +29,7 @@ type FileIgnoreConfig struct {
 	FileName        string   `yaml:"filename"`
 	Checksum        string   `yaml:"checksum"`
 	IgnoreDetectors []string `yaml:"ignore_detectors,omitempty"`
+	AllowedPatterns []string `yaml:"allowed_patterns,omitempty"`
 }
 
 type ScopeConfig struct {
@@ -45,6 +46,7 @@ type TalismanRC struct {
 	FileIgnoreConfig []FileIgnoreConfig `yaml:"fileignoreconfig,omitempty"`
 	ScopeConfig      []ScopeConfig      `yaml:"scopeconfig,omitempty"`
 	CustomPatterns   []PatternString    `yaml:"custom_patterns,omitempty"`
+	AllowedPatterns  []string           `yaml:"allowed_patterns,omitempty"`
 	Experimental     ExperimentalConfig `yaml:"experimental,omitempty"`
 }
 
