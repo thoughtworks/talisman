@@ -290,13 +290,29 @@ At the moment, you can ignore
 * `filename`
 * `filesize`
 
+### Ignoring specific keywords
+
+Because some of your files might contain keywords such as `key` or `pass` that are not necessarily related to secrets, you might want to ignore these keywords to reduce the number of false positives.
+This can be achieved by using the `allowed_patterns` field at the file level and/or at the repository level:
+
+```yaml
+fileignoreconfig:
+- filename: test
+  allowed_patterns: [key]
+allowed_patterns:
+- keyword
+- pass
+```
+
+In the previous example, `key` is allowed in the `test` file, `keyword` and `pass` are allowed at the repository level.
+
 ### Ignoring multiple files of same type (with wildcards)
 
 You can choose to ignore all files of a certain type, because you know they will always be safe, and you wouldn't want Talisman to scan them.
 
 Steps:
 
-1. Format a wildard pattern for the files you want to ignore. For example, `*.lock`
+1. Format a wildcard pattern for the files you want to ignore. For example, `*.lock`
 2. Use the [checksum calculator](#checksum-calculator) to feed the pattern and attain a collective checksum. For example, `talisman --checksum="*.lock" `
 3. Copy the fileconfig block, printed on console, to .talismanrc file.
 

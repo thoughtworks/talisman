@@ -59,6 +59,18 @@ func TestShouldIgnorePasswordPatterns(t *testing.T) {
 	assert.True(t, results.Successful(), "Expected file %s to be ignored by pattern", filename)
 }
 
+func TestShouldIgnoreAllowedPattern(t *testing.T) {
+	results := helpers.NewDetectionResults()
+	content := []byte("\"key\" : \"This is an allowed keyword\"\npassword=y0uw1lln3v3rgu3ssmyP@55w0rd")
+	filename := "allowed_pattern.txt"
+	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
+	fileIgnoreConfig := talismanrc.FileIgnoreConfig{filename, "", []string{}, []string{"key"}}
+	ignores := &talismanrc.TalismanRC{FileIgnoreConfig: []talismanrc.FileIgnoreConfig{fileIgnoreConfig}, AllowedPatterns: []string{"password"}}
+
+	NewPatternDetector(customPatterns).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additions, ignores, results)
+	assert.True(t, results.Successful(), "Expected keywords %s to be ignored by Talisman", append(fileIgnoreConfig.AllowedPatterns, ignores.AllowedPatterns...))
+}
+
 func DetectionOfSecretPattern(filename string, content []byte) (*helpers.DetectionResults, []gitrepo.Addition, string) {
 	results := helpers.NewDetectionResults()
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
