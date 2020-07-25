@@ -27,7 +27,7 @@ var (
 
 type FileIgnoreConfig struct {
 	FileName        string   `yaml:"filename"`
-	Checksum        string   `yaml:"checksum"`
+	Checksum        string   `yaml:"checksum,omitempty"`
 	IgnoreDetectors []string `yaml:"ignore_detectors,omitempty"`
 	AllowedPatterns []string `yaml:"allowed_patterns,omitempty"`
 }

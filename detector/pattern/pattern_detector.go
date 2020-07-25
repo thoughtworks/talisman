@@ -76,7 +76,7 @@ func (detector PatternDetector) Test(comparator helpers.ChecksumCompare, current
 
 func replaceAllStrings(str string, pattern string) string {
 	re := regexp.MustCompile(fmt.Sprintf("(?i)%s", pattern))
-	return re.ReplaceAllString(str, "TALISMAN_ALLOWED_PATTERN")
+	return re.ReplaceAllString(str, "")
 }
 
 func processAllowedPatterns(addition gitrepo.Addition, tRC *talismanrc.TalismanRC) string {
