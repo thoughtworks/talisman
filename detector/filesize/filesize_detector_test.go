@@ -21,6 +21,17 @@ func TestShouldFlagLargeFiles(t *testing.T) {
 	assert.True(t, results.HasFailures(), "Expected file to fail the check against file size detector.")
 }
 
+func TestShouldNotFlagLargeFilesIfThresholdIsBelowSeverity(t *testing.T) {
+	results := helpers.NewDetectionResults()
+	content := []byte("more than one byte")
+	var talismanRCContents = "threshold: 3"
+	talismanRCWithThreshold := talismanrc.NewTalismanRC([]byte(talismanRCContents))
+	additions := []gitrepo.Addition{gitrepo.NewAddition("filename", content)}
+	NewFileSizeDetector(2).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanRCWithThreshold), additions, talismanRCWithThreshold, results)
+	assert.False(t, results.HasFailures(), "Expected file to not to fail the check against file size detector.")
+	assert.True(t, results.HasWarnings(), "Expected file to have warnings against file size detector.")
+}
+
 func TestShouldNotFlagSmallFiles(t *testing.T) {
 	results := helpers.NewDetectionResults()
 	content := []byte("m")

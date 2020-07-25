@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"talisman/detector/severity"
 	"talisman/gitrepo"
 	"talisman/prompt"
 	"talisman/talismanrc"
@@ -17,9 +18,10 @@ import (
 )
 
 type Details struct {
-	Category string   `json:"type"`
-	Message  string   `json:"message"`
-	Commits  []string `json:"commits"`
+	Category string            `json:"type"`
+	Message  string            `json:"message"`
+	Commits  []string          `json:"commits"`
+	Severity severity.Severity `json:"severity,omitempty"`
 }
 
 type ResultsDetails struct {
@@ -65,7 +67,7 @@ func (r *ResultsDetails) getWarningDataByCategoryAndMessage(failureMessage strin
 func (r *ResultsDetails) getFailureDataByCategoryAndMessage(failureMessage string, category string) *Details {
 	detail := getDetaisByCategoryAndMessage(r.FailureList, category, failureMessage)
 	if detail == nil {
-		detail = &Details{category, failureMessage, make([]string, 0)}
+		detail = &Details{category, failureMessage, make([]string, 0), severity.Low()}
 		r.FailureList = append(r.FailureList, *detail)
 	}
 	return detail
@@ -79,7 +81,7 @@ func (r *ResultsDetails) addIgnoreDataByCategory(category string) {
 		}
 	}
 	if !isCategoryAlreadyPresent {
-		detail := Details{category, "", make([]string, 0)}
+		detail := Details{category, "", make([]string, 0), severity.Low()}
 		r.IgnoreList = append(r.IgnoreList, detail)
 	}
 }
@@ -114,7 +116,7 @@ func NewDetectionResults() *DetectionResults {
 //Fail is used to mark the supplied FilePath as failing a detection for a supplied reason.
 //Detectors are encouraged to provide context sensitive messages so that fixing the errors is made simple for the end user
 //Fail may be called multiple times for each FilePath and the calls accumulate the provided reasons
-func (r *DetectionResults) Fail(filePath gitrepo.FilePath, category string, message string, commits []string) {
+func (r *DetectionResults) Fail(filePath gitrepo.FilePath, category string, message string, commits []string, severity severity.Severity) {
 	isFilePresentInResults := false
 	for resultIndex := 0; resultIndex < len(r.Results); resultIndex++ {
 		if r.Results[resultIndex].Filename == filePath {
@@ -127,12 +129,12 @@ func (r *DetectionResults) Fail(filePath gitrepo.FilePath, category string, mess
 				}
 			}
 			if !isEntryPresentForGivenCategoryAndMessage {
-				r.Results[resultIndex].FailureList = append(r.Results[resultIndex].FailureList, Details{category, message, commits})
+				r.Results[resultIndex].FailureList = append(r.Results[resultIndex].FailureList, Details{category, message, commits, severity})
 			}
 		}
 	}
 	if !isFilePresentInResults {
-		failureDetails := Details{category, message, commits}
+		failureDetails := Details{category, message, commits, severity}
 		resultDetails := ResultsDetails{filePath, make([]Details, 0), make([]Details, 0), make([]Details, 0)}
 		resultDetails.FailureList = append(resultDetails.FailureList, failureDetails)
 		r.Results = append(r.Results, resultDetails)
@@ -140,7 +142,7 @@ func (r *DetectionResults) Fail(filePath gitrepo.FilePath, category string, mess
 	r.updateResultsSummary(category)
 }
 
-func (r *DetectionResults) Warn(filePath gitrepo.FilePath, category string, message string, commits []string) {
+func (r *DetectionResults) Warn(filePath gitrepo.FilePath, category string, message string, commits []string, severity severity.Severity) {
 	isFilePresentInResults := false
 	for resultIndex := 0; resultIndex < len(r.Results); resultIndex++ {
 		if r.Results[resultIndex].Filename == filePath {
@@ -153,12 +155,12 @@ func (r *DetectionResults) Warn(filePath gitrepo.FilePath, category string, mess
 				}
 			}
 			if !isEntryPresentForGivenCategoryAndMessage {
-				r.Results[resultIndex].WarningList = append(r.Results[resultIndex].WarningList, Details{category, message, commits})
+				r.Results[resultIndex].WarningList = append(r.Results[resultIndex].WarningList, Details{category, message, commits, severity})
 			}
 		}
 	}
 	if !isFilePresentInResults {
-		warningDetails := Details{category, message, commits}
+		warningDetails := Details{category, message, commits, severity}
 		resultDetails := ResultsDetails{filePath, make([]Details, 0), make([]Details, 0), make([]Details, 0)}
 		resultDetails.WarningList = append(resultDetails.WarningList, warningDetails)
 		r.Results = append(r.Results, resultDetails)
@@ -182,13 +184,13 @@ func (r *DetectionResults) Ignore(filePath gitrepo.FilePath, category string) {
 				}
 			}
 			if !isEntryPresentForGivenCategory {
-				detail := Details{category, "", make([]string, 0)}
+				detail := Details{category, "", make([]string, 0), severity.Low()}
 				r.Results[resultIndex].IgnoreList = append(r.Results[resultIndex].IgnoreList, detail)
 			}
 		}
 	}
 	if !isFilePresentInResults {
-		ignoreDetails := Details{category, "", make([]string, 0)}
+		ignoreDetails := Details{category, "", make([]string, 0), severity.Low()}
 		resultDetails := ResultsDetails{filePath, make([]Details, 0), make([]Details, 0), make([]Details, 0)}
 		resultDetails.IgnoreList = append(resultDetails.IgnoreList, ignoreDetails)
 		r.Results = append(r.Results, resultDetails)
@@ -196,8 +198,8 @@ func (r *DetectionResults) Ignore(filePath gitrepo.FilePath, category string) {
 	r.Summary.Types.Ignores++
 }
 
-func createNewResultForFile(category string, message string, commits []string, filePath gitrepo.FilePath) ResultsDetails {
-	failureDetails := Details{category, message, commits}
+func createNewResultForFile(category string, message string, commits []string, filePath gitrepo.FilePath, severity severity.Severity) ResultsDetails {
+	failureDetails := Details{category, message, commits, severity}
 	resultDetails := ResultsDetails{filePath, make([]Details, 0), make([]Details, 0), make([]Details, 0)}
 	resultDetails.FailureList = append(resultDetails.FailureList, failureDetails)
 	return resultDetails
@@ -252,7 +254,7 @@ func (r *DetectionResults) ReportWarnings() string {
 	var data [][]string
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"File", "Warnings"})
+	table.SetHeader([]string{"File", "Warnings", "Severity"})
 	table.SetRowLine(true)
 
 	for _, resultDetails := range r.Results {
@@ -281,7 +283,7 @@ func (r *DetectionResults) Report(fs afero.Fs, ignoreFile string, promptContext 
 	var data [][]string
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"File", "Errors"})
+	table.SetHeader([]string{"File", "Errors", "Severity"})
 	table.SetRowLine(true)
 
 	for _, resultDetails := range r.Results {
@@ -369,7 +371,7 @@ func (r *DetectionResults) ReportFileFailures(filePath gitrepo.FilePath) [][]str
 			if len(detail.Message) > 150 {
 				detail.Message = detail.Message[:150] + "\n" + detail.Message[150:]
 			}
-			data = append(data, []string{string(filePath), detail.Message})
+			data = append(data, []string{string(filePath), detail.Message, detail.Severity.String()})
 		}
 	}
 	return data
@@ -383,7 +385,7 @@ func (r *DetectionResults) ReportFileWarnings(filePath gitrepo.FilePath) [][]str
 			if len(detail.Message) > 150 {
 				detail.Message = detail.Message[:150] + "\n" + detail.Message[150:]
 			}
-			data = append(data, []string{string(filePath), detail.Message})
+			data = append(data, []string{string(filePath), detail.Message, detail.Severity.String()})
 		}
 	}
 	return data

@@ -2,28 +2,35 @@ package pattern
 
 import (
 	"fmt"
-	"github.com/Sirupsen/logrus"
 	"regexp"
+	"talisman/detector/severity"
 	"talisman/talismanrc"
+
+	"github.com/Sirupsen/logrus"
 )
 
 type PatternMatcher struct {
-	regexes []*regexp.Regexp
+	regexes []*severity.PatternSeverity
 }
 
-func (pm *PatternMatcher) check(content string) []string {
-	var detected []string
-	for _, regex := range pm.regexes {
+type DetectionsWithSeverity struct {
+	detections []string
+	severity   severity.Severity
+}
+
+func (pm *PatternMatcher) check(content string, thresholdValue severity.SeverityValue) []DetectionsWithSeverity {
+	var detectionsWithSeverity []DetectionsWithSeverity
+	for _, pattern := range pm.regexes {
+		var detected []string
+		regex := pattern.Pattern
 		logrus.Debugf("checking for pattern %v", regex)
 		matches := regex.FindAllString(content, -1)
 		if matches != nil {
 			detected = append(detected, matches...)
+			detectionsWithSeverity = append(detectionsWithSeverity, DetectionsWithSeverity{detections: detected, severity: pattern.Severity})
 		}
 	}
-	if detected != nil {
-		return detected
-	}
-	return []string{""}
+	return detectionsWithSeverity
 }
 
 func (pm *PatternMatcher) add(ps talismanrc.PatternString) {
@@ -32,10 +39,10 @@ func (pm *PatternMatcher) add(ps talismanrc.PatternString) {
 		logrus.Warnf("ignoring invalid pattern '%s'", ps)
 		return
 	}
-	logrus.Infof("added custom pattern '%s'", ps)
-	pm.regexes = append(pm.regexes, re)
+	logrus.Infof("added custom pattern '%s' with high severity", ps)
+	pm.regexes = append(pm.regexes, &severity.PatternSeverity{Pattern: re, Severity: severity.High()})
 }
 
-func NewPatternMatcher(patterns []*regexp.Regexp) *PatternMatcher {
+func NewPatternMatcher(patterns []*severity.PatternSeverity) *PatternMatcher {
 	return &PatternMatcher{patterns}
 }

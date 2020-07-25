@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 	"talisman/detector/helpers"
+	"talisman/detector/severity"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
 
@@ -72,24 +73,29 @@ type content struct {
 	path        gitrepo.FilePath
 	contentType contentType
 	results     []string
+	severity    severity.Severity
 }
 
 func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *helpers.DetectionResults) {
 	contentTypes := []struct {
 		contentType
 		fn
+		severity severity.Severity
 	}{
 		{
 			contentType: base64Content,
 			fn:          checkBase64,
+			severity:    severity.Medium(),
 		},
 		{
 			contentType: hexContent,
 			fn:          checkHex,
+			severity:    severity.Medium(),
 		},
 		{
 			contentType: creditCardContent,
 			fn:          checkCreditCardNumber,
+			severity:    severity.High(),
 		},
 	}
 	re := regexp.MustCompile(`(?i)checksum[ \t]*:[ \t]*[0-9a-fA-F]+`)
@@ -118,6 +124,7 @@ func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentA
 					path:        addition.Path,
 					contentType: ct.contentType,
 					results:     fc.detectFile(addition.Data, ct.fn),
+					severity:    ct.severity,
 				}
 			}
 		}(addition)
@@ -141,7 +148,7 @@ func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentA
 				contentChanHasMore = false
 				continue
 			}
-			processContent(c, result)
+			processContent(c, ignoreConfig.Threshold, result)
 		}
 	}
 }
@@ -153,16 +160,16 @@ func processIgnoredFilepath(path gitrepo.FilePath, result *helpers.DetectionResu
 	result.Ignore(path, "filecontent")
 }
 
-func processContent(c content, result *helpers.DetectionResults) {
+func processContent(c content, threshold severity.SeverityValue, result *helpers.DetectionResults) {
 	for _, res := range c.results {
 		if res != "" {
 			log.WithFields(log.Fields{
 				"filePath": c.path,
 			}).Info(c.contentType.getInfo())
-			if string(c.name) == talismanrc.DefaultRCFileName {
-				result.Warn(c.path, "filecontent", fmt.Sprintf(c.contentType.getMessageFormat(), formatForReporting(res)), []string{})
+			if string(c.name) == talismanrc.DefaultRCFileName || !c.severity.ExceedsThreshold(threshold) {
+				result.Warn(c.path, "filecontent", fmt.Sprintf(c.contentType.getMessageFormat(), formatForReporting(res)), []string{}, c.severity)
 			} else {
-				result.Fail(c.path, "filecontent", fmt.Sprintf(c.contentType.getMessageFormat(), formatForReporting(res)), []string{})
+				result.Fail(c.path, "filecontent", fmt.Sprintf(c.contentType.getMessageFormat(), formatForReporting(res)), []string{}, c.severity)
 			}
 		}
 	}

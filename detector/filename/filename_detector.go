@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"talisman/detector/detector"
 	"talisman/detector/helpers"
+	"talisman/detector/severity"
 
 	"talisman/gitrepo"
 	"talisman/talismanrc"
@@ -13,71 +14,72 @@ import (
 )
 
 var (
-	filenamePatterns = []*regexp.Regexp{
-		regexp.MustCompile(`^.+_rsa$`),
-		regexp.MustCompile(`^.+_dsa.*$`),
-		regexp.MustCompile(`^.+_ed25519$`),
-		regexp.MustCompile(`^.+_ecdsa$`),
-		regexp.MustCompile(`^\.\w+_history$`),
-		regexp.MustCompile(`^.+\.pem$`),
-		regexp.MustCompile(`^.+\.ppk$`),
-		regexp.MustCompile(`^.+\.key(pair)?$`),
-		regexp.MustCompile(`^.+\.pkcs12$`),
-		regexp.MustCompile(`^.+\.pfx$`),
-		regexp.MustCompile(`^.+\.p12$`),
-		regexp.MustCompile(`^.+\.asc$`),
-		regexp.MustCompile(`^\.?htpasswd$`),
-		regexp.MustCompile(`^\.?netrc$`),
-		regexp.MustCompile(`^.*\.tblk$`),
-		regexp.MustCompile(`^.*\.ovpn$`),
-		regexp.MustCompile(`^.*\.kdb$`),
-		regexp.MustCompile(`^.*\.agilekeychain$`),
-		regexp.MustCompile(`^.*\.keychain$`),
-		regexp.MustCompile(`^.*\.key(store|ring)$`),
-		regexp.MustCompile(`^jenkins\.plugins\.publish_over_ssh\.BapSshPublisherPlugin.xml$`),
-		regexp.MustCompile(`^credentials\.xml$`),
-		regexp.MustCompile(`^.*\.pubxml(\.user)?$`),
-		regexp.MustCompile(`^\.?s3cfg$`),
-		regexp.MustCompile(`^\.gitrobrc$`),
-		regexp.MustCompile(`^\.?(bash|zsh)rc$`),
-		regexp.MustCompile(`^\.?(bash_|zsh_)?profile$`),
-		regexp.MustCompile(`^\.?(bash_|zsh_)?aliases$`),
-		regexp.MustCompile(`^secret_token.rb$`),
-		regexp.MustCompile(`^omniauth.rb$`),
-		regexp.MustCompile(`^carrierwave.rb$`),
-		regexp.MustCompile(`^schema.rb$`),
-		regexp.MustCompile(`^database.yml$`),
-		regexp.MustCompile(`^settings.py$`),
-		regexp.MustCompile(`^.*(config)(\.inc)?\.php$`),
-		regexp.MustCompile(`^LocalSettings.php$`),
-		regexp.MustCompile(`\.?env`),
-		regexp.MustCompile(`\bdump|dump\b`),
-		regexp.MustCompile(`\bsql|sql\b`),
-		regexp.MustCompile(`\bdump|dump\b`),
-		regexp.MustCompile(`password`),
-		regexp.MustCompile(`backup`),
-		regexp.MustCompile(`private.*key`),
-		regexp.MustCompile(`(oauth).*(token)`),
-		regexp.MustCompile(`^.*\.log$`),
-		regexp.MustCompile(`^\.?kwallet$`),
-		regexp.MustCompile(`^\.?gnucash$`),
+	filenamePatterns = []*severity.PatternSeverity{
+		{Pattern: regexp.MustCompile(`^.+_rsa$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^.+_dsa.*$`), Severity: severity.High()},
+		{Pattern: regexp.MustCompile(`^.+_ed25519$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^.+_ecdsa$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^\.\w+_history$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^.+\.pem$`), Severity: severity.High()},
+		{Pattern: regexp.MustCompile(`^.+\.ppk$`), Severity: severity.High()},
+		{Pattern: regexp.MustCompile(`^.+\.key(pair)?$`), Severity: severity.High()},
+		{Pattern: regexp.MustCompile(`^.+\.pkcs12$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^.+\.pfx$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^.+\.p12$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^.+\.asc$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^\.?htpasswd$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^\.?netrc$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^.*\.tblk$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^.*\.ovpn$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^.*\.kdb$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^.*\.agilekeychain$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^.*\.keychain$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^.*\.key(store|ring)$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^jenkins\.plugins\.publish_over_ssh\.BapSshPublisherPlugin.xml$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^credentials\.xml$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^.*\.pubxml(\.user)?$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^\.?s3cfg$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^\.gitrobrc$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^\.?(bash|zsh)rc$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^\.?(bash_|zsh_)?profile$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^\.?(bash_|zsh_)?aliases$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^secret_token.rb$`), Severity: severity.High()},
+		{Pattern: regexp.MustCompile(`^omniauth.rb$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^carrierwave.rb$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^schema.rb$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^database.yml$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^settings.py$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^.*(config)(\.inc)?\.php$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^LocalSettings.php$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`\.?env`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`\bdump|dump\b`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`\bsql|sql\b`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`\bdump|dump\b`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`password`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`backup`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`private.*key`), Severity: severity.High()},
+		{Pattern: regexp.MustCompile(`(oauth).*(token)`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^.*\.log$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^\.?kwallet$`), Severity: severity.Low()},
+		{Pattern: regexp.MustCompile(`^\.?gnucash$`), Severity: severity.Low()},
 	}
 )
 
 //FileNameDetector represents tests performed against the fileName of the Additions.
 //The Paths of the supplied Additions are tested against the configured patterns and if any of them match, it is logged as a failure during the run
 type FileNameDetector struct {
-	flagPatterns []*regexp.Regexp
+	flagPatterns []*severity.PatternSeverity
+	threshold    severity.SeverityValue
 }
 
 //DefaultFileNameDetector returns a FileNameDetector that tests Additions against the pre-configured patterns
-func DefaultFileNameDetector() detector.Detector {
-	return NewFileNameDetector(filenamePatterns)
+func DefaultFileNameDetector(threshold severity.SeverityValue) detector.Detector {
+	return NewFileNameDetector(filenamePatterns, threshold)
 }
 
 //NewFileNameDetector returns a FileNameDetector that tests Additions against the supplied patterns
-func NewFileNameDetector(patterns []*regexp.Regexp) detector.Detector {
-	return FileNameDetector{patterns}
+func NewFileNameDetector(patternsWithSeverity []*severity.PatternSeverity, threshold severity.SeverityValue) detector.Detector {
+	return FileNameDetector{patternsWithSeverity, threshold}
 }
 
 //Test tests the fileNames of the Additions to ensure that they don't look suspicious
@@ -90,13 +92,18 @@ func (fd FileNameDetector) Test(comparator helpers.ChecksumCompare, currentAddit
 			result.Ignore(addition.Path, "filename")
 			continue
 		}
-		for _, pattern := range fd.flagPatterns {
-			if pattern.MatchString(string(addition.Name)) {
+		for _, patternWithSeverity := range fd.flagPatterns {
+			if patternWithSeverity.Pattern.MatchString(string(addition.Name)) {
 				log.WithFields(log.Fields{
 					"filePath": addition.Path,
-					"pattern":  pattern,
+					"pattern":  patternWithSeverity.Pattern,
+					"severity": patternWithSeverity.Severity,
 				}).Info("Failing file as it matched pattern.")
-				result.Fail(addition.Path, "filename", fmt.Sprintf("The file name %q failed checks against the pattern %s", addition.Path, pattern), addition.Commits)
+				if patternWithSeverity.Severity.ExceedsThreshold(fd.threshold) {
+					result.Fail(addition.Path, "filename", fmt.Sprintf("The file name %q failed checks against the pattern %s", addition.Path, patternWithSeverity.Pattern), addition.Commits, patternWithSeverity.Severity)
+				} else {
+					result.Warn(addition.Path, "filename", fmt.Sprintf("The file name %q failed checks against the pattern %s", addition.Path, patternWithSeverity.Pattern), addition.Commits, patternWithSeverity.Severity)
+				}
 			}
 		}
 	}

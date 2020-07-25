@@ -1,15 +1,17 @@
 package talismanrc
 
 import (
-	logr "github.com/Sirupsen/logrus"
-	"github.com/spf13/afero"
-	"gopkg.in/yaml.v2"
 	"log"
 	"os"
 	"reflect"
 	"regexp"
 	"sort"
 
+	logr "github.com/Sirupsen/logrus"
+	"github.com/spf13/afero"
+	"gopkg.in/yaml.v2"
+
+	"talisman/detector/severity"
 	"talisman/gitrepo"
 )
 
@@ -23,7 +25,6 @@ var (
 	fs                 = afero.NewOsFs()
 	currentRCFileName  = DefaultRCFileName
 )
-
 
 type FileIgnoreConfig struct {
 	FileName        string   `yaml:"filename"`
@@ -43,11 +44,12 @@ type ExperimentalConfig struct {
 type PatternString string
 
 type TalismanRC struct {
-	FileIgnoreConfig []FileIgnoreConfig `yaml:"fileignoreconfig,omitempty"`
-	ScopeConfig      []ScopeConfig      `yaml:"scopeconfig,omitempty"`
-	CustomPatterns   []PatternString    `yaml:"custom_patterns,omitempty"`
-	AllowedPatterns  []string           `yaml:"allowed_patterns,omitempty"`
-	Experimental     ExperimentalConfig `yaml:"experimental,omitempty"`
+	FileIgnoreConfig []FileIgnoreConfig     `yaml:"fileignoreconfig,omitempty"`
+	ScopeConfig      []ScopeConfig          `yaml:"scopeconfig,omitempty"`
+	CustomPatterns   []PatternString        `yaml:"custom_patterns,omitempty"`
+	AllowedPatterns  []string               `yaml:"allowed_patterns,omitempty"`
+	Experimental     ExperimentalConfig     `yaml:"experimental,omitempty"`
+	Threshold        severity.SeverityValue `default:"1" yaml:"threshold,omitempty"`
 }
 
 func SetFs(_fs afero.Fs) {

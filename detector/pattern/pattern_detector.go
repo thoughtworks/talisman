@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"sync"
 	"talisman/detector/helpers"
+	"talisman/detector/severity"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
 
@@ -16,14 +17,14 @@ type PatternDetector struct {
 }
 
 var (
-	detectorPatterns = []*regexp.Regexp{
-		regexp.MustCompile(`(?i)((.*)(password|passphrase|secret|key|pwd|pword|pass)(.*) *[:=>][^,;\n]{8,})`),
-		regexp.MustCompile(`(?i)(['"_]?pw['"]? *[:=][^,;\n]{8,})`),
-		regexp.MustCompile(`(?i)(<ConsumerKey>\S*</ConsumerKey>)`),
-		regexp.MustCompile(`(?i)(<ConsumerSecret>\S*</ConsumerSecret>)`),
-		regexp.MustCompile(`(?i)(AWS[ \w]+key[ \w]+[:=])`),
-		regexp.MustCompile(`(?i)(AWS[ \w]+secret[ \w]+[:=])`),
-		regexp.MustCompile(`(?s)(BEGIN RSA PRIVATE KEY.*END RSA PRIVATE KEY)`),
+	detectorPatterns = []*severity.PatternSeverity{
+		{Pattern: regexp.MustCompile(`(?i)((.*)(password|passphrase|secret|key|pwd|pword|pass)(.*) *[:=>][^,;\n]{8,})`), Severity: severity.Medium()},
+		{Pattern: regexp.MustCompile(`(?i)(['"_]?pw['"]? *[:=][^,;\n]{8,})`), Severity: severity.Medium()},
+		{Pattern: regexp.MustCompile(`(?i)(<ConsumerKey>\S*</ConsumerKey>)`), Severity: severity.High()},
+		{Pattern: regexp.MustCompile(`(?i)(<ConsumerSecret>\S*</ConsumerSecret>)`), Severity: severity.High()},
+		{Pattern: regexp.MustCompile(`(?i)(AWS[ \w]+key[ \w]+[:=])`), Severity: severity.High()},
+		{Pattern: regexp.MustCompile(`(?i)(AWS[ \w]+secret[ \w]+[:=])`), Severity: severity.High()},
+		{Pattern: regexp.MustCompile(`(?s)(BEGIN RSA PRIVATE KEY.*END RSA PRIVATE KEY)`), Severity: severity.High()},
 	}
 )
 
@@ -31,7 +32,7 @@ type match struct {
 	name       gitrepo.FileName
 	path       gitrepo.FilePath
 	commits    []string
-	detections []string
+	detections []DetectionsWithSeverity
 }
 
 //Test tests the contents of the Additions to ensure that they don't look suspicious
@@ -47,7 +48,7 @@ func (detector PatternDetector) Test(comparator helpers.ChecksumCompare, current
 				ignoredFilePaths <- addition.Path
 				return
 			}
-			detections := detector.secretsPattern.check(processAllowedPatterns(addition, ignoreConfig))
+			detections := detector.secretsPattern.check(processAllowedPatterns(addition, ignoreConfig), ignoreConfig.Threshold)
 			matches <- match{name: addition.Name, path: addition.Path, detections: detections, commits: addition.Commits}
 		}(addition)
 	}
@@ -63,7 +64,7 @@ func (detector PatternDetector) Test(comparator helpers.ChecksumCompare, current
 				matchChanHasMore = false
 				continue
 			}
-			detector.processMatch(match, result)
+			detector.processMatch(match, result, ignoreConfig.Threshold)
 		case ignore, hasMore := <-ignoredFilePaths:
 			if !hasMore {
 				ignoredChanHasMore = false
@@ -103,21 +104,23 @@ func (detector PatternDetector) processIgnore(ignoredFilePath gitrepo.FilePath, 
 	result.Ignore(ignoredFilePath, "filecontent")
 }
 
-func (detector PatternDetector) processMatch(match match, result *helpers.DetectionResults) {
-	for _, detection := range match.detections {
-		if detection != "" {
-			if string(match.name) == talismanrc.DefaultRCFileName {
-				log.WithFields(log.Fields{
-					"filePath": match.path,
-					"pattern":  detection,
-				}).Warn("Warning file as it matched pattern.")
-				result.Warn(match.path, "filecontent", fmt.Sprintf("Potential secret pattern : %s", detection), match.commits)
-			} else {
-				log.WithFields(log.Fields{
-					"filePath": match.path,
-					"pattern":  detection,
-				}).Info("Failing file as it matched pattern.")
-				result.Fail(match.path, "filecontent", fmt.Sprintf("Potential secret pattern : %s", detection), match.commits)
+func (detector PatternDetector) processMatch(match match, result *helpers.DetectionResults, threshold severity.SeverityValue) {
+	for _, detectionWithSeverity := range match.detections {
+		for _, detection := range detectionWithSeverity.detections {
+			if detection != "" {
+				if string(match.name) == talismanrc.DefaultRCFileName || !detectionWithSeverity.severity.ExceedsThreshold(threshold) {
+					log.WithFields(log.Fields{
+						"filePath": match.path,
+						"pattern":  detection,
+					}).Warn("Warning file as it matched pattern.")
+					result.Warn(match.path, "filecontent", fmt.Sprintf("Potential secret pattern : %s", detection), match.commits, detectionWithSeverity.severity)
+				} else {
+					log.WithFields(log.Fields{
+						"filePath": match.path,
+						"pattern":  detection,
+					}).Info("Failing file as it matched pattern.")
+					result.Fail(match.path, "filecontent", fmt.Sprintf("Potential secret pattern : %s", detection), match.commits, detectionWithSeverity.severity)
+				}
 			}
 		}
 	}
