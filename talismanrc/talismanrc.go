@@ -52,6 +52,15 @@ type TalismanRC struct {
 	Threshold        severity.SeverityValue `default:"1" yaml:"threshold,omitempty"`
 }
 
+type TalismanRCFile struct {
+	FileIgnoreConfig []FileIgnoreConfig `yaml:"fileignoreconfig,omitempty"`
+	ScopeConfig      []ScopeConfig      `yaml:"scopeconfig,omitempty"`
+	CustomPatterns   []PatternString    `yaml:"custom_patterns,omitempty"`
+	AllowedPatterns  []string           `yaml:"allowed_patterns,omitempty"`
+	Experimental     ExperimentalConfig `yaml:"experimental,omitempty"`
+	Threshold        string             `default:"low" yaml:"threshold,omitempty"`
+}
+
 func SetFs(_fs afero.Fs) {
 	fs = _fs
 }
@@ -83,14 +92,21 @@ func readRepoFile() func(string) ([]byte, error) {
 }
 
 func NewTalismanRC(fileContents []byte) *TalismanRC {
-	talismanRC := TalismanRC{}
-	err := yaml.Unmarshal(fileContents, &talismanRC)
+	talismanRCFile := TalismanRCFile{}
+	err := yaml.Unmarshal(fileContents, &talismanRCFile)
 	if err != nil {
 		log.Println("Unable to parse .talismanrc")
 		log.Printf("error: %v", err)
-		return &talismanRC
+		return &TalismanRC{}
 	}
-	return &talismanRC
+	return &TalismanRC{
+		FileIgnoreConfig: talismanRCFile.FileIgnoreConfig,
+		ScopeConfig:      talismanRCFile.ScopeConfig,
+		CustomPatterns:   talismanRCFile.CustomPatterns,
+		AllowedPatterns:  talismanRCFile.AllowedPatterns,
+		Experimental:     talismanRCFile.Experimental,
+		Threshold:        severity.SeverityStringToValue(talismanRCFile.Threshold),
+	}
 }
 
 func (i FileIgnoreConfig) isEffective(detectorName string) bool {

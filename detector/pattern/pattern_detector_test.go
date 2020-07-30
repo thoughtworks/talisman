@@ -75,7 +75,7 @@ func TestShouldOnlyWarnSecretPatternIfBelowThreshold(t *testing.T) {
 	content := []byte(`password=UnsafeString`)
 	filename := "secret.txt"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
-	talismanRCContents := "threshold: 3"
+	talismanRCContents := "threshold: high"
 	talismanRCWithThreshold := talismanrc.NewTalismanRC([]byte(talismanRCContents))
 	NewPatternDetector(customPatterns).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanRCWithThreshold), additions, talismanRCWithThreshold, results)
 	assert.False(t, results.HasFailures(), "Expected file %s to not have failures", filename)

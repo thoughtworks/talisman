@@ -7,9 +7,9 @@ import (
 type SeverityValue int
 
 const (
-	LowSeverity    SeverityValue = 1
-	MediumSeverity SeverityValue = 2
-	HighSeverity   SeverityValue = 3
+	LowSeverity = SeverityValue(iota + 1)
+	MediumSeverity
+	HighSeverity
 )
 
 type PatternSeverity struct {
@@ -17,25 +17,12 @@ type PatternSeverity struct {
 	Severity Severity
 }
 
-func SeverityDisplayString(severity SeverityValue) string {
-	switch severity {
-	case 1:
-		return "Low"
-	case 2:
-		return "Medium"
-	case 3:
-		return "High"
-	default:
-		return "Undefined"
-	}
-}
-
 type Severity struct {
 	Value SeverityValue
 }
 
 func (s Severity) String() string {
-	return SeverityDisplayString(s.Value)
+	return SeverityValueToString(s.Value)
 }
 func (s Severity) ExceedsThreshold(threshold SeverityValue) bool {
 	return s.Value >= threshold

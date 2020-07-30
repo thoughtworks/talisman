@@ -3,6 +3,7 @@ package talismanrc
 import (
 	"testing"
 
+	"talisman/detector/severity"
 	"talisman/gitrepo"
 
 	"github.com/stretchr/testify/assert"
@@ -18,6 +19,11 @@ func TestShouldIgnoreUnformattedFiles(t *testing.T) {
 	for _, s := range []string{"#", "#monkey", "# this monkey likes bananas  "} {
 		assert.True(t, NewTalismanRC([]byte(s)).AcceptsAll(), "Expected commented line '%s' to result in no ignore patterns", s)
 	}
+}
+
+func TestShouldConvertThresholdToValue(t *testing.T) {
+	talismanRCContents := []byte("threshold: high")
+	assert.Equal(t, NewTalismanRC(talismanRCContents).Threshold, severity.HighSeverity)
 }
 
 func TestDirectoryPatterns(t *testing.T) {

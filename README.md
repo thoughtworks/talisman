@@ -354,20 +354,19 @@ custom_patterns:
 
 ## Configuring severity threshold
 
-Each validation is associated with a severity value
-
-1. Low Severity
-2. Medium Severity
-3. High Severity
+Each validation is associated with a severity 
+1. low
+2. medium
+3. high
 
 You can specify a threshold in your .talismanrc: 
 
 ```yaml
-threshold: 2
+threshold: medium
 ```
 This will report all Medium severity issues and higher (Potential risks that are below the threshold will be reported in the warnings)
 
-By default, the threshold is set to 1
+By default, the threshold is set to low
 
 ## Talisman as a CLI utility
 

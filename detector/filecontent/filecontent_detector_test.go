@@ -85,7 +85,7 @@ func TestShouldNotFlagBase64ContentIfThresholdIsHigher(t *testing.T) {
 	content := []byte(awsSecretAccessKey)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
-	var talismanRCContents = "threshold: 3"
+	var talismanRCContents = "threshold: high"
 	talismanRCWithThreshold := talismanrc.NewTalismanRC([]byte(talismanRCContents))
 
 	NewFileContentDetector(talismanRC).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanRCWithThreshold), additions, talismanRCWithThreshold, results)
@@ -181,7 +181,7 @@ func TestShouldNotFlagSecretsEncodedInHexIfAboveThreshold(t *testing.T) {
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 
-	var talismanRCContents = "threshold: 3"
+	var talismanRCContents = "threshold: high"
 	talismanRCWithThreshold := talismanrc.NewTalismanRC([]byte(talismanRCContents))
 
 	NewFileContentDetector(talismanRC).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanRCWithThreshold), additions, talismanRCWithThreshold, results)
