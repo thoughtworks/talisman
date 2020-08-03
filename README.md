@@ -16,9 +16,10 @@
 - [Talisman in action](#talisman-in-action)
 	- [Validations](#validations)
 	- [Ignoring files](#ignoring-files)
-  	- [Talisman as a CLI utility](#talisman-as-a-cli-utility)
-  		- [Git History Scanner](#git-history-scanner)
-  		- [Checksum Calculator](#checksum-calculator)
+	- [Configuring severity threshold](#configuring-severity-threshold)
+  - [Talisman as a CLI utility](#talisman-as-a-cli-utility)
+    - [Git History Scanner](#git-history-scanner)
+    - [Checksum Calculator](#checksum-calculator)
 	- [Talisman HTML Reporting](#talisman-html-reporting)
 - [Uninstallation](#uninstallation)
 	- [From a global hook template](#uninstallation-from-a-global-hook-template)
@@ -350,6 +351,22 @@ custom_patterns:
 * .talismanrc has a much more legible yaml format
 * It also brings in more secure practices with every modification of a file with a potential sensitive value to be reviewed
 * The new format also brings in the extensibility to introduce new usable functionalities. Keep a watch out for more </i>
+
+## Configuring severity threshold
+
+Each validation is associated with a severity 
+1. low
+2. medium
+3. high
+
+You can specify a threshold in your .talismanrc: 
+
+```yaml
+threshold: medium
+```
+This will report all Medium severity issues and higher (Potential risks that are below the threshold will be reported in the warnings)
+
+By default, the threshold is set to low
 
 ## Talisman as a CLI utility
 

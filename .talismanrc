@@ -1,6 +1,6 @@
 fileignoreconfig:
 - filename: detector/pattern_detector_test.go
-  checksum: fbb55705e75e1fcba609b10c454e277e5c67c930bd5aedd514055570e2b868b4
+  checksum: 4d70b790f28f2d23d506f808d489aa43f1efd2514549ae6a83a535e1223382e3
 - filename: detector/detection_results_test.go
   checksum: 69fed055782cddfe0f0d23ea440cef9f9dd0b9e8a3c8a73856741bb26257b223
   ignore_detectors:
@@ -10,5 +10,17 @@ fileignoreconfig:
   ignore_detectors: []
 - filename: global_install_scripts/install.bash
   checksum: 5d659125ecbe619ea99f5bc71c2d761b586ce3ec9ccab7683ee54f4ebde9f748
+- filename: detector/filecontent/filecontent_detector_test.go
+  checksum: affb25839a87476dcef4f4169ccb9b54b2d2f2437cef3aca24f4d3b69d5886c5
+- filename: detector/pattern/match_pattern_test.go
+  checksum: b90530d286fbc0ee864d2350fc0c532e0fb2f01149d51e81339b420439014238
+- filename: detector/pattern/pattern_detector_test.go
+  checksum: 4d70b790f28f2d23d506f808d489aa43f1efd2514549ae6a83a535e1223382e3
+- filename: detector/pattern/pattern_detector.go
+  checksum: 248bc5f67fa12d39b0fa1b63319a5b125006858a11603a837d8c53dbab2277c3
+- filename: detector/filename/filename_detector.go
+  checksum: 5782cb11c373723ec7b40279a3dd375c0cd1d285ac0d032599f0300d9e133eec
+- filename: detector/filename/filename_detector_test.go
+  checksum: 0a9c9f113e203ca29d3a9bf0b4802a252e990c2132e1f168a46ab49ed532e6c9
 scopeconfig:
 - scope: go

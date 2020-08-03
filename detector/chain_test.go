@@ -1,17 +1,19 @@
 package detector
 
 import (
-	"github.com/stretchr/testify/assert"
 	"talisman/detector/helpers"
+	"talisman/detector/severity"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type FailingDetection struct{}
 
 func (v FailingDetection) Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *helpers.DetectionResults) {
-	result.Fail("some_file", "filecontent", "FAILED BY DESIGN", []string{})
+	result.Fail("some_file", "filecontent", "FAILED BY DESIGN", []string{}, severity.Low())
 }
 
 type PassingDetection struct{}

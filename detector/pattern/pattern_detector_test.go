@@ -19,7 +19,7 @@ var (
 
 func TestShouldDetectPasswordPatterns(t *testing.T) {
 	filename := "secret.txt"
-	values := [7]string {"password","secret", "key", "pwd","pass","pword","passphrase"}
+	values := [7]string{"password", "secret", "key", "pwd", "pass", "pword", "passphrase"}
 	for i := 0; i < len(values); i++ {
 		shouldPassDetectionOfSecretPattern(filename, []byte(strings.ToTitle(values[i])+":UnsafeString"), t)
 		shouldPassDetectionOfSecretPattern(filename, []byte(values[i]+"=UnsafeString"), t)
@@ -69,6 +69,17 @@ func TestShouldIgnoreAllowedPattern(t *testing.T) {
 
 	NewPatternDetector(customPatterns).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additions, ignores, results)
 	assert.True(t, results.Successful(), "Expected keywords %s to be ignored by Talisman", append(fileIgnoreConfig.AllowedPatterns, ignores.AllowedPatterns...))
+}
+func TestShouldOnlyWarnSecretPatternIfBelowThreshold(t *testing.T) {
+	results := helpers.NewDetectionResults()
+	content := []byte(`password=UnsafeString`)
+	filename := "secret.txt"
+	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
+	talismanRCContents := "threshold: high"
+	talismanRCWithThreshold := talismanrc.NewTalismanRC([]byte(talismanRCContents))
+	NewPatternDetector(customPatterns).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanRCWithThreshold), additions, talismanRCWithThreshold, results)
+	assert.False(t, results.HasFailures(), "Expected file %s to not have failures", filename)
+	assert.True(t, results.HasWarnings(), "Expected file %s to have warnings", filename)
 }
 
 func DetectionOfSecretPattern(filename string, content []byte) (*helpers.DetectionResults, []gitrepo.Addition, string) {
