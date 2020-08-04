@@ -45,14 +45,19 @@ talisman_hook_script)
 	;;
 esac
 
+TALISMAN_UPGRADE_CONNECT_TIMEOUT=${TALISMAN_UPGRADE_CONNECT_TIMEOUT:-10}
 function check_and_upgrade_talisman_binary() {
-	if [ -n "${TALISMAN_HOME:-}" ]; then
-		LATEST_VERSION=$(curl -Is https://github.com/${ORG_REPO}/releases/latest | grep -iE "^location:" | grep -o '[^/]\+$' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')
+	if [[ -n "${TALISMAN_HOME:-}" && "$TALISMAN_SKIP_UPGRADE" != "true" ]]; then
+		LATEST_VERSION=$(curl --connect-timeout $TALISMAN_UPGRADE_CONNECT_TIMEOUT -Is https://github.com/${ORG_REPO}/releases/latest | grep -iE "^location:" | grep -o '[^/]\+$' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')
 		CURRENT_VERSION=$(${TALISMAN_BINARY} --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')
-		if [ ! -z "$LATEST_VERSION" ] && [ "$LATEST_VERSION" != "$CURRENT_VERSION" ]; then
+		if [ -z "$LATEST_VERSION" ]; then
+			echo_warning "Failed to retrieve latest version, skipping update."
+		elif [ "$LATEST_VERSION" != "$CURRENT_VERSION" ]; then
 			echo ""
 			echo_warning "Your version of Talisman is outdated. Updating Talisman to v${LATEST_VERSION}"
 			curl --silent https://raw.githubusercontent.com/${ORG_REPO}/master/global_install_scripts/update_talisman.bash >/tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash talisman-binary
+		else
+			echo_debug "Talisman version up-to-date, skipping update"
 		fi
 	fi
 }
