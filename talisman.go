@@ -1,7 +1,9 @@
 package main
 
 import (
+	"github.com/spf13/afero"
 	flag "github.com/spf13/pflag"
+	"runtime"
 	"talisman/prompt"
 )
 
@@ -100,6 +102,11 @@ func main() {
 }
 
 func run(stdin io.Reader, _options options, promptContext prompt.PromptContext) (returnCode int) {
+	if err := validateGitExecutable(afero.NewOsFs(), runtime.GOOS); err != nil {
+		log.Printf("error validating git executable: %v", err)
+		return 1
+	}
+
 	if _options.debug {
 		log.SetLevel(log.DebugLevel)
 	} else {
@@ -144,4 +151,22 @@ func readRefAndSha(file io.Reader) (string, string, string, string) {
 		return EmptySha, EmptySha, "", ""
 	}
 	return refsAndShas[0], refsAndShas[1], refsAndShas[2], refsAndShas[3]
+}
+
+func validateGitExecutable(fs afero.Fs, operatingSystem string) error {
+	if operatingSystem == "windows" {
+		extensions := strings.ToLower(os.Getenv("PATHEXT"))
+		windowsExecutables := strings.Split(extensions, ";")
+		for _, executable := range windowsExecutables {
+			gitExecutable := fmt.Sprintf("git%s", executable)
+			exists, err := afero.Exists(fs, gitExecutable)
+			if err != nil {
+				return err
+			}
+			if exists {
+				return fmt.Errorf("not allowed to have git executable located in repository: %s", gitExecutable)
+			}
+		}
+	}
+	return nil
 }
