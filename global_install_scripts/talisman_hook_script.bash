@@ -47,7 +47,7 @@ esac
 
 function check_and_upgrade_talisman_binary() {
 	if [ -n "${TALISMAN_HOME:-}" ]; then
-		LATEST_VERSION=$(curl -Is https://github.com/${ORG_REPO}/releases/latest | grep -E "Location" | grep -o '[^/]\+$' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')
+		LATEST_VERSION=$(curl -Is https://github.com/${ORG_REPO}/releases/latest | grep -iE "^location:" | grep -o '[^/]\+$' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')
 		CURRENT_VERSION=$(${TALISMAN_BINARY} --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')
 		if [ ! -z "$LATEST_VERSION" ] && [ "$LATEST_VERSION" != "$CURRENT_VERSION" ]; then
 			echo ""
