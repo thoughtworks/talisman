@@ -23,7 +23,7 @@ func Init(gitRoot string) *GitTesting {
 	os.MkdirAll(gitRoot, 0777)
 	testingRepo := &GitTesting{gitRoot}
 	testingRepo.ExecCommand("git", "init", ".")
-	gitConfigFileObject, _ := ioutil.TempFile("/tmp", "gitConfigForTalismanTests")
+	gitConfigFileObject, _ := ioutil.TempFile(os.TempDir(), "gitConfigForTalismanTests")
 	gitConfigFile = gitConfigFileObject.Name()
 	testingRepo.CreateFileWithContents(gitConfigFile, `[user]
 	email = talisman-test-user@example.com
