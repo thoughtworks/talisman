@@ -1,8 +1,8 @@
 package main
 
 import (
-	"io/ioutil"
 	"talisman/gitrepo"
+	"talisman/utility"
 
 	log "github.com/Sirupsen/logrus"
 
@@ -35,5 +35,5 @@ func (p *DirectoryHook) GetFilesFromDirectory(globPattern string) []gitrepo.Addi
 
 func ReadFile(filepath string) ([]byte, error) {
 	log.Debugf("reading file %s", filepath)
-	return ioutil.ReadFile(filepath)
+	return utility.SafeReadFile(filepath)
 }

@@ -2,6 +2,7 @@ package utility
 
 import (
 	"fmt"
+	log "github.com/Sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"os"
@@ -88,4 +89,20 @@ func Dir(src string, dst string) error {
 		}
 	}
 	return nil
+}
+
+func IsFileSymlink(path string) bool {
+	fileMetadata, err := os.Lstat(path)
+	if err != nil {
+		return false
+	}
+	return fileMetadata.Mode()&os.ModeSymlink != 0
+}
+
+func SafeReadFile(path string) ([]byte, error) {
+	if IsFileSymlink(path) {
+		log.Debug("Symlink was detected! Not following symlink ", path)
+		return []byte{}, nil
+	}
+	return ioutil.ReadFile(path)
 }

@@ -3,7 +3,6 @@ package utility
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"io/ioutil"
 )
 
 type SHA256Hasher interface {
@@ -20,7 +19,7 @@ func (DefaultSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
 		concatBytes := hashByte(&sbyte)
 		nameByte := []byte(path)
 		nameHash := hashByte(&nameByte)
-		fileBytes, _ := ioutil.ReadFile(path)
+		fileBytes, _ := SafeReadFile(path)
 		fileHash := hashByte(&fileBytes)
 		finHash = concatBytes + fileHash + nameHash
 	}
