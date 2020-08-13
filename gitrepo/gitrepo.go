@@ -3,13 +3,13 @@ package gitrepo
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"talisman/utility"
 )
 
 //FilePath represents the absolute path of an added file
@@ -161,7 +161,7 @@ func NewScannerAddition(filePath string, commits []string, content []byte) Addit
 func (repo GitRepo) ReadRepoFile(fileName string) ([]byte, error) {
 	path := filepath.Join(repo.root, fileName)
 	log.Debugf("reading file %s", path)
-	return ioutil.ReadFile(path)
+	return utility.SafeReadFile(path)
 }
 
 //ReadRepoFileOrNothing returns the contents of the supplied relative filename by locating it in the git repo.
