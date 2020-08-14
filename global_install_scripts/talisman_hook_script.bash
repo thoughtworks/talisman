@@ -55,7 +55,7 @@ function check_and_upgrade_talisman_binary() {
 		elif [ "$LATEST_VERSION" != "$CURRENT_VERSION" ]; then
 			echo ""
 			echo_warning "Your version of Talisman is outdated. Updating Talisman to v${LATEST_VERSION}"
-			curl --silent https://raw.githubusercontent.com/${ORG_REPO}/master/global_install_scripts/update_talisman.bash >/tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash talisman-binary
+			curl --silent https://raw.githubusercontent.com/${ORG_REPO}/master/global_install_scripts/update_talisman.bash >/tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash
 		else
 			echo_debug "Talisman version up-to-date, skipping update"
 		fi
