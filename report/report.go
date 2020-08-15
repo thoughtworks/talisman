@@ -39,7 +39,9 @@ func GenerateReport(r *helpers.DetectionResults, directory string) (path string,
 			return "", fmt.Errorf("error copying reports: %v", err)
 		}
 	} else {
-		path = filepath.Join(directory, "talisman_reports", "/data")
+		path = filepath.Join(directory, "talisman_reports")
+		_ = os.RemoveAll(path)
+		path = filepath.Join(path, "data")
 		jsonFilePath = filepath.Join(path, jsonFileName)
 	}
 
