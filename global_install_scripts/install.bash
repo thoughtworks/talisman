@@ -78,22 +78,20 @@ function run() {
 		cat ${TEMP_DIR}/download_urls
 	}
 
-	function set_talisman_binary_name() {
-		# based on OS (linux/darwin) and ARCH(32/64 bit)
-		declare ARCHITECTURE
-		OS=$(uname -s)
-		case $OS in
+	function operating_system() {
+  OS=$(uname -s)
+  case $OS in
 		"Linux")
-			ARCHITECTURE="linux"
+			echo "linux"
 			;;
 		"Darwin")
-			ARCHITECTURE="darwin"
+			echo "darwin"
 			;;
 		MINGW32_NT-10.0-WOW*)
-			ARCHITECTURE="windows"
+			echo "windows"
 			;;
 		MINGW64_NT-10.0*)
-			ARCHITECTURE="windows"
+			echo "windows"
 			;;
 		*)
 			echo_error "Talisman currently only supports Windows, Linux and MacOS(darwin) systems."
@@ -101,7 +99,12 @@ function run() {
 			exit $E_UNSUPPORTED_ARCH
 			;;
 		esac
+}
 
+	function set_talisman_binary_name() {
+		# based on OS (linux/darwin) and ARCH(32/64 bit)
+		declare ARCHITECTURE
+		ARCHITECTURE=$(operating_system)
 		ARCH=$(uname -m)
 		case $ARCH in
 		"x86_64")
@@ -118,7 +121,7 @@ function run() {
 		esac
 
 		TALISMAN_BINARY_NAME="talisman_${ARCHITECTURE}"
-		if [[ "$OS" == *"MINGW32_NT-10.0-WOW"* || "$OS" == *"MINGW64_NT-10.0"* ]]; then
+		if [[ $ARCHITECTURE == *"windows"* ]]; then
 			TALISMAN_BINARY_NAME="${TALISMAN_BINARY_NAME}.exe"
 		fi
 	}
@@ -208,9 +211,9 @@ function run() {
 			mkdir -p "$TEMPLATE_DIR/hooks"
 			echo "Setting up template ${HOOK_SCRIPT} hook"
 
-			OS=$(uname -s)
-			case $OS in
-			"MINGW32_NT-10.0-WOW" | "MINGW64_NT-10.0")
+			ARCHITECTURE=$(operating_system)
+			case $ARCHITECTURE in
+			"windows")
 				TEMPLATE_DIR_WIN=$(sed -e 's/\/\([a-z]\)\//\1:\\/' -e 's/\//\\/g' <<<"$TEMPLATE_DIR")
 				TALISMAN_HOOK_SCRIPT_PATH_WIN=$(sed -e 's/\/\([a-z]\)\//\1:\\/' -e 's/\//\\/g' <<<"$TALISMAN_HOOK_SCRIPT_PATH")
 				cmd <<<"mklink "$TEMPLATE_DIR_WIN\\hooks\\$HOOK_SCRIPT"  "$TALISMAN_HOOK_SCRIPT_PATH_WIN"" >/dev/null
@@ -288,13 +291,17 @@ function run() {
     # set interactive mode for talisman if user opts in for it
     # default to non-interactive mode
     TALISMAN_INTERACTIVE_OPTION="false"
-    echo -e "\n\nSetting up interaction mode"
+    ARCHITECTURE=$(operating_system)
+    if [[ $ARCHITECTURE != "windows" ]]
+    then
+    	echo -e "\n\nSetting up interaction mode"
 
     	read -rep $'\nDO YOU WANT TO BE PROMPTED WHEN ADDING EXCEPTIONS TO .talismanrc FILE? \nEnter y to install in interactive mode. Press any key to continue without interactive mode (y/n):' INTERACTIVE_OPT
       if [[ $INTERACTIVE_OPT =~ ^[Yy]$ ]]
       then
         TALISMAN_INTERACTIVE_OPTION="true"
       fi
+    fi
   }
 
 	function set_talisman_home_and_binary_path() {
@@ -344,9 +351,9 @@ function run() {
 
 		NUMBER_OF_EXCEPTION_REPOS=$(cat ${EXCEPTIONS_FILE} | wc -l)
 
-		OS=$(uname -s)
+		ARCHITECTURE=$(operating_system)
 		if [ ${NUMBER_OF_EXCEPTION_REPOS} -gt 0 ]; then
-			if [[ "$OS" == "MINGW32_NT-10.0-WOW" || "$OS" == "MINGW64_NT-10.0" ]]; then
+			if [[ $ARCHITECTURE == "windows" ]]; then
 
 				EXCEPTIONS_FILE_HOME_PATH="${HOME}/talisman_missed_repositories.paths"
 				mv ${EXCEPTIONS_FILE} ${EXCEPTIONS_FILE_HOME_PATH}

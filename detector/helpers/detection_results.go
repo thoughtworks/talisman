@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 	"strings"
 	"talisman/detector/severity"
 	"talisman/gitrepo"
@@ -315,7 +316,7 @@ func (r *DetectionResults) suggestTalismanRC(filePaths []string, promptContext p
 		entriesToAdd = append(entriesToAdd, fileIgnoreConfig)
 	}
 
-	if promptContext.Interactive {
+	if promptContext.Interactive && runtime.GOOS != "windows" {
 		confirmedEntries := getUserConfirmation(entriesToAdd, promptContext)
 		talismanrc.Get().AddFileIgnores(confirmedEntries)
 	} else {
