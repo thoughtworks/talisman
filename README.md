@@ -259,6 +259,9 @@ fileignoreconfig:
 Entering this in the `.talismanrc` file will ensure that Talisman will ignore the `danger.pem` file as long as the checksum matches the value mentioned in the `checksum` field.
 
 ### Interactive mode
+
+**Available only for non-Windows users**
+
 If it is too much of a hassle to keep copying content to .talismanrc everytime you encounter an error from Talisman, you could enable the interactive mode and let Talisman assist you in prompting the additions of the files to ignore. 
 Just follow the simple steps:
 1. Open your bash profile where your environment variables are set (.bashrc, .bash_profile, .profile or any other location)

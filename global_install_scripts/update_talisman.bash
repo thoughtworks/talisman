@@ -55,38 +55,41 @@ function run() {
 		cat ${TEMP_DIR}/download_urls
 	}
 
+	function operating_system() {
+    OS=$(uname -s)
+    case $OS in
+      "Linux")
+        echo "linux"
+        ;;
+      "Darwin")
+        echo "darwin"
+        ;;
+      MINGW32_NT-10.0-WOW*)
+        echo "windows"
+        ;;
+      MINGW64_NT-10.0*)
+        echo "windows"
+        ;;
+      *)
+        echo_error "Talisman currently only supports Windows, Linux and MacOS(darwin) systems."
+        echo_error "If this is a problem for you, please open an issue: https://github.com/${INSTALL_ORG_REPO}/issues/new"
+        exit $E_UNSUPPORTED_ARCH
+        ;;
+      esac
+}
+
 	function set_talisman_binary_name() {
 		# based on OS (linux/darwin) and ARCH(32/64 bit)
 		echo_debug "Running set_talisman_binary_name"
-		declare ARCHITECTURE
-		OS=$(uname -s)
-		case $OS in
-		"Linux")
-			ARCHITECTURE="linux"
-			;;
-		"Darwin")
-			ARCHITECTURE="darwin"
-			;;
-		"MINGW32_NT-10.0-WOW")
-			ARCHITECTURE="windows"
-			;;
-		"MINGW64_NT-10.0")
-			ARCHITECTURE="windows"
-			;;
-		*)
-			echo_error "Talisman currently only supports Windows, Linux and MacOS(darwin) systems."
-			echo_error "If this is a problem for you, please open an issue: https://github.com/${INSTALL_ORG_REPO}/issues/new"
-			exit $E_UNSUPPORTED_ARCH
-			;;
-		esac
-
+		declare OS
+		OS=$(operating_system)
 		ARCH=$(uname -m)
 		case $ARCH in
 		"x86_64")
-			ARCHITECTURE="${ARCHITECTURE}_amd64"
+			OS="${OS}_amd64"
 			;;
 		"i686" | "i386")
-			ARCHITECTURE="${ARCHITECTURE}_386"
+			OS="${OS}_386"
 			;;
 		*)
 			echo_error "Talisman currently only supports x86 and x86_64 architectures."
@@ -95,8 +98,8 @@ function run() {
 			;;
 		esac
 
-		TALISMAN_BINARY_NAME="talisman_${ARCHITECTURE}"
-		if [[ "$OS" == "MINGW32_NT-10.0-WOW" || "$OS" == "MINGW64_NT-10.0" ]]; then
+		TALISMAN_BINARY_NAME="talisman_${OS}"
+		if [[ $OS == *"windows"* ]]; then
 			TALISMAN_BINARY_NAME="${TALISMAN_BINARY_NAME}.exe"
 		fi
 	}
