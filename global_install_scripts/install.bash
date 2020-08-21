@@ -103,15 +103,15 @@ function run() {
 
 	function set_talisman_binary_name() {
 		# based on OS (linux/darwin) and ARCH(32/64 bit)
-		declare ARCHITECTURE
-		ARCHITECTURE=$(operating_system)
+		declare OS
+		OS=$(operating_system)
 		ARCH=$(uname -m)
 		case $ARCH in
 		"x86_64")
-			ARCHITECTURE="${ARCHITECTURE}_amd64"
+			OS="${OS}_amd64"
 			;;
 		"i686" | "i386")
-			ARCHITECTURE="${ARCHITECTURE}_386"
+			OS="${OS}_386"
 			;;
 		*)
 			echo_error "Talisman currently only supports x86 and x86_64 architectures."
@@ -120,8 +120,8 @@ function run() {
 			;;
 		esac
 
-		TALISMAN_BINARY_NAME="talisman_${ARCHITECTURE}"
-		if [[ $ARCHITECTURE == *"windows"* ]]; then
+		TALISMAN_BINARY_NAME="talisman_${OS}"
+		if [[ $OS == *"windows"* ]]; then
 			TALISMAN_BINARY_NAME="${TALISMAN_BINARY_NAME}.exe"
 		fi
 	}
@@ -211,8 +211,8 @@ function run() {
 			mkdir -p "$TEMPLATE_DIR/hooks"
 			echo "Setting up template ${HOOK_SCRIPT} hook"
 
-			ARCHITECTURE=$(operating_system)
-			case $ARCHITECTURE in
+			OS=$(operating_system)
+			case $OS in
 			"windows")
 				TEMPLATE_DIR_WIN=$(sed -e 's/\/\([a-z]\)\//\1:\\/' -e 's/\//\\/g' <<<"$TEMPLATE_DIR")
 				TALISMAN_HOOK_SCRIPT_PATH_WIN=$(sed -e 's/\/\([a-z]\)\//\1:\\/' -e 's/\//\\/g' <<<"$TALISMAN_HOOK_SCRIPT_PATH")
@@ -291,8 +291,8 @@ function run() {
     # set interactive mode for talisman if user opts in for it
     # default to non-interactive mode
     TALISMAN_INTERACTIVE_OPTION="false"
-    ARCHITECTURE=$(operating_system)
-    if [[ $ARCHITECTURE != "windows" ]]
+    OS=$(operating_system)
+    if [[ $OS != "windows" ]]
     then
     	echo -e "\n\nSetting up interaction mode"
 
@@ -351,9 +351,9 @@ function run() {
 
 		NUMBER_OF_EXCEPTION_REPOS=$(cat ${EXCEPTIONS_FILE} | wc -l)
 
-		ARCHITECTURE=$(operating_system)
+		OS=$(operating_system)
 		if [ ${NUMBER_OF_EXCEPTION_REPOS} -gt 0 ]; then
-			if [[ $ARCHITECTURE == "windows" ]]; then
+			if [[ $OS == "windows" ]]; then
 
 				EXCEPTIONS_FILE_HOME_PATH="${HOME}/talisman_missed_repositories.paths"
 				mv ${EXCEPTIONS_FILE} ${EXCEPTIONS_FILE_HOME_PATH}
