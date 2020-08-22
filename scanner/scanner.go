@@ -1,12 +1,12 @@
 package scanner
 
 import (
+	"fmt"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"io/ioutil"
 	"log"
-	"os/exec"
 	"strings"
 	"talisman/gitrepo"
 )
@@ -46,8 +46,18 @@ func getBlobsInCommit() BlobsInCommits {
 
 func putBlobsInChannel(commit string, result chan []string) {
 	if commit != "" {
-		blobDetailsBytes, _ := exec.Command("git", "ls-tree", "-r", commit).CombinedOutput()
-		blobDetailsList := strings.Split(string(blobDetailsBytes), "\n")
+		var blobDetails []string
+		gitRepo, err := git.PlainOpen("")
+		if err != nil {
+			log.Fatal(err)
+		}
+		commitObject, err := gitRepo.CommitObject(plumbing.NewHash(commit))
+		tree, err := commitObject.Tree()
+		tree.Files().ForEach(func(f *object.File) error {
+			blobDetails = append(blobDetails, fmt.Sprintf("%s %s %s\t%s", f.Mode, f.Type(), f.Hash, f.Name))
+			return nil
+		})
+		blobDetailsList := blobDetails
 		blobDetailsList = append(blobDetailsList, commit)
 		result <- blobDetailsList
 	}
