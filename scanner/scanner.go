@@ -1,6 +1,8 @@
 package scanner
 
 import (
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	"log"
 	"os/exec"
 	"strings"
@@ -63,11 +65,17 @@ func getBlobsFromChannel(blobsInCommits BlobsInCommits, result chan []string) {
 }
 
 func getAllCommits() []string {
-	out, err := exec.Command("git", "log", "--all", "--pretty=%H").CombinedOutput()
+	var commitsHash []string
+	r, err := git.PlainOpen("")
 	if err != nil {
 		log.Fatal(err)
 	}
-	return strings.Split(string(out), "\n")
+	cIter, _ := r.Log(&git.LogOptions{All: true})
+	cIter.ForEach(func(c *object.Commit) error {
+		commitsHash = append(commitsHash, c.Hash.String())
+		return nil
+	})
+	return commitsHash
 }
 
 func getData(objectHash string) []byte {
