@@ -1,4 +1,4 @@
-# Talisman Gihub Pages
+This is a branch for Gihub Pages.
 
 The pages are written using just-the-docs template in jekyll.
 

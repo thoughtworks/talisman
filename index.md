@@ -34,7 +34,7 @@ You can also follow the links given in the menu options for a more detailed navi
 
 ## About the project
 
-Talisman was created by [ThoughtWorks](https://www.thoughtworks.com) as an [open-sourced project](https://github.com/thoughtworks).
+Created by [ThoughtWorks](https://www.thoughtworks.com) as an [open-sourced project](https://github.com/thoughtworks).
 
 ### License
 
