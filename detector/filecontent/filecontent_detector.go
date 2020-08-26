@@ -85,17 +85,17 @@ func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentA
 		{
 			contentType: base64Content,
 			fn:          checkBase64,
-			severity:    severity.Medium(),
+			severity:    severity.SeverityConfiguration["Base64Content"],
 		},
 		{
 			contentType: hexContent,
 			fn:          checkHex,
-			severity:    severity.Medium(),
+			severity:    severity.SeverityConfiguration["HexContent"],
 		},
 		{
 			contentType: creditCardContent,
 			fn:          checkCreditCardNumber,
-			severity:    severity.High(),
+			severity:    severity.SeverityConfiguration["CreditCardContent"],
 		},
 	}
 	re := regexp.MustCompile(`(?i)checksum[ \t]*:[ \t]*[0-9a-fA-F]+`)

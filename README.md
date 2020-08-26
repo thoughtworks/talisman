@@ -363,9 +363,9 @@ custom_patterns:
 ## Configuring severity threshold
 
 Each validation is associated with a severity 
-1. low
-2. medium
-3. high
+1. Low
+2. Medium
+3. High
 
 You can specify a threshold in your .talismanrc: 
 
@@ -374,7 +374,9 @@ threshold: medium
 ```
 This will report all Medium severity issues and higher (Potential risks that are below the threshold will be reported in the warnings)
 
-By default, the threshold is set to low
+1. A list of all risks with their severity level can be found in this [configuration file](detector/severity/severity_config.go).
+2. By default, the threshold is set to low.
+3. Any custom search patterns you add, are considered to be of high severity.
 
 ## Talisman as a CLI utility
 
