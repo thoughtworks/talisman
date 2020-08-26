@@ -40,7 +40,7 @@ func (pm *PatternMatcher) add(ps talismanrc.PatternString) {
 		return
 	}
 	logrus.Infof("added custom pattern '%s' with high severity", ps)
-	pm.regexes = append(pm.regexes, &severity.PatternSeverity{Pattern: re, Severity: severity.High()})
+	pm.regexes = append(pm.regexes, &severity.PatternSeverity{Pattern: re, Severity: severity.SeverityConfiguration["CustomPattern"]})
 }
 
 func NewPatternMatcher(patterns []*severity.PatternSeverity) *PatternMatcher {
