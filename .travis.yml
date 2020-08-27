@@ -25,7 +25,6 @@ deploy:
   file:
   - checksums
   - talisman_darwin_amd64
-  - talisman_darwin_386
   - talisman_linux_amd64
   - talisman_linux_386
   - talisman_windows_386.exe
