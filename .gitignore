@@ -6,3 +6,4 @@ vendor
 .jekyll-cache
 .DS_Store
 .talismanrc
+Gemfile.lock
