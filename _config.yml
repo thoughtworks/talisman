@@ -22,6 +22,9 @@ url: "https://thoughtworks.github.io" # the base hostname & protocol for your si
 exclude:
   - vendor
 
+plugins:
+  - jekyll-seo-tag
+
 # Build settings
 markdown: kramdown
 
