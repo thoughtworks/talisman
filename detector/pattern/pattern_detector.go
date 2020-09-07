@@ -75,9 +75,18 @@ func (detector PatternDetector) Test(comparator helpers.ChecksumCompare, current
 	}
 }
 
+var knownPatterns = make(map[string]*regexp.Regexp)
+
 func replaceAllStrings(str string, pattern string) string {
-	re := regexp.MustCompile(fmt.Sprintf("(?i)%s", pattern))
-	return re.ReplaceAllString(str, "")
+	var pat *regexp.Regexp
+	var ok bool
+
+	if pat, ok = knownPatterns[pattern]; !ok {
+		pat = regexp.MustCompile(fmt.Sprintf("(?i)%s", pattern))
+		knownPatterns[pattern] = pat
+	}
+
+	return pat.ReplaceAllString(str, "")
 }
 
 func processAllowedPatterns(addition gitrepo.Addition, tRC *talismanrc.TalismanRC) string {
