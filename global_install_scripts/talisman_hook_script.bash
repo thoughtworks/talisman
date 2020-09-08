@@ -25,6 +25,10 @@ function echo_success() {
 	echo -ne $(tput sgr0)
 }
 
+function toLower(){
+	echo "$1" | awk '{print tolower($0)}'
+}
+
 declare HOOKNAME="pre-commit"
 NAME=$(basename $0)
 ORG_REPO=${ORG_REPO:-'thoughtworks/talisman'}
@@ -72,11 +76,12 @@ if [[ -f .talisman_skip || -f .talisman_skip.${HOOKNAME} ]]; then
 fi
 
 DEBUG_OPTS=""
-[[ -n "${TALISMAN_DEBUG}" ]] && DEBUG_OPTS="-d"
+[[ $(toLower "${TALISMAN_DEBUG}") == "true" ]] && DEBUG_OPTS="-d"
+
 INTERACTIVE=""
-if [ -n "${TALISMAN_INTERACTIVE}" ]; then
+if [ $(toLower "${TALISMAN_INTERACTIVE}") == "true" ]; then
     INTERACTIVE="-i"
-	[[ "${HOOKNAME}" == "pre-commit" ]] && exec < /dev/tty || echo_warning "talisman pre-push hook cannot be invoked in interactive mode currently"
+	  [[ "${HOOKNAME}" == "pre-commit" ]] && exec < /dev/tty || echo_warning "talisman pre-push hook cannot be invoked in interactive mode currently"
 fi
 
 CMD="${TALISMAN_BINARY} ${DEBUG_OPTS} --githook ${HOOKNAME} ${INTERACTIVE}"
