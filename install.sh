@@ -10,7 +10,6 @@ pre-commit | pre-push) REPO_HOOK_TARGET=".git/hooks/${HOOK_NAME}" ;;
   ;;
 esac
 
-
 # we call run() at the end of the script to prevent inconsistent state in case
 # user runs with curl|bash and curl fails in the middle of the download
 # (https://www.seancassidy.me/dont-pipe-to-your-shell.html)
@@ -29,16 +28,16 @@ run() {
   EXPECTED_BINARY_SHA_LINUX_AMD64="22b1aaee860b27306bdf345a0670f138830bcf7fbe16c75be186fe119e9d54b4"
   EXPECTED_BINARY_SHA_LINUX_X86="d0558d626a4ee1e90d2c2a5f3c69372a30b8f2c8e390a59cedc15585b0731bc4"
   EXPECTED_BINARY_SHA_DARWIN_AMD64="f30e1ec6fb3e1fc33928622f17d6a96933ca63d5ab322f9ba869044a3075ffda"
-  
+
   declare DOWNLOADED_BINARY
-  
+
   E_HOOK_ALREADY_PRESENT=1
   E_CHECKSUM_MISMATCH=2
   E_USER_CANCEL=3
   E_HEADLESS=4
   E_UNSUPPORTED_ARCH=5
   E_DEPENDENCY_NOT_FOUND=6
-  
+
   echo_error() {
     echo -ne $(tput setaf 1) >&2
     echo "$1" >&2
@@ -72,10 +71,9 @@ run() {
       echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
       exit $E_UNSUPPORTED_ARCH
     fi
-    
+
     echo $ARCHITECTURE
   }
-
 
   download_and_verify() {
     if [[ ! -x "$(which curl 2>/dev/null)" ]]; then
@@ -86,32 +84,32 @@ run() {
       echo_error "This script requires 'shasum' to verify the Talisman binary."
       exit $E_DEPENDENCY_NOT_FOUND
     fi
-    
+
     echo 'Downloading and verifying binary...'
     echo
-    
+
     TMP_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'talisman')
     trap 'rm -r $TMP_DIR' EXIT
     chmod 0700 $TMP_DIR
 
     ARCH_SUFFIX=$(binary_arch_suffix)
-    
+
     curl --location --silent "${BINARY_BASE_URL}_${ARCH_SUFFIX}" >"${TMP_DIR}/talisman"
     curl --location --silent "$HOOK_SCRIPT_URL" >"${TMP_DIR}/talisman_hook_script.bash"
 
-    DOWNLOAD_SHA=$(shasum -b -a256 $TMP_DIR/talisman | cut -d' ' -f1)
+    DOWNLOAD_SHA=$(shasum -b -a256 "${TMP_DIR}/talisman" | cut -d' ' -f1)
 
     declare EXPECTED_BINARY_SHA
     case "$ARCH_SUFFIX" in
-      linux_386)
-        EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_LINUX_X86"
-        ;;
-      linux_amd64)
-        EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_LINUX_AMD64"
-        ;;
-      darwin_amd64)
-        EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_DARWIN_AMD64"
-        ;;
+    linux_386)
+      EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_LINUX_X86"
+      ;;
+    linux_amd64)
+      EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_LINUX_AMD64"
+      ;;
+    darwin_amd64)
+      EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_DARWIN_AMD64"
+      ;;
     esac
 
     if [[ ! "$DOWNLOAD_SHA" == "$EXPECTED_BINARY_SHA" ]]; then
@@ -184,13 +182,13 @@ run() {
       echo
 
       case "$USE_EXISTING" in
-	Y|y|"") ;; # okay, continue
-	*)
-	  echo_error "Not installing Talisman."
-	  echo_error "If you were trying to install into a single git repo, re-run this command from that repo."
-	  echo_error "You can always download/compile manually from our Github page: $GITHUB_URL"
-	  exit $E_USER_CANCEL
-	  ;;
+      Y | y | "") ;; # okay, continue
+      *)
+        echo_error "Not installing Talisman."
+        echo_error "If you were trying to install into a single git repo, re-run this command from that repo."
+        echo_error "You can always download/compile manually from our Github page: $GITHUB_URL"
+        exit $E_USER_CANCEL
+        ;;
       esac
     fi
 
@@ -208,7 +206,7 @@ run() {
 
     download_and_verify
 
-    cp $DOWNLOADED_BINARY "$TEMPLATE_DIR/hooks/${HOOK_NAME}"
+    cp "$DOWNLOADED_BINARY" "$TEMPLATE_DIR/hooks/${HOOK_NAME}"
     chmod +x "$TEMPLATE_DIR/hooks/${HOOK_NAME}"
 
     echo_success "Talisman successfully installed."
