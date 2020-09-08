@@ -1,6 +1,16 @@
 #!/bin/bash
 set -euo pipefail
 
+HOOK_NAME="${1:-pre-push}"
+case "$HOOK_NAME" in
+pre-commit | pre-push) REPO_HOOK_TARGET=".git/hooks/${HOOK_NAME}" ;;
+*)
+  echo "Unknown Hook name '${HOOK_NAME}'. Please check parameters"
+  exit 1
+  ;;
+esac
+
+
 # we call run() at the end of the script to prevent inconsistent state in case
 # user runs with curl|bash and curl fails in the middle of the download
 # (https://www.seancassidy.me/dont-pipe-to-your-shell.html)
@@ -10,7 +20,7 @@ run() {
   VERSION="v0.3.2"
   GITHUB_URL="https://github.com/thoughtworks/talisman"
   BINARY_BASE_URL="$GITHUB_URL/releases/download/$VERSION/talisman"
-  REPO_PRE_PUSH_HOOK=".git/hooks/pre-push"
+
   DEFAULT_GLOBAL_TEMPLATE_DIR="$HOME/.git-templates"
 
   EXPECTED_BINARY_SHA_LINUX_AMD64="8c0ba72fb018892b48c8e63f5e579b5bd72ec5f9d284f31c35a5382f77685834"
@@ -30,6 +40,12 @@ run() {
     echo -ne $(tput setaf 1) >&2
     echo "$1" >&2
     echo -ne $(tput sgr0) >&2
+  }
+
+  echo_success() {
+    echo -ne $(tput setaf 2)
+    echo "$1" >&2
+    echo -ne $(tput sgr0)
   }
 
   binary_arch_suffix() {
@@ -105,8 +121,8 @@ run() {
   }
 
   install_to_repo() {
-    if [[ -x "$REPO_PRE_PUSH_HOOK" ]]; then
-      echo_error "Oops, it looks like you already have a pre-push hook installed at '$REPO_PRE_PUSH_HOOK'."
+    if [[ -x "$REPO_HOOK_TARGET" ]]; then
+      echo_error "Oops, it looks like you already have a ${HOOK_NAME} hook installed at '${REPO_HOOK_TARGET}'."
       echo_error "Talisman is not compatible with other hooks right now, sorry."
       echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
       exit $E_HOOK_ALREADY_PRESENT
@@ -114,13 +130,11 @@ run() {
 
     download_and_verify
 
-    mkdir -p $(dirname $REPO_PRE_PUSH_HOOK)
-    cp $DOWNLOADED_BINARY $REPO_PRE_PUSH_HOOK
-    chmod +x $REPO_PRE_PUSH_HOOK
+    mkdir -p $(dirname $REPO_HOOK_TARGET)
+    cp $DOWNLOADED_BINARY $REPO_HOOK_TARGET
+    chmod +x $REPO_HOOK_TARGET
 
-    echo -ne $(tput setaf 2)
-    echo "Talisman successfully installed to '$REPO_PRE_PUSH_HOOK'."
-    echo -ne $(tput sgr0)
+    echo_success "Talisman successfully installed to '$REPO_HOOK_TARGET'."
   }
 
   install_to_git_templates() {
@@ -170,23 +184,21 @@ run() {
     # Support '~' in path
     TEMPLATE_DIR=${TEMPLATE_DIR/#\~/$HOME}
 
-    if [ -f "$TEMPLATE_DIR/hooks/pre-push" ]; then
-      echo_error "Oops, it looks like you already have a pre-push hook installed at '$TEMPLATE_DIR/hooks/pre-push'."
+    if [ -f "$TEMPLATE_DIR/hooks/${HOOK_NAME}" ]; then
+      echo_error "Oops, it looks like you already have a ${HOOK_NAME} hook installed at '$TEMPLATE_DIR/hooks/${HOOK_NAME}'."
       echo_error "Talisman is not compatible with other hooks right now, sorry."
       echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
       exit $E_HOOK_ALREADY_PRESENT
     fi
-    
+
     mkdir -p "$TEMPLATE_DIR/hooks"
 
     download_and_verify
 
-    cp $DOWNLOADED_BINARY "$TEMPLATE_DIR/hooks/pre-push"
-    chmod +x "$TEMPLATE_DIR/hooks/pre-push"
-    
-    echo -ne $(tput setaf 2)
-    echo "Talisman successfully installed."
-    echo -ne $(tput sgr0)
+    cp $DOWNLOADED_BINARY "$TEMPLATE_DIR/hooks/${HOOK_NAME}"
+    chmod +x "$TEMPLATE_DIR/hooks/${HOOK_NAME}"
+
+    echo_success "Talisman successfully installed."
   }
 
   if [ ! -d "./.git" ]; then
