@@ -10,23 +10,38 @@
 ## Table of Contents
 - [What is Talisman?](#what-is-talisman)
 - [Installation](#installation)
-	- [As a global hook template (Recommended)](#installation-as-a-global-hook-template)
-	- [To a single repository](#installation-to-a-single-project)
-- [Upgrading Talisman](#Upgrading)
+  - [[Recommended approach]](#recommended-approach)
+  - [Installation as a global hook template](#installation-as-a-global-hook-template)
+    - [Handling existing hooks](#handling-existing-hooks)
+      - [1. Pre-commit (Linux/Unix)](#1-pre-commit-linuxunix)
+      - [2. Husky (Linux/Unix/Windows)](#2-husky-linuxunixwindows)
+          - [Windows](#windows)
+          - [Linux/Unix](#linuxunix)
+          - [Windows](#windows-1)
+          - [Linux/Unix](#linuxunix-1)
+  - [Installation to a single project](#installation-to-a-single-project)
+    - [Handling existing hooks](#handling-existing-hooks-1)
+- [Upgrading](#upgrading)
 - [Talisman in action](#talisman-in-action)
-	- [Validations](#validations)
-	- [Ignoring files](#ignoring-files)
-	- [Configuring severity threshold](#configuring-severity-threshold)
+  - [Validations](#validations)
+  - [Ignoring Files](#ignoring-files)
+    - [Interactive mode](#interactive-mode)
+    - [Ignoring specific detectors](#ignoring-specific-detectors)
+    - [Ignoring specific keywords](#ignoring-specific-keywords)
+    - [Ignoring multiple files of same type (with wildcards)](#ignoring-multiple-files-of-same-type-with-wildcards)
+    - [Ignoring files by specifying language scope](#ignoring-files-by-specifying-language-scope)
+    - [Custom search patterns](#custom-search-patterns)
+  - [Configuring severity threshold](#configuring-severity-threshold)
   - [Talisman as a CLI utility](#talisman-as-a-cli-utility)
-    - [Git History Scanner](#git-history-scanner)
+    - [Interactive mode](#interactive-mode-1)
+    - [Git history Scanner](#git-history-scanner)
     - [Checksum Calculator](#checksum-calculator)
-	- [Talisman HTML Reporting](#talisman-html-reporting)
+- [Talisman HTML Reporting](#talisman-html-reporting)
+  - [Sample Screenshots](#sample-screenshots)
 - [Uninstallation](#uninstallation)
-	- [From a global hook template](#uninstallation-from-a-global-hook-template)
-	- [From a single repository](#uninstallation-from-a-single-repository)
-- [Contributing to Talisman](#contributing-to-talisman)
-	- [Developing locally](https://github.com/thoughtworks/talisman/blob/master/contributing.md#developing-locally)
-	- [Releasing](https://github.com/thoughtworks/talisman/blob/master/contributing.md#releasing)
+  - [Uninstallation from a global hook template](#uninstallation-from-a-global-hook-template)
+  - [Uninstallation from a single repository](#uninstallation-from-a-single-repository)
+  - [Contributing to Talisman](#contributing-to-talisman)
 
 # What is Talisman?
 Talisman is a tool that installs a hook to your repository to ensure that potential secrets or sensitive information do not leave the developer's workstation.
@@ -156,15 +171,18 @@ In order to use husky, make sure you have already set TALISMAN_HOME to `$PATH`.
 ## Installation to a single project
 
 ```bash
-# Download the talisman binary
+# Download the talisman installer script
 curl https://thoughtworks.github.io/talisman/install.sh > ~/install-talisman.sh
 chmod +x ~/install-talisman.sh
 ```
 
 ```bash
-# Install to a single project (as pre-push hook)
+# Install to a single project
 cd my-git-project
+# as a pre-push hook
 ~/install-talisman.sh
+# or as a pre-commit hook
+~/install-talisman.sh pre-commit
 ```
 
 ### Handling existing hooks
