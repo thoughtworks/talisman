@@ -142,7 +142,7 @@ run() {
     cp "$DOWNLOADED_HOOK_SCRIPT" "$HOOK_SCRIPT_TARGET"
     chmod +x "$HOOK_SCRIPT_TARGET"
 
-    echo "TALISMAN_BINARY=\"${TALISMAN_BIN_TARGET}\" ${HOOK_SCRIPT_TARGET}" >"$REPO_HOOK_TARGET"
+    echo "TALISMAN_BINARY=\"${TALISMAN_BIN_TARGET}\" TALISMAN_INTERACTIVE=\"false\" ${HOOK_SCRIPT_TARGET}" >"$REPO_HOOK_TARGET"
     chmod +x "$REPO_HOOK_TARGET"
 
     echo_success "Talisman successfully installed to '$REPO_HOOK_TARGET'."
