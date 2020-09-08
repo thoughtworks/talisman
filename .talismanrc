@@ -23,7 +23,7 @@ fileignoreconfig:
   checksum: 7e5442d7ee07a6fad12cf636c5dc2880c69b9593fd286e44d567e178ffdd0194
 - filename: global_install_scripts/install.bash
   checksum: 5d659125ecbe619ea99f5bc71c2d761b586ce3ec9ccab7683ee54f4ebde9f748
-- filename: build
-  checksum: 8fbb878aeef148b198e747f24c38561492bc8b1290a1495470c61a6b9a90d5d7
+- filename: upx_compress.sh
+  checksum: 1a5d9b0ebd627646650c86236f4a21df5b4a2bcf26d77c439dd81c7b28ff9aa0
 scopeconfig:
 - scope: go
