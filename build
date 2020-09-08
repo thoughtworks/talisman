@@ -4,4 +4,5 @@ export GO111MODULE=on
 go get github.com/mitchellh/gox
 gox -os="linux darwin windows" -arch="386 amd64" -ldflags="-s -w -X main.Version=${VERSION}"
 upx --lzma talisman_{l,d,w}*
+upx -t talisman_{l,d,w}*
 shasum -b -a256 talisman_{l,d,w}* > checksums
