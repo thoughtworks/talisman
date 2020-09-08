@@ -7,7 +7,6 @@ go:
 - stable
 before_install:
 - go get github.com/mattn/goveralls
-- sudo apt-get -y install upx-ucl
 install: true
 jobs:
   include:
@@ -16,7 +15,7 @@ jobs:
     - go mod vendor
     - go test -covermode=count -coverprofile=coverage.out -v ./...
     - "$GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci"
-before_deploy: "./build"
+before_deploy: "./build && ./upx_compress.sh"
 deploy:
   provider: releases
   draft: true
