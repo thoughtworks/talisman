@@ -21,6 +21,8 @@ run() {
   GITHUB_URL="https://github.com/thoughtworks/talisman"
   GITHUB_RAW_URL="https://raw.githubusercontent.com/thoughtworks/talisman"
   BINARY_BASE_URL="$GITHUB_URL/releases/download/$VERSION/talisman"
+  HOOK_SCRIPT_URL="$GITHUB_RAW_URL/master/global_install_scripts/talisman_hook_script.bash"
+  REPO_HOOK_BIN_DIR=".git/hooks/bin"
 
   DEFAULT_GLOBAL_TEMPLATE_DIR="$HOME/.git-templates"
 
@@ -94,7 +96,8 @@ run() {
 
     ARCH_SUFFIX=$(binary_arch_suffix)
     
-    curl --location --silent "${BINARY_BASE_URL}_${ARCH_SUFFIX}" > $TMP_DIR/talisman
+    curl --location --silent "${BINARY_BASE_URL}_${ARCH_SUFFIX}" >"${TMP_DIR}/talisman"
+    curl --location --silent "$HOOK_SCRIPT_URL" >"${TMP_DIR}/talisman_hook_script.bash"
 
     DOWNLOAD_SHA=$(shasum -b -a256 $TMP_DIR/talisman | cut -d' ' -f1)
 
@@ -119,6 +122,7 @@ run() {
     fi
 
     DOWNLOADED_BINARY="$TMP_DIR/talisman"
+    DOWNLOADED_HOOK_SCRIPT="${TMP_DIR}/talisman_hook_script.bash"
   }
 
   install_to_repo() {
@@ -131,9 +135,17 @@ run() {
 
     download_and_verify
 
-    mkdir -p $(dirname $REPO_HOOK_TARGET)
-    cp $DOWNLOADED_BINARY $REPO_HOOK_TARGET
-    chmod +x $REPO_HOOK_TARGET
+    mkdir -p "$REPO_HOOK_BIN_DIR"
+    TALISMAN_BIN_TARGET="${REPO_HOOK_BIN_DIR}/talisman"
+    cp "$DOWNLOADED_BINARY" "$TALISMAN_BIN_TARGET"
+    chmod +x "$TALISMAN_BIN_TARGET"
+
+    HOOK_SCRIPT_TARGET="${REPO_HOOK_BIN_DIR}/pre-commit"
+    cp "$DOWNLOADED_HOOK_SCRIPT" "$HOOK_SCRIPT_TARGET"
+    chmod +x "$HOOK_SCRIPT_TARGET"
+
+    echo "TALISMAN_BINARY=\"${TALISMAN_BIN_TARGET}\" ${HOOK_SCRIPT_TARGET}" >"$REPO_HOOK_TARGET"
+    chmod +x "$REPO_HOOK_TARGET"
 
     echo_success "Talisman successfully installed to '$REPO_HOOK_TARGET'."
   }
