@@ -1,6 +1,5 @@
 #!/bin/bash
 shopt -s extglob
-exec < /dev/tty
 
 # set TALISMAN_DEBUG="some-non-empty-value" in the env to get verbose output when the hook or talisman is running
 function echo_debug() {
@@ -78,8 +77,12 @@ fi
 
 DEBUG_OPTS=""
 [[ $(toLower "${TALISMAN_DEBUG}") == "true" ]] && DEBUG_OPTS="-d"
+
 INTERACTIVE=""
-[[ $(toLower "${TALISMAN_INTERACTIVE}") == "true" ]] && INTERACTIVE="-i"
+if [ $(toLower "${TALISMAN_INTERACTIVE}") == "true" ]; then
+    INTERACTIVE="-i"
+	  [[ "${HOOKNAME}" == "pre-commit" ]] && exec < /dev/tty || echo_warning "talisman pre-push hook cannot be invoked in interactive mode currently"
+fi
 
 CMD="${TALISMAN_BINARY} ${DEBUG_OPTS} --githook ${HOOKNAME} ${INTERACTIVE}"
 echo_debug "ARGS are $@"
