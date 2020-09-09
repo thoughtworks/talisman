@@ -4,7 +4,9 @@ import (
 	"github.com/spf13/afero"
 	flag "github.com/spf13/pflag"
 	"runtime"
+	"strconv"
 	"talisman/prompt"
+	"time"
 )
 
 import (
@@ -24,12 +26,13 @@ var (
 	showVersion bool
 	pattern     string
 	//Version : Version of talisman
-	Version         = "Development Build"
-	scan            bool
-	checksum        string
-	reportdirectory string
-	scanWithHtml    bool
-	interactive     bool
+	Version              = "Development Build"
+	buildTimeStampString = "0"
+	scan                 bool
+	checksum             string
+	reportdirectory      string
+	scanWithHtml         bool
+	interactive          bool
 )
 
 const (
@@ -55,6 +58,7 @@ type options struct {
 
 //Logger is the default log device, set to emit at the Error level by default
 func main() {
+	warnIfBuildIsOlderThan60Days()
 	flag.BoolVarP(&fdebug, "debug", "d", false, "enable debug mode (warning: very verbose)")
 	flag.BoolVarP(&showVersion, "version", "v", false, "show current version of talisman")
 	flag.StringVarP(&pattern, "pattern", "p", "", "pattern (glob-like) of files to scan (ignores githooks)")
@@ -92,13 +96,20 @@ func main() {
 		checksum:        checksum,
 		reportdirectory: reportdirectory,
 		scanWithHtml:    scanWithHtml,
-
 	}
 
 	prompter := prompt.NewPrompt()
 	promptContext := prompt.NewPromptContext(interactive, prompter)
 
 	os.Exit(run(os.Stdin, _options, promptContext))
+}
+
+func warnIfBuildIsOlderThan60Days() {
+	buildTimeStamp, _ := strconv.ParseInt(buildTimeStampString, 10, 64)
+	secondsInSixtyDays := int64(5184000)
+	if time.Now().Unix()-buildTimeStamp > secondsInSixtyDays {
+		fmt.Printf("Talisman build is more than 60 days old. Do verify manually if a update is available.\n")
+	}
 }
 
 func run(stdin io.Reader, _options options, promptContext prompt.PromptContext) (returnCode int) {
