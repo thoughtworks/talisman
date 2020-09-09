@@ -82,6 +82,7 @@ func main() {
 			fmt.Println(fmt.Errorf("githook should be %s or %s, but got %s", PreCommit, PrePush, githook))
 			os.Exit(1)
 		}
+		fmt.Printf("Talisman %s %s hook tiggered\n", Version, githook)
 	}
 
 	_options := options{
