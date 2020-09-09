@@ -75,11 +75,13 @@ if [[ -f .talisman_skip || -f .talisman_skip.${HOOKNAME} ]]; then
 	exit 0
 fi
 
+TALISMAN_DEBUG="$(toLower "${TALISMAN_DEBUG}")"
 DEBUG_OPTS=""
-[[ $(toLower "${TALISMAN_DEBUG}") == "true" ]] && DEBUG_OPTS="-d"
+[[ "${TALISMAN_DEBUG}" == "true" ]] && DEBUG_OPTS="-d"
 
+TALISMAN_INTERACTIVE="$(toLower "${TALISMAN_INTERACTIVE}")"
 INTERACTIVE=""
-if [ $(toLower "${TALISMAN_INTERACTIVE}") == "true" ]; then
+if [ "${TALISMAN_INTERACTIVE}" == "true" ]; then
     INTERACTIVE="-i"
 	  [[ "${HOOKNAME}" == "pre-commit" ]] && exec < /dev/tty || echo_warning "talisman pre-push hook cannot be invoked in interactive mode currently"
 fi
