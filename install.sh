@@ -1,4 +1,10 @@
 #!/bin/bash
+# Hello there! If you update the talisman version, please remember to:
+# - Test that this script works with no args, and the `pre-push` / `pre-commit` arg.
+# - also update `install.sh` in the gh_pages branch of this repo, so that
+#   <https://thoughtworks.github.io/talisman/install.sh> gets updated too.
+# Thanks!
+
 set -euo pipefail
 
 HOOK_NAME="${1:-pre-push}"
@@ -18,9 +24,7 @@ run() {
 
   VERSION="v1.8.0"
   GITHUB_URL="https://github.com/thoughtworks/talisman"
-  GITHUB_RAW_URL="https://raw.githubusercontent.com/thoughtworks/talisman"
   BINARY_BASE_URL="$GITHUB_URL/releases/download/$VERSION/talisman"
-  HOOK_SCRIPT_URL="$GITHUB_RAW_URL/master/global_install_scripts/talisman_hook_script.bash"
   REPO_HOOK_BIN_DIR=".git/hooks/bin"
 
   DEFAULT_GLOBAL_TEMPLATE_DIR="$HOME/.git-templates"
@@ -95,7 +99,6 @@ run() {
     ARCH_SUFFIX=$(binary_arch_suffix)
 
     curl --location --silent "${BINARY_BASE_URL}_${ARCH_SUFFIX}" >"${TMP_DIR}/talisman"
-    curl --location --silent "$HOOK_SCRIPT_URL" >"${TMP_DIR}/talisman_hook_script.bash"
 
     DOWNLOAD_SHA=$(shasum -b -a256 "${TMP_DIR}/talisman" | cut -d' ' -f1)
 
@@ -120,7 +123,6 @@ run() {
     fi
 
     DOWNLOADED_BINARY="$TMP_DIR/talisman"
-    DOWNLOADED_HOOK_SCRIPT="${TMP_DIR}/talisman_hook_script.bash"
   }
 
   install_to_repo() {
@@ -138,11 +140,31 @@ run() {
     cp "$DOWNLOADED_BINARY" "$TALISMAN_BIN_TARGET"
     chmod +x "$TALISMAN_BIN_TARGET"
 
-    HOOK_SCRIPT_TARGET="${REPO_HOOK_BIN_DIR}/pre-commit"
-    cp "$DOWNLOADED_HOOK_SCRIPT" "$HOOK_SCRIPT_TARGET"
-    chmod +x "$HOOK_SCRIPT_TARGET"
+    cat >"$REPO_HOOK_TARGET" <<EOF
+#!/bin/bash
+function echo_debug() {
+	MSG="\$@"
+	[[ -n "\${TALISMAN_DEBUG}" ]] && echo "\${MSG}"
+}
 
-    echo "TALISMAN_BINARY=\"${TALISMAN_BIN_TARGET}\" TALISMAN_INTERACTIVE=\"false\" ${HOOK_SCRIPT_TARGET}" >"$REPO_HOOK_TARGET"
+function toLower(){
+	echo "\$1" | awk '{print tolower(\$0)}'
+}
+
+# Don't run talisman checks in a git repo, if we find a .talisman_skip or .talisman_skip.pre-<commit/push> file in the repo
+if [[ -f .talisman_skip || -f .talisman_skip.${HOOK_NAME} ]]; then
+	echo_debug "Found skip file. Not performing checks"
+	exit 0
+fi
+
+DEBUG_OPTS=""
+[[ \$(toLower "\${TALISMAN_DEBUG}") == "true" ]] && DEBUG_OPTS="-d"
+
+CMD="${PWD}/${TALISMAN_BIN_TARGET} \${DEBUG_OPTS} --githook ${HOOK_NAME}"
+echo_debug "ARGS are \$@"
+echo_debug "Executing: \${CMD}"
+\${CMD}
+EOF
     chmod +x "$REPO_HOOK_TARGET"
 
     echo_success "Talisman successfully installed to '$REPO_HOOK_TARGET'."
