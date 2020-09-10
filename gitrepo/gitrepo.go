@@ -191,9 +191,9 @@ func (repo GitRepo) CheckIfFileExists(fileName string) bool {
 //If there is no path separator anywhere in the pattern, the pattern is matched against the base name of the file. Thus, the pattern will match files with that name anywhere in the repository.
 func (a Addition) Matches(pattern string) bool {
 	var result bool
-	if pattern[len(pattern)-1] == os.PathSeparator {
+	if pattern[len(pattern)-1] == '/' {
 		result = strings.HasPrefix(string(a.Path), pattern)
-	} else if strings.ContainsRune(pattern, os.PathSeparator) {
+	} else if strings.ContainsRune(pattern, '/') {
 		result, _ = path.Match(pattern, string(a.Path))
 	} else {
 		result, _ = path.Match(pattern, string(a.Name))
