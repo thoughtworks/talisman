@@ -1,5 +1,20 @@
 #!/bin/bash
+# Hello there! If you update the talisman version, please remember to:
+# - Test that this script works with no args, and the `pre-push` / `pre-commit` arg.
+# - also update `install.sh` in the gh_pages branch of this repo, so that
+#   <https://thoughtworks.github.io/talisman/install.sh> gets updated too.
+# Thanks!
+
 set -euo pipefail
+
+HOOK_NAME="${1:-pre-push}"
+case "$HOOK_NAME" in
+pre-commit | pre-push) REPO_HOOK_TARGET=".git/hooks/${HOOK_NAME}" ;;
+*)
+  echo "Unknown Hook name '${HOOK_NAME}'. Please check parameters"
+  exit 1
+  ;;
+esac
 
 # we call run() at the end of the script to prevent inconsistent state in case
 # user runs with curl|bash and curl fails in the middle of the download
@@ -7,29 +22,36 @@ set -euo pipefail
 run() {
   IFS=$'\n'
 
-  VERSION="v0.3.2"
+  VERSION="v1.8.0"
   GITHUB_URL="https://github.com/thoughtworks/talisman"
   BINARY_BASE_URL="$GITHUB_URL/releases/download/$VERSION/talisman"
-  REPO_PRE_PUSH_HOOK=".git/hooks/pre-push"
+  REPO_HOOK_BIN_DIR=".git/hooks/bin"
+
   DEFAULT_GLOBAL_TEMPLATE_DIR="$HOME/.git-templates"
 
-  EXPECTED_BINARY_SHA_LINUX_AMD64="8c0ba72fb018892b48c8e63f5e579b5bd72ec5f9d284f31c35a5382f77685834"
-  EXPECTED_BINARY_SHA_LINUX_X86="332bb7a1295f45d2efaac48757f4f8c513a4cca563ebc86f964c985be7aaed51"
-  EXPECTED_BINARY_SHA_DARWIN_AMD64="e66c2b21b69ab80f4474d3cc3f591f6ca68e2b76a96337e7eb807fc305e518f1"
-  
+  EXPECTED_BINARY_SHA_LINUX_AMD64="22b1aaee860b27306bdf345a0670f138830bcf7fbe16c75be186fe119e9d54b4"
+  EXPECTED_BINARY_SHA_LINUX_X86="d0558d626a4ee1e90d2c2a5f3c69372a30b8f2c8e390a59cedc15585b0731bc4"
+  EXPECTED_BINARY_SHA_DARWIN_AMD64="f30e1ec6fb3e1fc33928622f17d6a96933ca63d5ab322f9ba869044a3075ffda"
+
   declare DOWNLOADED_BINARY
-  
+
   E_HOOK_ALREADY_PRESENT=1
   E_CHECKSUM_MISMATCH=2
   E_USER_CANCEL=3
   E_HEADLESS=4
   E_UNSUPPORTED_ARCH=5
   E_DEPENDENCY_NOT_FOUND=6
-  
+
   echo_error() {
     echo -ne $(tput setaf 1) >&2
     echo "$1" >&2
     echo -ne $(tput sgr0) >&2
+  }
+
+  echo_success() {
+    echo -ne $(tput setaf 2)
+    echo "$1" >&2
+    echo -ne $(tput sgr0)
   }
 
   binary_arch_suffix() {
@@ -53,10 +75,9 @@ run() {
       echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
       exit $E_UNSUPPORTED_ARCH
     fi
-    
+
     echo $ARCHITECTURE
   }
-
 
   download_and_verify() {
     if [[ ! -x "$(which curl 2>/dev/null)" ]]; then
@@ -67,31 +88,31 @@ run() {
       echo_error "This script requires 'shasum' to verify the Talisman binary."
       exit $E_DEPENDENCY_NOT_FOUND
     fi
-    
+
     echo 'Downloading and verifying binary...'
     echo
-    
+
     TMP_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'talisman')
     trap 'rm -r $TMP_DIR' EXIT
     chmod 0700 $TMP_DIR
 
     ARCH_SUFFIX=$(binary_arch_suffix)
-    
-    curl --location --silent "${BINARY_BASE_URL}_${ARCH_SUFFIX}" > $TMP_DIR/talisman
 
-    DOWNLOAD_SHA=$(shasum -b -a256 $TMP_DIR/talisman | cut -d' ' -f1)
+    curl --location --silent "${BINARY_BASE_URL}_${ARCH_SUFFIX}" >"${TMP_DIR}/talisman"
+
+    DOWNLOAD_SHA=$(shasum -b -a256 "${TMP_DIR}/talisman" | cut -d' ' -f1)
 
     declare EXPECTED_BINARY_SHA
     case "$ARCH_SUFFIX" in
-      linux_386)
-        EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_LINUX_X86"
-        ;;
-      linux_amd64)
-        EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_LINUX_AMD64"
-        ;;
-      darwin_amd64)
-        EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_DARWIN_AMD64"
-        ;;
+    linux_386)
+      EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_LINUX_X86"
+      ;;
+    linux_amd64)
+      EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_LINUX_AMD64"
+      ;;
+    darwin_amd64)
+      EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_DARWIN_AMD64"
+      ;;
     esac
 
     if [[ ! "$DOWNLOAD_SHA" == "$EXPECTED_BINARY_SHA" ]]; then
@@ -105,8 +126,8 @@ run() {
   }
 
   install_to_repo() {
-    if [[ -x "$REPO_PRE_PUSH_HOOK" ]]; then
-      echo_error "Oops, it looks like you already have a pre-push hook installed at '$REPO_PRE_PUSH_HOOK'."
+    if [[ -x "$REPO_HOOK_TARGET" ]]; then
+      echo_error "Oops, it looks like you already have a ${HOOK_NAME} hook installed at '${REPO_HOOK_TARGET}'."
       echo_error "Talisman is not compatible with other hooks right now, sorry."
       echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
       exit $E_HOOK_ALREADY_PRESENT
@@ -114,13 +135,22 @@ run() {
 
     download_and_verify
 
-    mkdir -p $(dirname $REPO_PRE_PUSH_HOOK)
-    cp $DOWNLOADED_BINARY $REPO_PRE_PUSH_HOOK
-    chmod +x $REPO_PRE_PUSH_HOOK
+    mkdir -p "$REPO_HOOK_BIN_DIR"
+    TALISMAN_BIN_TARGET="${REPO_HOOK_BIN_DIR}/talisman"
+    cp "$DOWNLOADED_BINARY" "$TALISMAN_BIN_TARGET"
+    chmod +x "$TALISMAN_BIN_TARGET"
 
-    echo -ne $(tput setaf 2)
-    echo "Talisman successfully installed to '$REPO_PRE_PUSH_HOOK'."
-    echo -ne $(tput sgr0)
+    cat >"$REPO_HOOK_TARGET" <<EOF
+#!/bin/bash
+[[ -n "\${TALISMAN_DEBUG}" ]] && DEBUG_OPTS="-d"
+CMD="${PWD}/${TALISMAN_BIN_TARGET} \${DEBUG_OPTS} --githook ${HOOK_NAME}"
+[[ -n "\${TALISMAN_DEBUG}" ]] && echo "ARGS are \$@"
+[[ -n "\${TALISMAN_DEBUG}" ]] && echo "Executing: \${CMD}"
+\${CMD}
+EOF
+    chmod +x "$REPO_HOOK_TARGET"
+
+    echo_success "Talisman successfully installed to '$REPO_HOOK_TARGET'."
   }
 
   install_to_git_templates() {
@@ -157,36 +187,34 @@ run() {
       echo
 
       case "$USE_EXISTING" in
-	Y|y|"") ;; # okay, continue
-	*)
-	  echo_error "Not installing Talisman."
-	  echo_error "If you were trying to install into a single git repo, re-run this command from that repo."
-	  echo_error "You can always download/compile manually from our Github page: $GITHUB_URL"
-	  exit $E_USER_CANCEL
-	  ;;
+      Y | y | "") ;; # okay, continue
+      *)
+        echo_error "Not installing Talisman."
+        echo_error "If you were trying to install into a single git repo, re-run this command from that repo."
+        echo_error "You can always download/compile manually from our Github page: $GITHUB_URL"
+        exit $E_USER_CANCEL
+        ;;
       esac
     fi
 
     # Support '~' in path
     TEMPLATE_DIR=${TEMPLATE_DIR/#\~/$HOME}
 
-    if [ -f "$TEMPLATE_DIR/hooks/pre-push" ]; then
-      echo_error "Oops, it looks like you already have a pre-push hook installed at '$TEMPLATE_DIR/hooks/pre-push'."
+    if [ -f "$TEMPLATE_DIR/hooks/${HOOK_NAME}" ]; then
+      echo_error "Oops, it looks like you already have a ${HOOK_NAME} hook installed at '$TEMPLATE_DIR/hooks/${HOOK_NAME}'."
       echo_error "Talisman is not compatible with other hooks right now, sorry."
       echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
       exit $E_HOOK_ALREADY_PRESENT
     fi
-    
+
     mkdir -p "$TEMPLATE_DIR/hooks"
 
     download_and_verify
 
-    cp $DOWNLOADED_BINARY "$TEMPLATE_DIR/hooks/pre-push"
-    chmod +x "$TEMPLATE_DIR/hooks/pre-push"
-    
-    echo -ne $(tput setaf 2)
-    echo "Talisman successfully installed."
-    echo -ne $(tput sgr0)
+    cp "$DOWNLOADED_BINARY" "$TEMPLATE_DIR/hooks/${HOOK_NAME}"
+    chmod +x "$TEMPLATE_DIR/hooks/${HOOK_NAME}"
+
+    echo_success "Talisman successfully installed."
   }
 
   if [ ! -d "./.git" ]; then
