@@ -142,27 +142,10 @@ run() {
 
     cat >"$REPO_HOOK_TARGET" <<EOF
 #!/bin/bash
-function echo_debug() {
-	MSG="\$@"
-	[[ -n "\${TALISMAN_DEBUG}" ]] && echo "\${MSG}"
-}
-
-function toLower(){
-	echo "\$1" | awk '{print tolower(\$0)}'
-}
-
-# Don't run talisman checks in a git repo, if we find a .talisman_skip or .talisman_skip.pre-<commit/push> file in the repo
-if [[ -f .talisman_skip || -f .talisman_skip.${HOOK_NAME} ]]; then
-	echo_debug "Found skip file. Not performing checks"
-	exit 0
-fi
-
-DEBUG_OPTS=""
-[[ \$(toLower "\${TALISMAN_DEBUG}") == "true" ]] && DEBUG_OPTS="-d"
-
+[[ -n "\${TALISMAN_DEBUG}" ]] && DEBUG_OPTS="-d"
 CMD="${PWD}/${TALISMAN_BIN_TARGET} \${DEBUG_OPTS} --githook ${HOOK_NAME}"
-echo_debug "ARGS are \$@"
-echo_debug "Executing: \${CMD}"
+[[ -n "\${TALISMAN_DEBUG}" ]] && echo "ARGS are \$@"
+[[ -n "\${TALISMAN_DEBUG}" ]] && echo "Executing: \${CMD}"
 \${CMD}
 EOF
     chmod +x "$REPO_HOOK_TARGET"
