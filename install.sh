@@ -32,6 +32,8 @@ run() {
   EXPECTED_BINARY_SHA_LINUX_AMD64="22b1aaee860b27306bdf345a0670f138830bcf7fbe16c75be186fe119e9d54b4"
   EXPECTED_BINARY_SHA_LINUX_X86="d0558d626a4ee1e90d2c2a5f3c69372a30b8f2c8e390a59cedc15585b0731bc4"
   EXPECTED_BINARY_SHA_DARWIN_AMD64="f30e1ec6fb3e1fc33928622f17d6a96933ca63d5ab322f9ba869044a3075ffda"
+  EXPECTED_BINARY_SHA_WINDOWS_AMD64="697cebb5988ee002b630b814c6c6f5d49d921c9c3aad4545c4a77d749e5ae833"
+  EXPECTED_BINARY_SHA_WINDOWS_X86="98ee5ed4bb394096a643531b7b8d3e6e919cc56e4673add744b46036260527c3"
 
   declare DOWNLOADED_BINARY
 
@@ -54,29 +56,51 @@ run() {
     echo -ne $(tput sgr0)
   }
 
-  binary_arch_suffix() {
-    declare ARCHITECTURE
-    if [[ "$(uname -s)" == "Linux" ]]; then
-      ARCHITECTURE="linux"
-    elif [[ "$(uname -s)" == "Darwin" ]]; then
-      ARCHITECTURE="darwin"
-    else
-      echo_error "Talisman currently only supports Linux and Darwin systems."
-      echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
-      exit $E_UNSUPPORTED_ARCH
-    fi
+  	function operating_system() {
+    OS=$(uname -s)
+    case $OS in
+      "Linux")
+        echo "linux"
+        ;;
+      "Darwin")
+        echo "darwin"
+        ;;
+      MINGW32_NT-10.0-WOW*)
+        echo "windows"
+        ;;
+      MINGW64_NT-10.0*)
+        echo "windows"
+        ;;
+      *)
+        echo_error "Talisman currently only supports Windows, Linux and MacOS(darwin) systems."
+        echo_error "If this is a problem for you, please open an issue: https://github.com/${INSTALL_ORG_REPO}/issues/new"
+        exit $E_UNSUPPORTED_ARCH
+        ;;
+      esac
+}
 
-    if [[ "$(uname -m)" = "x86_64" ]]; then
-      ARCHITECTURE="${ARCHITECTURE}_amd64"
-    elif [[ "$(uname -m)" =~ '^i.?86$' ]]; then
-      ARCHITECTURE="${ARCHITECTURE}_386"
-    else
-      echo_error "Talisman currently only supports x86 and x86_64 architectures."
-      echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
-      exit $E_UNSUPPORTED_ARCH
-    fi
+   binary_arch_suffix() {
+    declare OS
+    OS=$(operating_system)
+		ARCH=$(uname -m)
+		case $ARCH in
+		"x86_64")
+			OS="${OS}_amd64"
+			;;
+		"i686" | "i386")
+			OS="${OS}_386"
+			;;
+		*)
+			echo_error "Talisman currently only supports x86 and x86_64 architectures."
+			echo_error "If this is a problem for you, please open an issue: https://github.com/${INSTALL_ORG_REPO}/issues/new"
+			exit $E_UNSUPPORTED_ARCH
+			;;
+		esac
 
-    echo $ARCHITECTURE
+		TALISMAN_BINARY_NAME="talisman_${OS}"
+		if [[ $OS == *"windows"* ]]; then
+			TALISMAN_BINARY_NAME="${TALISMAN_BINARY_NAME}.exe"
+		fi
   }
 
   download_and_verify() {
@@ -112,6 +136,12 @@ run() {
       ;;
     darwin_amd64)
       EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_DARWIN_AMD64"
+      ;;
+    windows_386)
+      EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_WINDOWS_X86"
+      ;;
+    windows_amd64)
+      EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_WINDOWS_AMD64"
       ;;
     esac
 
