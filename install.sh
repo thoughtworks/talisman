@@ -7,6 +7,7 @@
 
 set -euo pipefail
 
+DEBUG=${DEBUG:-''}
 HOOK_NAME="${1:-pre-push}"
 case "$HOOK_NAME" in
 pre-commit | pre-push) REPO_HOOK_TARGET=".git/hooks/${HOOK_NAME}" ;;
@@ -20,22 +21,21 @@ esac
 # user runs with curl|bash and curl fails in the middle of the download
 # (https://www.seancassidy.me/dont-pipe-to-your-shell.html)
 run() {
+  declare TALISMAN_BINARY_NAME
+
   IFS=$'\n'
 
   VERSION="v1.8.0"
   GITHUB_URL="https://github.com/thoughtworks/talisman"
-  BINARY_BASE_URL="$GITHUB_URL/releases/download/$VERSION/talisman"
+  BINARY_BASE_URL="$GITHUB_URL/releases/download/$VERSION"
   REPO_HOOK_BIN_DIR=".git/hooks/bin"
 
   DEFAULT_GLOBAL_TEMPLATE_DIR="$HOME/.git-templates"
 
-  EXPECTED_BINARY_SHA_LINUX_AMD64="22b1aaee860b27306bdf345a0670f138830bcf7fbe16c75be186fe119e9d54b4"
-  EXPECTED_BINARY_SHA_LINUX_X86="d0558d626a4ee1e90d2c2a5f3c69372a30b8f2c8e390a59cedc15585b0731bc4"
-  EXPECTED_BINARY_SHA_DARWIN_AMD64="f30e1ec6fb3e1fc33928622f17d6a96933ca63d5ab322f9ba869044a3075ffda"
-  EXPECTED_BINARY_SHA_WINDOWS_AMD64="697cebb5988ee002b630b814c6c6f5d49d921c9c3aad4545c4a77d749e5ae833"
-  EXPECTED_BINARY_SHA_WINDOWS_X86="98ee5ed4bb394096a643531b7b8d3e6e919cc56e4673add744b46036260527c3"
-
   declare DOWNLOADED_BINARY
+  TEMP_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'talisman_setup')
+	trap "rm -r ${TEMP_DIR}" EXIT
+	chmod 0700 ${TEMP_DIR}
 
   E_HOOK_ALREADY_PRESENT=1
   E_CHECKSUM_MISMATCH=2
@@ -49,14 +49,24 @@ run() {
     echo "$1" >&2
     echo -ne $(tput sgr0) >&2
   }
+  export -f echo_error
+
+	function echo_debug() {
+		[[ -z "${DEBUG}" ]] && return
+		echo -ne $(tput setaf 3) >&2
+		echo "$1" >&2
+		echo -ne $(tput sgr0) >&2
+	}
+	export -f echo_debug
 
   echo_success() {
     echo -ne $(tput setaf 2)
     echo "$1" >&2
     echo -ne $(tput sgr0)
   }
+  export -f echo_success
 
-  	function operating_system() {
+  operating_system() {
     OS=$(uname -s)
     case $OS in
       "Linux")
@@ -103,57 +113,33 @@ run() {
 		fi
   }
 
-  download_and_verify() {
-    if [[ ! -x "$(which curl 2>/dev/null)" ]]; then
-      echo_error "This script requires 'curl' to download the Talisman binary."
-      exit $E_DEPENDENCY_NOT_FOUND
-    fi
-    if [[ ! -x "$(which shasum 2>/dev/null)" ]]; then
-      echo_error "This script requires 'shasum' to verify the Talisman binary."
-      exit $E_DEPENDENCY_NOT_FOUND
-    fi
+	function download() {
+		OBJECT=$1
+		DOWNLOADED_BINARY="$TEMP_DIR/talisman"
+		DOWNLOAD_URL=${BINARY_BASE_URL}/${OBJECT}
+		echo "Downloading ${OBJECT} from ${DOWNLOAD_URL}"
+		curl --location --silent ${DOWNLOAD_URL} >${DOWNLOADED_BINARY}
+	}
 
-    echo 'Downloading and verifying binary...'
-    echo
+  function verify_checksum() {
+		FILE_NAME=$1
+		CHECKSUM_FILE_NAME='checksums'
+		echo_debug "Verifying checksum for ${FILE_NAME}"
+		download ${CHECKSUM_FILE_NAME}
 
-    TMP_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'talisman')
-    trap 'rm -r $TMP_DIR' EXIT
-    chmod 0700 $TMP_DIR
+		pushd ${TEMP_DIR} >/dev/null 2>&1
+		grep ${TALISMAN_BINARY_NAME} ${CHECKSUM_FILE_NAME} >${CHECKSUM_FILE_NAME}.single
+		shasum -a 256 -c ${CHECKSUM_FILE_NAME}.single
+		popd >/dev/null 2>&1
+		echo_debug "Checksum verification successful!"
+		echo
+	}
 
-    ARCH_SUFFIX=$(binary_arch_suffix)
-
-    curl --location --silent "${BINARY_BASE_URL}_${ARCH_SUFFIX}" >"${TMP_DIR}/talisman"
-
-    DOWNLOAD_SHA=$(shasum -b -a256 "${TMP_DIR}/talisman" | cut -d' ' -f1)
-
-    declare EXPECTED_BINARY_SHA
-    case "$ARCH_SUFFIX" in
-    linux_386)
-      EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_LINUX_X86"
-      ;;
-    linux_amd64)
-      EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_LINUX_AMD64"
-      ;;
-    darwin_amd64)
-      EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_DARWIN_AMD64"
-      ;;
-    windows_386)
-      EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_WINDOWS_X86"
-      ;;
-    windows_amd64)
-      EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_WINDOWS_AMD64"
-      ;;
-    esac
-
-    if [[ ! "$DOWNLOAD_SHA" == "$EXPECTED_BINARY_SHA" ]]; then
-      echo_error "Uh oh... SHA256 checksum did not verify. Binary download must have been corrupted in some way."
-      echo_error "Expected SHA: $EXPECTED_BINARY_SHA"
-      echo_error "Download SHA: $DOWNLOAD_SHA"
-      exit $E_CHECKSUM_MISMATCH
-    fi
-
-    DOWNLOADED_BINARY="$TMP_DIR/talisman"
-  }
+	function download_and_verify() {
+		binary_arch_suffix
+		download ${TALISMAN_BINARY_NAME}
+		verify_checksum ${TALISMAN_BINARY_NAME}
+	}
 
   install_to_repo() {
     if [[ -x "$REPO_HOOK_TARGET" ]]; then
