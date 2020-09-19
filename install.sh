@@ -115,10 +115,9 @@ run() {
 
 	function download() {
 		OBJECT=$1
-		DOWNLOADED_BINARY="$TEMP_DIR/talisman"
 		DOWNLOAD_URL=${BINARY_BASE_URL}/${OBJECT}
-		echo "Downloading ${OBJECT} from ${DOWNLOAD_URL}"
-		curl --location --silent ${DOWNLOAD_URL} >${DOWNLOADED_BINARY}
+		echo_debug "Downloading ${OBJECT} from ${DOWNLOAD_URL}"
+		curl --location --silent ${DOWNLOAD_URL} >"$TEMP_DIR/${OBJECT}"
 	}
 
   function verify_checksum() {
@@ -137,8 +136,9 @@ run() {
 
 	function download_and_verify() {
 		binary_arch_suffix
-		download ${TALISMAN_BINARY_NAME}
-		verify_checksum ${TALISMAN_BINARY_NAME}
+		download "${TALISMAN_BINARY_NAME}"
+		DOWNLOADED_BINARY="${TEMP_DIR}/${TALISMAN_BINARY_NAME}"
+		verify_checksum "${TALISMAN_BINARY_NAME}"
 	}
 
   install_to_repo() {
