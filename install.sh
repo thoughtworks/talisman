@@ -25,8 +25,8 @@ run() {
 
   IFS=$'\n'
 
-  VERSION="v1.8.0"
   GITHUB_URL="https://github.com/thoughtworks/talisman"
+  VERSION=$(curl --silent "https://api.github.com/repos/thoughtworks/talisman/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
   BINARY_BASE_URL="$GITHUB_URL/releases/download/$VERSION"
   REPO_HOOK_BIN_DIR=".git/hooks/bin"
 
