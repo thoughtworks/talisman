@@ -32,6 +32,8 @@ run() {
   EXPECTED_BINARY_SHA_LINUX_AMD64="22b1aaee860b27306bdf345a0670f138830bcf7fbe16c75be186fe119e9d54b4"
   EXPECTED_BINARY_SHA_LINUX_X86="d0558d626a4ee1e90d2c2a5f3c69372a30b8f2c8e390a59cedc15585b0731bc4"
   EXPECTED_BINARY_SHA_DARWIN_AMD64="f30e1ec6fb3e1fc33928622f17d6a96933ca63d5ab322f9ba869044a3075ffda"
+  EXPECTED_BINARY_SHA_WINDOWS_X86="98ee5ed4bb394096a643531b7b8d3e6e919cc56e4673add744b46036260527c3"
+  EXPECTED_BINARY_SHA_WINDOWS_AMD64="697cebb5988ee002b630b814c6c6f5d49d921c9c3aad4545c4a77d749e5ae833"
 
   declare DOWNLOADED_BINARY
 
@@ -56,19 +58,24 @@ run() {
 
   binary_arch_suffix() {
     declare ARCHITECTURE
-    if [[ "$(uname -s)" == "Linux" ]]; then
+    UNAME_S="$(uname -s)"
+    UNAME_O="$(uname -o)"
+    if [[ "$UNAME_S" == "Linux" ]]; then
       ARCHITECTURE="linux"
-    elif [[ "$(uname -s)" == "Darwin" ]]; then
+    elif [[ "$UNAME_S" == "Darwin" ]]; then
       ARCHITECTURE="darwin"
+    elif [[ "$UNAME_O" == "Msys" ]]; then
+      ARCHITECTURE="windows"
     else
-      echo_error "Talisman currently only supports Linux and Darwin systems."
+      echo_error "Talisman currently only supports Linux, Windows (Git Bash) and Darwin systems."
+      echo_error "OS Detected: ${UNAME_S}, ${UNAME_O}."
       echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
       exit $E_UNSUPPORTED_ARCH
     fi
 
     if [[ "$(uname -m)" = "x86_64" ]]; then
       ARCHITECTURE="${ARCHITECTURE}_amd64"
-    elif [[ "$(uname -m)" =~ '^i.?86$' ]]; then
+    elif [[ "$(uname -m)" =~ ^i.?86$ ]]; then
       ARCHITECTURE="${ARCHITECTURE}_386"
     else
       echo_error "Talisman currently only supports x86 and x86_64 architectures."
@@ -94,11 +101,18 @@ run() {
 
     TMP_DIR=$(mktemp -d 2>/dev/null || mktemp -d -t 'talisman')
     trap 'rm -r $TMP_DIR' EXIT
-    chmod 0700 $TMP_DIR
+    chmod 0700 "$TMP_DIR"
 
     ARCH_SUFFIX=$(binary_arch_suffix)
 
-    curl --location --silent "${BINARY_BASE_URL}_${ARCH_SUFFIX}" >"${TMP_DIR}/talisman"
+    declare DOWNLOAD_SUFFIX
+    if [[ "$ARCH_SUFFIX" =~ ^windows ]]; then
+      DOWNLOAD_SUFFIX="${ARCH_SUFFIX}.exe"
+    else
+      DOWNLOAD_SUFFIX="$ARCH_SUFFIX"
+    fi;
+
+    curl --location --silent "${BINARY_BASE_URL}_${DOWNLOAD_SUFFIX}" >"${TMP_DIR}/talisman"
 
     DOWNLOAD_SHA=$(shasum -b -a256 "${TMP_DIR}/talisman" | cut -d' ' -f1)
 
@@ -110,6 +124,12 @@ run() {
     linux_amd64)
       EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_LINUX_AMD64"
       ;;
+    windows_386)
+      EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_WINDOWS_X86"
+      ;;
+    windows_amd64)
+      EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_WINDOWS_AMD64"
+      ;;
     darwin_amd64)
       EXPECTED_BINARY_SHA="$EXPECTED_BINARY_SHA_DARWIN_AMD64"
       ;;
@@ -117,8 +137,10 @@ run() {
 
     if [[ ! "$DOWNLOAD_SHA" == "$EXPECTED_BINARY_SHA" ]]; then
       echo_error "Uh oh... SHA256 checksum did not verify. Binary download must have been corrupted in some way."
-      echo_error "Expected SHA: $EXPECTED_BINARY_SHA"
-      echo_error "Download SHA: $DOWNLOAD_SHA"
+      echo_error "Arch Suffix: ${ARCH_SUFFIX}"
+      echo_error "Expected SHA: ${EXPECTED_BINARY_SHA}"
+      echo_error "Download SHA: ${DOWNLOAD_SHA}"
+      echo_error "Downloaded binary: ${TMP_DIR}/talisman"
       exit $E_CHECKSUM_MISMATCH
     fi
 
@@ -142,8 +164,8 @@ run() {
 
     cat >"$REPO_HOOK_TARGET" <<EOF
 #!/bin/bash
-[[ -n "\${TALISMAN_DEBUG}" ]] && DEBUG_OPTS="-d"
-CMD="${PWD}/${TALISMAN_BIN_TARGET} \${DEBUG_OPTS} --githook ${HOOK_NAME}"
+[[ -n "\${TALISMAN_DEBUG}" ]] && TALISMAN_DEBUG_OPTS="-d"
+CMD="${PWD}/${TALISMAN_BIN_TARGET} \${TALISMAN_DEBUG_OPTS} --githook ${HOOK_NAME}"
 [[ -n "\${TALISMAN_DEBUG}" ]] && echo "ARGS are \$@"
 [[ -n "\${TALISMAN_DEBUG}" ]] && echo "Executing: \${CMD}"
 \${CMD}
