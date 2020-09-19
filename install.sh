@@ -164,11 +164,12 @@ run() {
 
     cat >"$REPO_HOOK_TARGET" <<EOF
 #!/bin/bash
-[[ -n "\${TALISMAN_DEBUG}" ]] && TALISMAN_DEBUG_OPTS="-d"
-CMD="${PWD}/${TALISMAN_BIN_TARGET} \${TALISMAN_DEBUG_OPTS} --githook ${HOOK_NAME}"
+TALISMAN_OPTS="--githook ${HOOK_NAME}"
+[[ -n "\${TALISMAN_DEBUG}" ]] && TALISMAN_OPTS="-d \${TALISMAN_OPTS}"
+TALISMAN_BIN="${PWD}/${TALISMAN_BIN_TARGET}"
 [[ -n "\${TALISMAN_DEBUG}" ]] && echo "ARGS are \$@"
-[[ -n "\${TALISMAN_DEBUG}" ]] && echo "Executing: \${CMD}"
-\${CMD}
+[[ -n "\${TALISMAN_DEBUG}" ]] && echo "Executing: \${TALISMAN_BIN} \${TALISMAN_OPTS}"
+"\$TALISMAN_BIN" \$TALISMAN_OPTS
 EOF
     chmod +x "$REPO_HOOK_TARGET"
 
