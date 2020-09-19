@@ -116,7 +116,7 @@ run() {
 	function download() {
 		OBJECT=$1
 		DOWNLOAD_URL=${BINARY_BASE_URL}/${OBJECT}
-		echo_debug "Downloading ${OBJECT} from ${DOWNLOAD_URL}"
+		echo "Downloading ${OBJECT} from ${DOWNLOAD_URL}"
 		curl --location --silent ${DOWNLOAD_URL} >"$TEMP_DIR/${OBJECT}"
 	}
 
@@ -144,8 +144,9 @@ run() {
   install_to_repo() {
     if [[ -x "$REPO_HOOK_TARGET" ]]; then
       echo_error "Oops, it looks like you already have a ${HOOK_NAME} hook installed at '${REPO_HOOK_TARGET}'."
-      echo_error "Talisman is not compatible with other hooks right now, sorry."
-      echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
+      echo_error "If this is expected, you should consider setting-up a tool to allow git hook chaining,"
+      echo_error "like pre-commit (brew install pre-commit) or Husky or any other tool of your choice."
+      echo_error "WARNING! Talisman hook not installed."
       exit $E_HOOK_ALREADY_PRESENT
     fi
 
@@ -218,8 +219,9 @@ EOF
 
     if [ -f "$TEMPLATE_DIR/hooks/${HOOK_NAME}" ]; then
       echo_error "Oops, it looks like you already have a ${HOOK_NAME} hook installed at '$TEMPLATE_DIR/hooks/${HOOK_NAME}'."
-      echo_error "Talisman is not compatible with other hooks right now, sorry."
-      echo_error "If this is a problem for you, please open an issue: https://github.com/thoughtworks/talisman/issues/new"
+				echo_error "If this is expected, you should consider setting-up a tool to allow git hook chaining,"
+				echo_error "like pre-commit (brew install pre-commit) or Husky or any other tool of your choice."
+				echo_error "WARNING! Talisman hook not installed."
       exit $E_HOOK_ALREADY_PRESENT
     fi
 
