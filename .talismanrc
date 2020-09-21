@@ -20,7 +20,7 @@ fileignoreconfig:
 - filename: detector/pattern_detector_test.go
   checksum: 4d70b790f28f2d23d506f808d489aa43f1efd2514549ae6a83a535e1223382e3
 - filename: detector/severity/severity_config.go
-  checksum: 7e5442d7ee07a6fad12cf636c5dc2880c69b9593fd286e44d567e178ffdd0194
+  checksum: b66d979756af47c780b1fda356f48b1ab354488ae77f7e93283a5ec360ac93a0
 - filename: global_install_scripts/install.bash
   checksum: 5d659125ecbe619ea99f5bc71c2d761b586ce3ec9ccab7683ee54f4ebde9f748
 - filename: upx_compress.sh

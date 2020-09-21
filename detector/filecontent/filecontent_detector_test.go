@@ -79,20 +79,6 @@ func TestShouldFlagPotentialAWSSecretKeys(t *testing.T) {
 	assert.Len(t, results.Results, 1)
 }
 
-func TestShouldNotFlagBase64ContentIfThresholdIsHigher(t *testing.T) {
-	const awsSecretAccessKey string = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-	results := helpers.NewDetectionResults()
-	content := []byte(awsSecretAccessKey)
-	filename := "filename"
-	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
-	var talismanRCContents = "threshold: high"
-	talismanRCWithThreshold := talismanrc.NewTalismanRC([]byte(talismanRCContents))
-
-	NewFileContentDetector(talismanRC).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanRCWithThreshold), additions, talismanRCWithThreshold, results)
-	assert.False(t, results.HasFailures(), "Expected file to not flag base64 encoded texts if threshold is higher")
-	assert.True(t, results.HasWarnings(), "Expected file to have warngings for base64 encoded texts if threshold is higher")
-}
-
 func TestShouldFlagPotentialSecretWithoutTrimmingWhenLengthLessThan50Characters(t *testing.T) {
 	const secret string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9asdfa"
 	results := helpers.NewDetectionResults()
@@ -174,10 +160,10 @@ func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
 	assert.Len(t, results.Results, 1)
 }
 
-func TestShouldNotFlagSecretsEncodedInHexIfAboveThreshold(t *testing.T) {
-	const hex string = "68656C6C6F20776F726C6421"
+func TestShouldNotFlagPotentialCreditCardNumberIfAboveThreshold(t *testing.T) {
+	const creditCardNumber string = "340000000000009"
 	results := helpers.NewDetectionResults()
-	content := []byte(hex)
+	content := []byte(creditCardNumber)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 
