@@ -54,7 +54,7 @@ function check_and_upgrade_talisman_binary() {
 		LATEST_VERSION=$(curl --connect-timeout $TALISMAN_UPGRADE_CONNECT_TIMEOUT -Is https://github.com/${ORG_REPO}/releases/latest | grep -iE "^location:" | grep -o '[^/]\+$' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')
 		CURRENT_VERSION=$(${TALISMAN_BINARY} --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')
 		if [ -z "$LATEST_VERSION" ]; then
-			echo_warning "Failed to retrieve latest version, skipping update."
+			echo_warning "Failed to retrieve latest Talisman version, skipping update."
 		elif [ "$LATEST_VERSION" != "$CURRENT_VERSION" ]; then
 			echo ""
 			echo_warning "Your version of Talisman is outdated. Updating Talisman to v${LATEST_VERSION}"
