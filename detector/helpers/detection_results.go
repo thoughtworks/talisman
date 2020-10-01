@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"runtime"
 	"strings"
 	"talisman/detector/severity"
@@ -319,6 +320,7 @@ func (r *DetectionResults) suggestTalismanRC(filePaths []string, promptContext p
 	if promptContext.Interactive && runtime.GOOS != "windows" {
 		confirmedEntries := getUserConfirmation(entriesToAdd, promptContext)
 		talismanrc.Get().AddFileIgnores(confirmedEntries)
+		exec.Command("git", "add", ".talismanrc").CombinedOutput()
 	} else {
 		printTalismanIgnoreSuggestion(entriesToAdd)
 		return
