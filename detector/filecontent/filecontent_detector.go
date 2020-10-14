@@ -76,7 +76,7 @@ type content struct {
 	severity    severity.Severity
 }
 
-func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *helpers.DetectionResults) {
+func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *helpers.DetectionResults, additionCompletionCallback func()) {
 	contentTypes := []struct {
 		contentType
 		fn
@@ -108,6 +108,7 @@ func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentA
 	for _, addition := range currentAdditions {
 		go func(addition gitrepo.Addition) {
 			defer waitGroup.Done()
+			defer additionCompletionCallback()
 			if ignoreConfig.Deny(addition, "filecontent") || comparator.IsScanNotRequired(addition) {
 				ignoredFilePaths <- addition.Path
 				return

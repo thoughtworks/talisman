@@ -10,5 +10,5 @@ import (
 //Detectors are expected to honor the ignores that are passed in and log them in the results
 //Detectors are expected to signal any errors to the results
 type Detector interface {
-	Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *helpers.DetectionResults)
+	Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *helpers.DetectionResults, additionCompletionCallback func())
 }

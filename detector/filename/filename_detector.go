@@ -83,13 +83,14 @@ func NewFileNameDetector(patternsWithSeverity []*severity.PatternSeverity, thres
 }
 
 //Test tests the fileNames of the Additions to ensure that they don't look suspicious
-func (fd FileNameDetector) Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *helpers.DetectionResults) {
+func (fd FileNameDetector) Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *helpers.DetectionResults, additionCompletionCallback func()) {
 	for _, addition := range currentAdditions {
 		if ignoreConfig.Deny(addition, "filename") || comparator.IsScanNotRequired(addition) {
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
 			}).Info("Ignoring addition as it was specified to be ignored.")
 			result.Ignore(addition.Path, "filename")
+			additionCompletionCallback()
 			continue
 		}
 		for _, patternWithSeverity := range fd.flagPatterns {
@@ -106,5 +107,6 @@ func (fd FileNameDetector) Test(comparator helpers.ChecksumCompare, currentAddit
 				}
 			}
 		}
+		additionCompletionCallback()
 	}
 }
