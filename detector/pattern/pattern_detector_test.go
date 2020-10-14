@@ -23,6 +23,8 @@ func TestShouldDetectPasswordPatterns(t *testing.T) {
 	for i := 0; i < len(values); i++ {
 		shouldPassDetectionOfSecretPattern(filename, []byte(strings.ToTitle(values[i])+":UnsafeString"), t)
 		shouldPassDetectionOfSecretPattern(filename, []byte(values[i]+"=UnsafeString"), t)
+		shouldPassDetectionOfSecretPattern(filename, []byte("."+values[i]+"=randomStringGoesHere}"), t)
+		shouldPassDetectionOfSecretPattern(filename, []byte(":"+values[i]+" randomStringGoesHere"), t)
 		shouldPassDetectionOfSecretPattern(filename, []byte("\"SERVER_"+strings.ToUpper(values[i])+"\" : UnsafeString"), t)
 		shouldPassDetectionOfSecretPattern(filename, []byte(values[i]+"2-string : UnsafeString"), t)
 		shouldPassDetectionOfSecretPattern(filename, []byte("<"+values[i]+" data=123> randomStringGoesHere </"+values[i]+">"), t)
