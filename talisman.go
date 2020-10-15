@@ -92,7 +92,6 @@ func main() {
 		checksum:        checksum,
 		reportdirectory: reportdirectory,
 		scanWithHtml:    scanWithHtml,
-
 	}
 
 	prompter := prompt.NewPrompt()
