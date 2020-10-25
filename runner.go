@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
+	"strconv"
+	"strings"
 	"talisman/checksumcalculator"
 	"talisman/detector"
 	"talisman/detector/helpers"
@@ -46,14 +49,30 @@ func (r *Runner) RunWithoutErrors(promptContext prompt.PromptContext) int {
 	return r.exitStatus()
 }
 
+func getCommitCount() uint64 {
+	out, err := exec.Command("git", "rev-list", "--all", "--count").CombinedOutput()
+	if err != nil {
+		log.Fatal(err)
+	}
+	result := strings.Split(string(out), "\n")[0]
+	count, _ := strconv.ParseUint(result, 10, 64)
+	return count
+}
+
 //Scan scans git commit history for potential secrets and returns 0 or 1 as exit code
 func (r *Runner) Scan(reportDirectory string) int {
 
 	fmt.Printf("\n\n")
 	utility.CreateArt("Running Scan..")
-	additions := scanner.GetAdditions()
-	ignores := &talismanrc.TalismanRC{}
-	detector.DefaultChain(ignores).Test(additions, ignores, r.results)
+	commitsToScanAtATime := uint64(250)
+	totalNumberOfCommits := getCommitCount()
+	fmt.Println("Number of commits to scan", totalNumberOfCommits)
+	for commitNumber := uint64(0); commitNumber < totalNumberOfCommits; commitNumber += commitsToScanAtATime {
+		additions := scanner.GetAdditionsInCommitRange(commitNumber, commitsToScanAtATime)
+		fmt.Printf("Scanning <=%d Commits after %dth commit\n", commitsToScanAtATime, commitNumber)
+		ignores := &talismanrc.TalismanRC{}
+		detector.DefaultChain(ignores).Test(additions, ignores, r.results)
+	}
 	reportsPath, err := report.GenerateReport(r.results, reportDirectory)
 	if err != nil {
 		log.Printf("error while generating report: %v", err)
