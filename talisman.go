@@ -92,6 +92,7 @@ func main() {
 		githook:         githook,
 		pattern:         pattern,
 		scan:            scan,
+		ignoreHistory:   ignoreHistory,
 		checksum:        checksum,
 		reportdirectory: reportdirectory,
 		scanWithHtml:    scanWithHtml,
