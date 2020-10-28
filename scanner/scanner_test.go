@@ -1,9 +1,16 @@
 package scanner
 
 import (
+	"github.com/Sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"talisman/git_testing"
 	"testing"
 )
+
+func init() {
+	git_testing.Logger = logrus.WithField("Environment", "Debug")
+	git_testing.Logger.Debug("Accetpance test started")
+}
 
 func Test_getBlobsFromChannel(t *testing.T) {
 	ch := make(chan []string)

@@ -404,6 +404,7 @@ If you execute `talisman` on the command line, you will be able to view all the 
   -c, --checksum string          checksum calculator calculates checksum and suggests .talismanrc format
   -d, --debug                    enable debug mode (warning: very verbose)
   -g, --githook string           either pre-push or pre-commit (default "pre-push")
+      --ignoreHistory           scanner scans all files on current head, will not scan through git commit history      
   -i, --interactive              interactively update talismanrc (only makes sense with -g/--githook)
   -p, --pattern string           pattern (glob-like) of files to scan (ignores githooks)
   -r, --reportdirectory string   directory where the scan reports will be stored

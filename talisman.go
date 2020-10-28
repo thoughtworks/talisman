@@ -26,6 +26,7 @@ var (
 	//Version : Version of talisman
 	Version         = "Development Build"
 	scan            bool
+	ignoreHistory   bool
 	checksum        string
 	reportdirectory string
 	scanWithHtml    bool
@@ -48,6 +49,7 @@ type options struct {
 	githook         string
 	pattern         string
 	scan            bool
+	ignoreHistory   bool
 	checksum        string
 	reportdirectory string
 	scanWithHtml    bool
@@ -60,6 +62,7 @@ func main() {
 	flag.StringVarP(&pattern, "pattern", "p", "", "pattern (glob-like) of files to scan (ignores githooks)")
 	flag.StringVarP(&githook, "githook", "g", PrePush, "either pre-push or pre-commit")
 	flag.BoolVarP(&scan, "scan", "s", false, "scanner scans the git commit history for potential secrets")
+	flag.BoolVar(&ignoreHistory, "ignoreHistory", false, "scanner scans all files on current head, will not scan through git commit history")
 	flag.StringVarP(&checksum, "checksum", "c", "", "checksum calculator calculates checksum and suggests .talismanrc format")
 	flag.StringVarP(&reportdirectory, "reportdirectory", "r", "", "directory where the scan reports will be stored")
 	flag.BoolVarP(&scanWithHtml, "scanWithHtml", "w", false, "generate html report (**Make sure you have installed talisman_html_report to use this, as mentioned in Readme**)")
@@ -122,10 +125,10 @@ func run(stdin io.Reader, _options options, promptContext prompt.PromptContext) 
 		return NewRunner(make([]gitrepo.Addition, 0)).RunChecksumCalculator(strings.Fields(_options.checksum))
 	} else if _options.scan {
 		log.Infof("Running scanner")
-		return NewRunner(make([]gitrepo.Addition, 0)).Scan(_options.reportdirectory)
+		return NewRunner(make([]gitrepo.Addition, 0)).Scan(_options.reportdirectory, _options.ignoreHistory)
 	} else if _options.scanWithHtml {
 		log.Infof("Running scanner with html report")
-		return NewRunner(make([]gitrepo.Addition, 0)).Scan("talisman_html_report")
+		return NewRunner(make([]gitrepo.Addition, 0)).Scan("talisman_html_report", _options.ignoreHistory)
 	} else if _options.pattern != "" {
 		log.Infof("Running %s pattern", _options.pattern)
 		directoryHook := NewDirectoryHook()

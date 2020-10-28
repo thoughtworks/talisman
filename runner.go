@@ -47,11 +47,11 @@ func (r *Runner) RunWithoutErrors(promptContext prompt.PromptContext) int {
 }
 
 //Scan scans git commit history for potential secrets and returns 0 or 1 as exit code
-func (r *Runner) Scan(reportDirectory string) int {
+func (r *Runner) Scan(reportDirectory string, ignoreHistory bool) int {
 
 	fmt.Printf("\n\n")
 	utility.CreateArt("Running Scan..")
-	additions := scanner.GetAdditions()
+	additions := scanner.GetAdditions(ignoreHistory)
 	ignores := &talismanrc.TalismanRC{}
 	detector.DefaultChain(ignores).Test(additions, ignores, r.results)
 	reportsPath, err := report.GenerateReport(r.results, reportDirectory)
