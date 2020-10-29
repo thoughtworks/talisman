@@ -14,7 +14,7 @@ It validates the outgoing changeset for things that look suspicious - such as po
 Talisman can also be used as a repository history scanner to detect secrets that have already been checked in, so that you can take an informed decision to safeguard secrets.  
 {: .fs-6 .fw-300 }
 
-[Get started now](#getting-started){: .btn .fs-5 .mb-4 .mb-md-0 } [View on GitHub](https://github.com/thoughtworks/talisman){: .btn .btn-purple .fs-5 .mb-4 .mb-md-0 .mr-2 }
+[Get started now](#getting-started){: .btn .btn-grey-lt .fs-5 .mb-4 .mb-md-0 } [View on GitHub](https://github.com/thoughtworks/talisman){: .btn .btn-blue .fs-5 .mb-4 .mb-md-0 .mr-2 }
 
 ---
 
@@ -25,8 +25,8 @@ It supports MAC OSX, Linux and Windows 10.
 
 Follow the quick links below based on your use-case:
 1. [Install Talisman](#installation)
-2. Use Talisman as a pre-commit/pre-push hook 
-3. Use Talisman as a repository scanner
+2. [Use Talisman as a pre-commit/pre-push hook](#as-a-hook)
+3. [Use Talisman as a repository scanner](#as-a-git-scanner)
 
 You can also follow the links given in the menu options for a more detailed navigation.
 
@@ -38,7 +38,7 @@ Created by [ThoughtWorks](https://www.thoughtworks.com) as an [open-sourced proj
 
 ### License
 
-Just the Docs is distributed by an [MIT license](https://github.com/thoughtworks/talisman/blob/master/LICENSE).
+Talisman is distributed by an [MIT license](https://github.com/thoughtworks/talisman/blob/master/LICENSE).
 
 ### Contributing
 

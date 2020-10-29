@@ -3,6 +3,7 @@ layout: default
 title: Single Repo Installation
 parent: Installation
 nav_order: 2
+has_children: true
 description: "Install hook in a single repository" 
 ---
 
@@ -23,17 +24,3 @@ cd my-git-project
 ~/install-talisman.sh
 ```
 
-### Handling existing hooks
-Talisman will need to be chained with any existing git hooks.You can use [pre-commit](https://pre-commit.com) git hooks framework to handle this.
-
-Add this to your `.pre-commit-config.yaml` (be sure to update `rev` to point to
-a real git revision!)
-
-```yaml
--   repo: https://github.com/thoughtworks/talisman
-    rev: ''  # Update me!
-    hooks:
-    # either `commit` or `push` support
-    -   id: talisman-commit
-    # -   id: talisman-push
-```
