@@ -16,10 +16,10 @@ When you regularly have too many files that get are flagged by talisman hook, wh
 You can invoke talisman in interactive mode by either of the 2 ways:
 
 1. Set environment variable `TALISMAN_INTERACTIVE` variable to be set as true in bash file by following the simple steps below.
- >i. Open your bash profile where your environment variables are set (.bashrc, .bash_profile, .profile or any other location)
- ><br>ii. You will see `TALISMAN_INTERACTIVE` variable under `# >>> talisman >>>`
- ><br>iii. If not already set to true, add `export TALISMAN_INTERACTIVE=true`
- ><br>iv. Don't forget to save and source the file
+<br>i. Open your bash profile where your environment variables are set (.bashrc, .bash_profile, .profile or any other location)
+<br>ii. You will see `TALISMAN_INTERACTIVE` variable under `# >>> talisman >>>`
+<br> iii. If not already set to true, add `export TALISMAN_INTERACTIVE=true`
+iv Don't forget to save and source the file
 
 2.  Alternatively, you can also invoke the interactive mode by using the CLI utility  
    (for using pre-commit hook)  
