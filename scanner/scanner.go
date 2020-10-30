@@ -13,8 +13,8 @@ type BlobsInCommits struct {
 }
 
 // GetAdditions will get all the additions for entire git history
-func GetAdditions() []gitrepo.Addition {
-	blobsInCommits := getBlobsInCommit()
+func GetAdditions(ignoreHistory bool) []gitrepo.Addition {
+	blobsInCommits := getBlobsInCommit(ignoreHistory)
 	var additions []gitrepo.Addition
 	for blob := range blobsInCommits.commits {
 		objectDetails := strings.Split(blob, "\t")
@@ -27,8 +27,8 @@ func GetAdditions() []gitrepo.Addition {
 	return additions
 }
 
-func getBlobsInCommit() BlobsInCommits {
-	commits := getAllCommits()
+func getBlobsInCommit(ignoreHistory bool) BlobsInCommits {
+	commits := getAllCommits(ignoreHistory)
 	blobsInCommits := newBlobsInCommit()
 	result := make(chan []string, len(commits))
 	for _, commit := range commits {
@@ -62,8 +62,12 @@ func getBlobsFromChannel(blobsInCommits BlobsInCommits, result chan []string) {
 	}
 }
 
-func getAllCommits() []string {
-	out, err := exec.Command("git", "log", "--all", "--pretty=%H").CombinedOutput()
+func getAllCommits(ignoreHistory bool) []string {
+	commitRange := "--all"
+	if ignoreHistory {
+		commitRange = "--max-count=1"
+	}
+	out, err := exec.Command("git", "log", commitRange, "--pretty=%H").CombinedOutput()
 	if err != nil {
 		log.Fatal(err)
 	}

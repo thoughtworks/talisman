@@ -283,6 +283,46 @@ func TestPatternFindsSecretInNestedFile(t *testing.T) {
 	})
 }
 
+func TestIgnoreHistoryDoesNotDetectRemovedSecrets(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		_options := options{
+			debug:   false,
+			pattern: "./**/*.*",
+			scan: true,
+			ignoreHistory: true,
+		}
+
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents("some-dir/should-not-be-included.txt", awsAccessKeyIDExample)
+		git.AddAndcommit("*", "Initial Commit")
+		git.RemoveFile("some-dir/should-not-be-included.txt")
+		git.AddAndcommit("*", "Removed secret")
+		git.CreateFileWithContents("some-dir/should-be-included.txt", "safeContents")
+		git.AddAndcommit("*", "Start of Scan")
+
+		assert.Equal(t, 0, runTalismanWithOptions(git, _options), "Expected run() to return 0 since secret was removed from head")
+	})
+}
+
+func TestIgnoreHistoryDetectsExistingIssuesOnHead(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		_options := options{
+			debug:   false,
+			pattern: "./**/*.*",
+			scan: true,
+			ignoreHistory: true,
+		}
+
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents("some-dir/file-with-issue.txt", awsAccessKeyIDExample)
+		git.AddAndcommit("*", "Commit with Secret")
+		git.CreateFileWithContents("some-dir/should-be-included.txt", "safeContents")
+		git.AddAndcommit("*", "Another Commit")
+
+		assert.Equal(t, 1, runTalismanWithOptions(git, _options), "Expected run() to return 1 since secret exists on head")
+	})
+}
+
 func runTalisman(git *git_testing.GitTesting) int {
 	_options := options{
 		debug:   false,
