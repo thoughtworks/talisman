@@ -1,0 +1,18 @@
+.cta {
+
+    .section-paragraph {
+        margin-bottom: 32px;
+    }
+}
+
+@include media( '>medium' ) {
+
+    .cta {
+
+        .section-paragraph {
+            margin-bottom: 32px;
+            padding-left: 72px;
+            padding-right: 72px;
+        }
+    }
+}

@@ -1,0 +1,112 @@
+// Font-size + Line-height + Kerning
+// Usage: @include font-size(1, mobile)
+// Add more true/false args to control what to output: font-size, line-height, kerning
+@mixin font-size($size, $elem, $font-size: true, $line-height: false, $kerning: false, $adjust-font-size: 0) {
+	@if not map-has-key(map-get($font__scale, $elem), $size) {
+		@warn "'#{$size}' key does not exist in array!";
+	}
+	@if ( $font-size != false ) {
+		font-size: get-font-size($size, $elem) + $adjust-font-size;
+	}
+	@if ( $line-height == true ) {
+		line-height: get-line-height($size, $elem);
+	}
+	@if ( $kerning == true ) {
+		letter-spacing: get-kerning($size, $elem);
+	}
+}
+
+// Font Family
+@mixin font-family($elem) {
+	font-family: unquote(get-font-family($elem));
+}
+
+// Font Weight
+@mixin font-weight($elem) {
+	font-weight: get-font-weight($elem);
+}
+
+// Anchor aspect
+@mixin anchor-aspect($type: 'main') {
+	@if ($type == 'main') { // Base
+		color: color(primary, 1);
+		text-decoration: none;
+
+		&:hover,
+		&:active {
+			outline: 0;
+			text-decoration: underline;
+		}
+	} @else if ($type == 'header') {
+		color: color(typography, 2i);
+		text-transform: uppercase;
+		text-decoration: none;
+
+		&:hover,
+		&:active {
+			color: color(typography, 1i);
+		}
+	} @else if ($type == 'footer') {
+		color: color(typography, 2i);
+		text-decoration: none;
+
+		&:hover,
+		&:active {
+			text-decoration: underline;
+		}
+	}
+}
+
+@mixin shadow($layout: false) {
+	@if ( $layout == 'dark' ) {
+		box-shadow: 0 20px 48px rgba(darken(color(bg, 1), 35%), .2);
+	} @else {
+		box-shadow: 0 20px 48px rgba(color(typography, 1), .16);
+	}
+}
+
+@mixin shadow-sm($layout: false) {
+	@if ( $layout == 'dark' ) {
+		box-shadow: 0 16px 24px rgba(darken(color(bg, 1), 35%), .2);
+	} @else {
+		box-shadow: 0 16px 24px rgba(color(typography, 1), .16);
+	}
+}
+
+@mixin divider-mix($layout: false) {
+	display: block;
+	height: 1px;
+	@if ( $layout == 'dark' ) {
+		background: color(bg, 2i);
+	} @else {
+		background: color(bg, 3);
+	}
+}
+
+@mixin divider($type: false, $layout: false) {
+	@if ( $type == 'before' ) {
+		position: relative;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			@include divider-mix($layout);
+		}
+	} @else if ($type == 'after') {
+		position: relative;
+
+		&::after {
+			content: '';
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			width: 100%;
+			@include divider-mix($layout);
+		}
+	} @else {
+		@include divider-mix($layout);
+	}
+}
