@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<!--[if lt IE 9 ]><html class="no-js oldie" lang="en"> <![endif]-->
+<!--[if IE 9 ]><html class="no-js oldie ie9" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+
+    <!--- basic page needs
+    ================================================== -->
+    <meta charset="utf-8">
+    <title>Talisman</title>
+    <meta name="description" content="">
+
+    <!-- mobile specific metas
+    ================================================== -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- CSS
+    ================================================== -->
+    <link rel="stylesheet" href="assets/css/base.css">
+    <link rel="stylesheet" href="assets/css/vendor.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;600;800&display=swap" rel="stylesheet">
+
+    <!-- Javascript
+    ================================================== -->
+    <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="assets/js/plugins.js"></script>
+    <script src="assets/js/main.js"></script>
+
+    <!-- favicons
+    ================================================== -->
+    <link rel="shortcut icon" href="assets/images/logo.png" type="image/x-icon">
+    <link rel="icon" href="assets/images/logo.png" type="image/x-icon">
+
+</head>
+
+
+<body id="top">
+
+<!-- header
+================================================== -->
+<header class="s-header">
+    <div class="text-center">
+
+    <div class="header-logo">
+        <a class="site-logo" href="index.html"><img src="assets/images/logo.png" alt="Homepage"></a>
+    </div>
+    </div>
+
+    <nav class="header-nav-wrap">
+        <ul class="header-nav">
+            <li><a href="#home" title="home">Home</a></li>
+            <li><a href="#description" title="about">About</a></li>
+            <li><a href="docs/" title="about">Documentation</a></li>
+            <li><a href="#contact" title="contact">Contact</a></li>
+        </ul>
+    </nav>
+
+    <a class="header-menu-toggle" href="#0"><span>Menu</span></a>
+
+</header> <!-- end s-header -->
+
+
+<!-- page header
+================================================== -->
+<section id="home" class="page-header page-hero" style="background-image:url(assets/images/logo-transparent.png);height:100%;">
+
+    <div class="row page-header__content">
+        <article class="col-full center">
+
+            <h1 class="page-header__title">
+                <a href="#0" title="TALISMAN">
+                    TALISMAN
+                </a>
+            </h1>
+            <div class="mx-auto">
+                <a href="docs/" class="btn btn--stroke page-header__btn">Read More <i class="im im-angle-right-circle" style="color: white"></i></a>
+                <a href="https://github.com/thoughtworks/talisman" class="btn btn--secondary page-header__btn">View Code <i class="im im-github" style="color: white"></i></a>
+            </div>
+            <div class="page-header__info">
+                <div class="page-header__cat">
+                    <a href="#0">Keep Your Secrets Secret</a>
+                </div>
+            </div>
+            <a href="#description">
+                <i class="im im-angle-down-circle" style="font-size: 400%"></i>
+            </a>
+        </article>
+    </div>
+
+</section> <!-- end page-header -->
+
+
+<!-- page description
+================================================== -->
+<section id="description" class="blog-content__main">
+    <span class="row blog-content__tags">
+        <div class="col-full">
+            <p class="blockquote"> Talisman is a tool that installs a hook to your repository to ensure that potential secrets or sensitive information do not leave the developer's workstation.
+        It validates the outgoing changeset for things that look suspicious - such as potential SSH keys, authorization tokens, private keys etc.
+        Talisman can also be used as a repository history scanner to detect secrets that have already been checked in, so that you can take an informed decision to safeguard secrets.
+            </p>
+        </div>
+    </span>
+
+
+</section>
+
+
+
+<!-- blog
+================================================== -->
+<section id="content-wrap" class="blog-content-wrap">
+
+    <div class="row blog-content">
+        <div class="col-full">
+
+            <div class="blog-list block-1-2 block-tab-full">
+
+                <article class="col-block">
+                    <h2 class="h01"><a href="docs/">Talisman in action!</a></h2>
+                    <div class="blog-cat">
+                        <a href="docs/">From installation to finding how Talisman works, look through the documentation for all you need</a>
+                    </div>
+                </article>
+
+                <article class="col-block">
+                    <h2 class="h01"><a href="https://github.com/thoughtworks/talisman">Contribute to Talisman</a></h2>
+                    <div class="blog-cat">
+                        <a href="https://github.com/thoughtworks/talisman">We are open-sourced and always love a shiny new contribution</a>
+                    </div>
+                </article>
+
+                <article class="col-block">
+                    <h2 class="h01"><a href="https://github.com/thoughtworks/talisman/issues">Raise an issue</a></h2>
+                    <div class="blog-cat">
+                        <a href="https://github.com/thoughtworks/talisman/issues">Facing a problem with Talisman? Find out if there is an existing issue. Tell us more...</a>
+                    </div>
+                </article>
+
+            </div> <!-- end blog-list -->
+
+        </div> <!-- end col-full -->
+    </div> <!-- end blog-content -->
+</section> <!-- end blog-content-wrap -->
+
+
+<!-- footer
+================================================== -->
+<footer>
+    <div class="row">
+        <div class="col-full">
+
+            <div class="footer-logo">
+                <a class="footer-site-logo" href="#0"><img src="assets/images/logo.png" alt="Homepage"></a>
+            </div>
+
+            <ul class="footer-social">
+                <li>
+                    <i class="im im-mail" aria-hidden="true"></i>
+                    <span style="bottom">talisman-maintainers@thoughtworks.com</span>
+                </li>
+                <span>© 2016-2020 ThoughtWorks, Inc.</span>
+            </ul>
+
+        </div>
+    </div>
+
+    <div class="row footer-bottom">
+
+     \   <div class="col-twelve">
+            <div class="go-top">
+                <a class="smoothscroll" title="Back to Top" href="#top"><i class="fas fa-chevron-circle-right"></i></a>
+            </div>
+        </div>
+q
+    </div> <!-- end footer-bottom -->
+
+</footer> <!-- end footer -->
+
+
+<div id="preloader">
+    <div id="loader"></div>
+</div>
+
+</body>
+
+</html>
