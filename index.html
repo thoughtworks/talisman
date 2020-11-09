@@ -1,4 +1,7 @@
-<!DOCTYPE html>
+---
+---
+
+<html>
 <!--[if lt IE 9 ]><html class="no-js oldie" lang="en"> <![endif]-->
 <!--[if IE 9 ]><html class="no-js oldie ie9" lang="en"> <![endif]-->
 <!--[if (gte IE 9)|!(IE)]><!-->
@@ -45,9 +48,9 @@
 <header class="s-header">
     <div class="text-center">
 
-    <div class="header-logo">
-        <a class="site-logo" href="index.html"><img src="assets/images/logo.png" alt="Homepage"></a>
-    </div>
+<!--    <div class="header-logo">-->
+<!--        <a class="site-logo" href="index.html"><img src="assets/images/logo.png" alt="Homepage"></a>-->
+<!--    </div>-->
     </div>
 
     <nav class="header-nav-wrap">
@@ -66,14 +69,15 @@
 
 <!-- page header
 ================================================== -->
-<section id="home" class="page-header page-hero" style="background-image:url(assets/images/logo-transparent.png);height:100%;">
+<section id="home" class="page-header page-hero" style="background-image:url(assets/images/stockpic.jpg);height:100%;">
 
     <div class="row page-header__content">
         <article class="col-full center">
 
             <h1 class="page-header__title">
-                <a href="#0" title="TALISMAN">
-                    TALISMAN
+                <a href="#home" title="TALISMAN">
+                    <img src="assets/images/logo-transparent.png" style="height:30%"/>
+                    <div>TALISMAN</div>
                 </a>
             </h1>
             <div class="mx-auto">
@@ -82,7 +86,7 @@
             </div>
             <div class="page-header__info">
                 <div class="page-header__cat">
-                    <a href="#0">Keep Your Secrets Secret</a>
+                    <a href="docs/">Keep Your Secrets Secret</a>
                 </div>
             </div>
             <a href="#description">
@@ -123,14 +127,14 @@
                 <article class="col-block">
                     <h2 class="h01"><a href="docs/">Talisman in action!</a></h2>
                     <div class="blog-cat">
-                        <a href="docs/">From installation to finding how Talisman works, look through the documentation for all you need</a>
+                        <a href="docs/">From installation to finding how Talisman works, look through the documentation for all you need...</a>
                     </div>
                 </article>
 
                 <article class="col-block">
                     <h2 class="h01"><a href="https://github.com/thoughtworks/talisman">Contribute to Talisman</a></h2>
                     <div class="blog-cat">
-                        <a href="https://github.com/thoughtworks/talisman">We are open-sourced and always love a shiny new contribution</a>
+                        <a href="https://github.com/thoughtworks/talisman">We are open-sourced and always love a shiny new contribution...</a>
                     </div>
                 </article>
 
@@ -158,12 +162,15 @@
                 <a class="footer-site-logo" href="#0"><img src="assets/images/logo.png" alt="Homepage"></a>
             </div>
 
-            <ul class="footer-social">
-                <li>
+            <ul id="contact" class="footer-social">
+                <li><a href="https://github.com/thoughtworks/talisman/issues">
+                    <i class="im im-github" aria-hidden="true"></i>
+                    <span>Contact on Github</span>
+                </a></li>
+                <li><a href="mailto:talisman-maintainers@thoughtworks.com">
                     <i class="im im-mail" aria-hidden="true"></i>
-                    <span style="bottom">talisman-maintainers@thoughtworks.com</span>
-                </li>
-                <span>© 2016-2020 ThoughtWorks, Inc.</span>
+                    <span>Email us</span>
+                </a></li>
             </ul>
 
         </div>
@@ -171,12 +178,13 @@
 
     <div class="row footer-bottom">
 
-     \   <div class="col-twelve">
+        <span>© 2016-2020 ThoughtWorks, Inc.</span>
+        <div class="col-twelve">
             <div class="go-top">
-                <a class="smoothscroll" title="Back to Top" href="#top"><i class="fas fa-chevron-circle-right"></i></a>
+                <a class="smoothscroll" title="Back to Top" href="#top"><i class="im fa-chevron-circle-right"></i></a>
             </div>
         </div>
-q
+
     </div> <!-- end footer-bottom -->
 
 </footer> <!-- end footer -->

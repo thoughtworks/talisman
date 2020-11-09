@@ -3586,6 +3586,7 @@ article.blog-single .blog-content {
     letter-spacing: .16rem;
     color: rgba(255, 255, 255, 0.8);
     font-family: "montserrat-bold", sans-serif;
+    padding: 2rem;
 }
 
 .page-header__cat a {

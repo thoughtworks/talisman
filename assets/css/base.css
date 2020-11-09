@@ -315,6 +315,7 @@ small {
 
 ol, ul {
     list-style: none;
+    justify-content: space-between
 }
 
 li {
