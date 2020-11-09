@@ -96,7 +96,7 @@ If you choose to set the `$PATH` later, please export TALISMAN\_HOME=$HOME/.tali
 
 
 3. Choose a base directory where Talisman should scan for all git repositories, and setup a git hook (pre-commit or pre-push, as chosen in step 1) as a symlink.
-  This script will not clobber pre-existing hooks. If you have existing hooks, [look for ways to chain Talisman into them.] (#handling-existing-hooks)
+  This script will not clobber pre-existing hooks. If you have existing hooks, [look for ways to chain Talisman into them.](#handling-existing-hooks)
 
 
 ### Handling existing hooks
