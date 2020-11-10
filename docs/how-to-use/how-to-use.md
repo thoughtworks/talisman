@@ -4,6 +4,8 @@ title: How To Use
 nav_order: 3
 description: "How Talisman works" 
 has_children: true
+permalink: docs/how-to-use
+
 ---
 
 # How To Use

@@ -5,6 +5,8 @@ nav_order: 2
 description: "Talisman can be installed to be used as a pre-commit/pre-push hook or as a repository scanner" 
 permalink: /installation
 has_children: true
+permalink: docs/installation
+
 ---
 
 # Installation

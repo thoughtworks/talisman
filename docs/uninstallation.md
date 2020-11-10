@@ -2,7 +2,7 @@
 layout: default
 title: Uninstallation
 nav_order: 6
-permalink: /uninstallation
+permalink: docs/uninstallation
 ---
 
 # Uninstallation

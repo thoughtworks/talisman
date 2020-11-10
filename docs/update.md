@@ -3,7 +3,7 @@ layout: default
 title: Update Talisman
 nav_order: 5
 description: "Talisman can be manually or auto updated" 
-permalink: /update
+permalink: docs/update
 ---
 
 # Update Talisman
