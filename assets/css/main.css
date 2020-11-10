@@ -1380,9 +1380,7 @@ button::-moz-focus-inner, input::-moz-focus-inner {
     position: absolute;
     bottom: 0;
     left: 0;
-    height: 1px;
-    width: 80px;
-    background-color: rgba(0, 0, 0, 0.15);
+    background-color: rgb(236 11 11 / 63%);
 }
 
 .blog-list .blog-date {
@@ -1404,7 +1402,7 @@ button::-moz-focus-inner, input::-moz-focus-inner {
 .blog-list .blog-cat {
     font-family: "montserrat-medium", sans-serif;
     font-size: 1.3rem;
-    text-transform: uppercase;
+    /* text-transform: uppercase; */
     letter-spacing: .2rem;
     color: #000000;
     margin-top: -.9rem;
@@ -3513,6 +3511,7 @@ article.blog-single .blog-content {
     position: relative;
     color: rgba(255, 255, 255, 0.5);
     min-height: 50.4rem;
+    background-size: cover;
 }
 
 .page-header--single {
@@ -3674,8 +3673,9 @@ article.blog-single .blog-content {
     border-radius: 7.5rem;
     color: #FFFFFF;
     letter-spacing: .25rem;
-    margin-right: 5rem !important;
-    margin-top: 5rem !important;
+    width: 200px;
+    /* margin-right: 5rem !important;
+    margin-top: 5rem !important; */
 }
 
 .page-header__btn:hover, .page-header__btn:focus {
@@ -3751,7 +3751,7 @@ article.blog-single .blog-content {
  * ------------------------------------------------------------------- */
 
 .blog-content-wrap {
-    background-color: darkgrey;
+    background-color: white;
     padding-top: 4.2rem;
     padding-bottom: 12rem;
 }
@@ -4150,4 +4150,9 @@ article.blog-single .blog-content {
     .commentlist .comment__avatar {
         display: none;
     }
+}
+
+.sec-header {
+    color: white;
+    margin-top: 20px;
 }
