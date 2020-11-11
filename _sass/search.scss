@@ -60,7 +60,7 @@
     padding-bottom: $gutter-spacing-sm;
     padding-left: #{$gutter-spacing + $sp-5};
     font-size: 14px;
-    background-color: $body-background-color;
+    background-color: black;
     transition: padding-left linear #{$transition-duration / 2};
   }
 
@@ -281,7 +281,7 @@
   }
 
   .search-input {
-    background-color: $search-background-color;
+    background-color: black;
 
     @include mq(md) {
       padding-left: #{$sp-4 * 1.25 + $sp-5};

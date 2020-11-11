@@ -22,7 +22,10 @@ body {
   font-size: inherit;
   line-height: $body-line-height;
   color: $body-text-color;
-  background-color: $body-background-color;
+  // background-color: black;
+  background-image: url('/assets/images/main.png');
+  background-size: cover;
+  
 }
 
 ol,
@@ -105,4 +108,9 @@ hr {
   margin: $sp-6 0;
   background-color: $border-color;
   border: 0;
+}
+
+.logo{
+  width: 15%;
+  height: 15%;
 }

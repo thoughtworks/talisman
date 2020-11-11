@@ -6,7 +6,9 @@
   z-index: 0;
   display: flex;
   flex-wrap: wrap;
-  background-color: $sidebar-color;
+  background-color: black;
+  background-image: url("/assets/images/side-bar.png");
+  
 
   @include mq(md) {
     flex-wrap: nowrap;
@@ -19,7 +21,7 @@
   }
 
   @include mq(lg) {
-    width: calc((100% - #{$nav-width + $content-width}) / 2 + #{$nav-width});
+    width: calc((100% - #{$nav-width + $content-width}) / 2);
     min-width: $nav-width;
   }
 }
@@ -52,13 +54,13 @@
 .main-header {
   z-index: 0;
   display: none;
-  background-color: $sidebar-color;
+  background-color: black;
 
   @include mq(md) {
     display: flex;
     justify-content: space-between;
     height: $header-height;
-    background-color: $body-background-color;
+    background-color: black;
     border-bottom: $border $border-color;
   }
 

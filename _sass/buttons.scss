@@ -110,7 +110,11 @@
 }
 
 .btn-blue {
-  @include btn-color($white, $blue-000);
+  color: #fff;
+  background-color: #8d374f;
+  background-image: linear-gradient(#8c364e, #361a4a);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25), 0 4px 10px rgba(0, 0, 0, 0.12);
+
 }
 
 .btn-green {
