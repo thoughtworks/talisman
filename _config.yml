@@ -16,7 +16,7 @@ description: > # this means to ignore newlines until "baseurl:"
   private keys etc. The aim is for Talisman to scan both file names and file
   content so that even potential problems embedded in source code and
   documentation can be caught.
-baseurl: "/talisman/" # the subpath of your site, e.g. /blog
+baseurl: "/talisman" # the subpath of your site, e.g. /blog
 url: "https://thoughtworks.github.io" # the base hostname & protocol for your site
 
 permalink: pretty
