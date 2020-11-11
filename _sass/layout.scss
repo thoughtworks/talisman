@@ -7,7 +7,7 @@
   display: flex;
   flex-wrap: wrap;
   background-color: black;
-  background-image: url("/assets/images/side-bar.png");
+  background-image: url("../../assets/images/side-bar.png");
   
 
   @include mq(md) {
