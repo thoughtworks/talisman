@@ -19,10 +19,12 @@ figure.highlight {
   background-color: $code-background-color;
   border-radius: $border-radius;
   -webkit-overflow-scrolling: touch;
+  white-space: pre-wrap;
 
   code {
     padding: 0;
     border: 0;
+    overflow-wrap: break-word;
   }
 }
 
