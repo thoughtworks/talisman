@@ -20,9 +20,9 @@ baseurl: "/talisman" # the subpath of your site, e.g. /blog
 url: "https://thoughtworks.github.io" # the base hostname & protocol for your site
 
 permalink: pretty
-#
-#exclude:
-#  - vendor
+
+exclude:
+ - vendor
 
 # Build settings
 markdown: kramdown
