@@ -7,3 +7,4 @@ vendor
 .DS_Store
 .talismanrc
 Gemfile.lock
+node_modules
