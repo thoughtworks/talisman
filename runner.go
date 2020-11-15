@@ -7,6 +7,7 @@ import (
 	"talisman/checksumcalculator"
 	"talisman/detector"
 	"talisman/detector/helpers"
+	"talisman/detector/severity"
 	"talisman/gitrepo"
 	"talisman/prompt"
 	"talisman/report"
@@ -52,8 +53,9 @@ func (r *Runner) Scan(reportDirectory string, ignoreHistory bool) int {
 	fmt.Printf("\n\n")
 	utility.CreateArt("Running Scan..")
 	additions := scanner.GetAdditions(ignoreHistory)
-	ignores := &talismanrc.TalismanRC{}
-	detector.DefaultChain(ignores).Test(additions, ignores, r.results)
+	rcConfig := talismanrc.Get()
+	setCustomSeverities(rcConfig)
+	detector.DefaultChain(rcConfig).Test(additions, rcConfig, r.results)
 	reportsPath, err := report.GenerateReport(r.results, reportDirectory)
 	if err != nil {
 		log.Printf("error while generating report: %v", err)
@@ -82,10 +84,19 @@ func (r *Runner) RunChecksumCalculator(fileNamePatterns []string) int {
 }
 
 func (r *Runner) doRun() {
-	rcConfigIgnores := talismanrc.Get()
+	rcConfig := talismanrc.Get()
+	setCustomSeverities(rcConfig)
 	scopeMap := getScopeConfig()
-	additionsToScan := rcConfigIgnores.IgnoreAdditionsByScope(r.additions, scopeMap)
-	detector.DefaultChain(rcConfigIgnores).Test(additionsToScan, rcConfigIgnores, r.results)
+	additionsToScan := rcConfig.IgnoreAdditionsByScope(r.additions, scopeMap)
+	detector.DefaultChain(rcConfig).Test(additionsToScan, rcConfig, r.results)
+}
+
+func setCustomSeverities(tRC *talismanrc.TalismanRC) {
+	for _, cs := range tRC.CustomSeverities {
+		severity.SeverityConfiguration[cs.Detector] = severity.Severity{
+															Value: severity.SeverityStringToValue(cs.Severity),
+														}
+	}
 }
 
 func getScopeConfig() map[string][]string {

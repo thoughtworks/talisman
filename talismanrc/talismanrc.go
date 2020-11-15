@@ -26,6 +26,11 @@ var (
 	currentRCFileName  = DefaultRCFileName
 )
 
+type CustomSeverityConfig struct {
+	Detector        string `yaml:"detector"`
+	Severity        string `yaml:"severity"`
+}
+
 type FileIgnoreConfig struct {
 	FileName        string   `yaml:"filename"`
 	Checksum        string   `yaml:"checksum,omitempty"`
@@ -47,18 +52,20 @@ type TalismanRC struct {
 	FileIgnoreConfig []FileIgnoreConfig     `yaml:"fileignoreconfig,omitempty"`
 	ScopeConfig      []ScopeConfig          `yaml:"scopeconfig,omitempty"`
 	CustomPatterns   []PatternString        `yaml:"custom_patterns,omitempty"`
+	CustomSeverities []CustomSeverityConfig `yaml:"custom_severities,omitempty"`
 	AllowedPatterns  []string               `yaml:"allowed_patterns,omitempty"`
 	Experimental     ExperimentalConfig     `yaml:"experimental,omitempty"`
 	Threshold        severity.SeverityValue `default:"1" yaml:"threshold,omitempty"`
 }
 
 type TalismanRCFile struct {
-	FileIgnoreConfig []FileIgnoreConfig `yaml:"fileignoreconfig,omitempty"`
-	ScopeConfig      []ScopeConfig      `yaml:"scopeconfig,omitempty"`
-	CustomPatterns   []PatternString    `yaml:"custom_patterns,omitempty"`
-	AllowedPatterns  []string           `yaml:"allowed_patterns,omitempty"`
-	Experimental     ExperimentalConfig `yaml:"experimental,omitempty"`
-	Threshold        string             `default:"low" yaml:"threshold,omitempty"`
+	FileIgnoreConfig []FileIgnoreConfig     `yaml:"fileignoreconfig,omitempty"`
+	ScopeConfig      []ScopeConfig          `yaml:"scopeconfig,omitempty"`
+	CustomPatterns   []PatternString        `yaml:"custom_patterns,omitempty"`
+	CustomSeverities []CustomSeverityConfig `yaml:"custom_severities,omitempty"`
+	AllowedPatterns  []string               `yaml:"allowed_patterns,omitempty"`
+	Experimental     ExperimentalConfig     `yaml:"experimental,omitempty"`
+	Threshold        string                 `default:"low" yaml:"threshold,omitempty"`
 }
 
 func SetFs(_fs afero.Fs) {
@@ -103,6 +110,7 @@ func NewTalismanRC(fileContents []byte) *TalismanRC {
 		FileIgnoreConfig: talismanRCFile.FileIgnoreConfig,
 		ScopeConfig:      talismanRCFile.ScopeConfig,
 		CustomPatterns:   talismanRCFile.CustomPatterns,
+		CustomSeverities: talismanRCFile.CustomSeverities,
 		AllowedPatterns:  talismanRCFile.AllowedPatterns,
 		Experimental:     talismanRCFile.Experimental,
 		Threshold:        severity.SeverityStringToValue(talismanRCFile.Threshold),
