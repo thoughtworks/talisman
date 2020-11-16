@@ -333,6 +333,20 @@ allowed_patterns:
 
 In the previous example, `key` is allowed in the `test` file, `keyword` and `pass` are allowed at the repository level.
 
+The `allowed_patterns` field also supports Golang regular expressions. Here is a simple code example where Golang RegExp can be useful: 
+
+```sh
+export AWS_ACCESS_KEY_ID = AKIAIO5FODNN7EXAMPLE
+export AWS_ACCESS_KEY_ID=$(vault read -field=value path/to/aws-access-key-id)
+```
+
+By default, Talisman will alert for both lines. In the second line, we are extracting the AWS Access Key ID from Hashicorp Vault which doesn't expose the secret to the code. If this type of usage is common in your code, you might want to tell Talisman to not alert when you use a Vault. This can be achieved with a configuration like:
+
+```yaml
+allowed_patterns:
+- export\ AWS[ \w]*KEY[ \w]*=.*vault\ read.*
+```
+
 ### Ignoring multiple files of same type (with wildcards)
 
 You can choose to ignore all files of a certain type, because you know they will always be safe, and you wouldn't want Talisman to scan them.
