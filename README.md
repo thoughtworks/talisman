@@ -410,6 +410,20 @@ This will report all Medium severity issues and higher (Potential risks that are
 2. By default, the threshold is set to low.
 3. Any custom search patterns you add, are considered to be of high severity.
 
+## Configuring custom severities
+
+You can customize the [security levels](detector/severity/severity_config.go) of the detectors provided by Talisman in the .talismanrc file:
+
+```yaml
+custom_severities:
+- detector: Base64Content
+  severity: medium
+- detector: HexContent
+  severity: low
+```
+
+By using custom severities and a severity threshold, Talisman can be configured to alert only on what is important based on your context. This can be useful to reduce the number of false positives.
+
 ## Talisman as a CLI utility
 
 If you execute `talisman` on the command line, you will be able to view all the parameter options you can pass
