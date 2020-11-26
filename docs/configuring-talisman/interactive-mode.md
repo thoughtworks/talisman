@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Hook In Interactive Mode
+title: Run In Interactive Mode
 parent: Configuring Talisman
 nav_order: 1
 description: "Hook In Interactive Mode" 

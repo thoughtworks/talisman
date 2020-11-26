@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Update Talisman
-nav_order: 5
+nav_order: 6
 description: "Talisman can be manually or auto updated" 
 permalink: docs/update
 ---
