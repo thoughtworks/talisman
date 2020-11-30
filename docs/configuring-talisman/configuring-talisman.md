@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Configuring Talisman
-nav_order: 4
+nav_order: 5
 description: "Configuring Talisman" 
 has_children: true
 permalink: docs/configuring-talisman
