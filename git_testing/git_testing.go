@@ -25,8 +25,8 @@ func Init(gitRoot string) *GitTesting {
 	testingRepo.ExecCommand("git", "init", ".")
 	gitConfigFileObject, _ := ioutil.TempFile(os.TempDir(), "gitConfigForTalismanTests")
 	gitConfigFile = gitConfigFileObject.Name()
-	testingRepo.ExecCommand("git", "config", "user.email", "talisman-test-user@example.com")
-	testingRepo.ExecCommand("git", "config", "user.name", "Talisman Test User")
+	testingRepo.ExecCommand("git", "config", "--global", "user.email", "talisman-test-user@example.com")
+	testingRepo.ExecCommand("git", "config", "--global", "user.name", "Talisman Test User")
 	return testingRepo
 }
 
