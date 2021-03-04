@@ -9,3 +9,7 @@ PATH="$PATH:`pwd`/upx-3.96-amd64_linux"
 upx --lzma talisman_{l,d,w}*
 upx -t talisman_{l,d,w}*
 shasum -b -a256 talisman_{l,d,w}* > checksums
+cd dist/
+upx --lzma talisman_{l,d,w}*
+upx -t talisman_{l,d,w}*
+shasum -b -a256 talisman_{l,d,w}* > checksums
