@@ -114,6 +114,8 @@ func (git *GitTesting) FileContents(filePath string) []byte {
 
 func (git *GitTesting) AddAndcommit(fileName string, message string) {
 	git.Add(fileName)
+	output,err := git.ExecCommand("git", "config", "--list")
+	fmt.Println(output.Output(), err.Error())
 	git.Commit(fileName, message)
 }
 
