@@ -122,7 +122,7 @@ func (git *GitTesting) Add(fileName string) {
 }
 
 func (git *GitTesting) Commit(fileName string, message string) {
-	git.ExecCommand("git", "commit", fileName, "-m", message)
+	git.ExecCommand("git", "commit", "-m", message)
 }
 
 func (git *GitTesting) GetBlobDetails(fileName string) string {
