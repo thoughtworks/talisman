@@ -19,7 +19,10 @@ jobs:
         go-version: 1.14
 
     - name: Test
-      run: go test -covermode=count -coverprofile=coverage.out -v ./...
+      run: |
+        git config user.email talisman-github-actions@github.com
+        git config user.name "Talisman GH Actions User"
+        go test -covermode=count -coverprofile=coverage.out -v ./...
       
     - name: Codecov
       # You may pin to the exact commit or the version.
