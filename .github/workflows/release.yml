@@ -1,8 +1,11 @@
 name: Release
 
 on:
-  release:
-    types: [ published, created, edited ]
+  push:
+    branches:
+      - master
+    tags:
+      - .*
 
 jobs:  
   publish:
