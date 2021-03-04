@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags: [ "?[0-9]+.[0-9]+.[0-9]+" ]
+
+jobs:
+  build:
+    outputs:
+      checksum: "${{ steps.checksum.outputs.value-linux-amd64 }}\n${{ steps.checksum.outputs.value-linux-386 }}"
+    strategy:
+      matrix:
+        OS: ["linux", "darwin", "windows" ]
+        ARCH: ["amd64", "386"]
+        exclude:
+        - OS: "darwin"
+          ARCH: "386"
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Build
+      run: mkdir dist/ && go build -o dist/talisman_${{ matrix.OS }}_${{ matrix.ARCH }}
+      env:
+        GOOS: ${{ matrix.OS }}
+        GOARCH: ${{ matrix.ARCH }}
+    - name: Compress
+      uses: docker://gacts/upx:latest
+      with:
+        file: dist/talisman_${{ matrix.OS }}_${{ matrix.ARCH }}
+        upx_args: --lzma
+    - name: Publish binaries to release
+      uses: fnkr/github-action-ghr@v1.3
+      env:
+          GHR_PATH: dist/
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Checksum
+      id: checksum
+      run: |
+        cd dist
+        echo "::set-output name=value-${{ matrix.OS }}-${{ matrix.ARCH }}::" $(shasum -a 256 talisman_${{ matrix.OS }}_${{ matrix.ARCH }})
+  publish_checksum:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Show
+      run: echo "Checksums are ${{ toJSON(needs.build.outputs) }}"
+    
+    
+    
+    
+

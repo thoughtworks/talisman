@@ -10,8 +10,6 @@ require (
 	github.com/fatih/color v1.7.0
 	github.com/golang/mock v1.3.1
 	github.com/kr/pretty v0.1.0 // indirect
-	github.com/mattn/goveralls v0.0.3 // indirect
-	github.com/mitchellh/gox v1.0.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.1
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/pflag v1.0.3
