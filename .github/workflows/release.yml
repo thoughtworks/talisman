@@ -12,6 +12,7 @@ jobs:
     steps:
     - name: Build
       run: ./build && ./upx_compress.sh
+      working-directory: ./
 
     - name: Publish binaries to release
       uses: fnkr/github-action-ghr@v1.3
