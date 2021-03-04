@@ -1,0 +1,20 @@
+name: Release
+
+on:
+  release:
+    types: [ created, edited ]
+
+jobs:  
+  publish:
+    runs-on: ubuntu-latest
+    if: contains(github.ref, 'refs/tags')
+    
+    steps:
+    - name: Build
+      run: ./build && ./upx_compress.sh
+
+    - name: Publish binaries to release
+      uses: fnkr/github-action-ghr@v1.3
+      env:
+          GHR_PATH: dist/
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
