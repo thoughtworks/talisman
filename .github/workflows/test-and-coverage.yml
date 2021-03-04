@@ -1,4 +1,4 @@
-name: Go
+name: Test And Coverage
 
 on:
   push:
@@ -16,24 +16,16 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
-        go-version: 1.15
+        go-version: 1.14
 
     - name: Test
-      run: go test -covermode=count -coverprofile=coverage.out -v ./...
+      run: |
+        git config user.email talisman-github-actions@github.com
+        git config user.name "Talisman GH Actions User"
+        go test -covermode=count -coverprofile=coverage.out -v ./...
       
     - name: Codecov
       # You may pin to the exact commit or the version.
       # uses: codecov/codecov-action@e156083f13aff6830c92fc5faa23505779fbf649
       uses: codecov/codecov-action@v1.2.1
-  
-  publish:
-    runs-on: ubuntu-latest
-    if: contains(github.ref, 'refs/tags')
-    
-    steps:
-    - name: Build
-      run: ./build && ./upx_compress.sh
-
-    - name: GitHub Releases
-      uses: fnkr/github-action-ghr@v1.3
 
