@@ -19,7 +19,7 @@ jobs:
     - name: Build
       run: ./build-release-binaries
     - name: Publish binaries to release
-      uses: fnkr/github-action-ghr@v1.3
+      uses: fnkr/github-action-ghr@ghr-options
       env:
           GHR_PATH: dist/
           GHR_DRAFT: yes
