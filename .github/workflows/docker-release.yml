@@ -1,0 +1,25 @@
+name: Containerized Build and Release
+on:
+  push:
+    tags: [ "?[0-9]+.[0-9]+.[0-9]+" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/svishwanath-tw/talisman-build:latest
+      credentials:
+        username: svishwanath-tw
+        password: ${{ secrets.ghcr_token }}
+      volumes:
+      - ${{ github.workspace }}:/talisman-src
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Build
+      run: ./build-release-binaries
+    - name: Publish binaries to release
+      uses: fnkr/github-action-ghr@v1.3
+      env:
+          GHR_PATH: dist/
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
