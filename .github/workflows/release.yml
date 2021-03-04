@@ -2,10 +2,10 @@ name: Release
 
 on:
   push:
-    branches:
-      - master
-    tags:
-      - .*
+    branches: [ master ]
+    tags: [ .* ]
+  release:
+    types: [published, created, edited]
 
 jobs:  
   publish:
