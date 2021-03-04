@@ -4,18 +4,17 @@ on:
   push:
     branches: [ master ]
     tags: [ .* ]
-  release:
-    types: [published, created, edited]
 
-jobs:  
+jobs:
   publish:
     runs-on: ubuntu-latest
     if: contains(github.ref, 'refs/tags')
-    
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
     - name: Build
       run: ./build && ./upx_compress.sh
-      working-directory: ./
 
     - name: Publish binaries to release
       uses: fnkr/github-action-ghr@v1.3
