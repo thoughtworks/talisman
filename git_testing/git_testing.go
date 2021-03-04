@@ -165,7 +165,7 @@ func (git *GitTesting) ExecCommand(commandName string, args ...string) string {
 
 func (git *GitTesting) die(msg string, err error) {
 	if err != nil {
-		msgtxt = fmt.Sprintf("Error %s: %s\n", msg, err.Error())
+		msgtxt := fmt.Sprintf("Error %s: %s\n", msg, err.Error())
 		Logger.Debugf(msgtxt)
 		fmt.Println(msgtxt);
 		panic(msgtxt)
