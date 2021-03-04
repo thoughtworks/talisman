@@ -154,7 +154,9 @@ func (git *GitTesting) ExecCommand(commandName string, args ...string) string {
 		//result.Env = []string{"GIT_CONFIG=" + gitConfigFile}
 		var err error
 		output, err = result.Output()
-		git.die(fmt.Sprintf("when executing command %s %v in %s", commandName, args, git.gitRoot), err)
+		fmt.Println("------------------>>>>>>>>>")
+		fmt.Printf("when executing command %s %v in %s\nError: %v\n", commandName, args, git.gitRoot, err)
+		git.die(fmt.Sprintf("when executing command %s %v in %s\nError: %v", commandName, args, git.gitRoot, err), err)
 		Logger.Debugf("Output of command %s %v in %s is: %s\n", commandName, args, git.gitRoot, string(output))
 	})
 	if len(output) > 0 {
