@@ -4,7 +4,7 @@
 <h1 align="center">Talisman</h1>
 <p align="center">A tool to detect and prevent secrets from getting checked in</p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Go Report Card](https://goreportcard.com/badge/thoughtworks/talisman)](https://goreportcard.com/report/thoughtworks/talisman) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/thoughtworks/talisman/issues) [![Build Status](https://travis-ci.org/thoughtworks/talisman.svg?branch=master)](https://travis-ci.org/thoughtworks/talisman) [![Coverage Status](https://coveralls.io/repos/github/thoughtworks/talisman/badge.svg?branch=master)](https://coveralls.io/github/thoughtworks/talisman?branch=master)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Go Report Card](https://goreportcard.com/badge/thoughtworks/talisman)](https://goreportcard.com/report/thoughtworks/talisman) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/thoughtworks/talisman/issues) [![Build Status](https://travis-ci.org/thoughtworks/talisman.svg?branch=master)](https://travis-ci.org/thoughtworks/talisman) [![Coverage Status](https://codecov.io/gh/thoughtworks/talisman/branch/master/graph/badge.svg)](https://codecov.io/gh/thoughtworks/talisman)
 
 
 ## Table of Contents
@@ -333,6 +333,20 @@ allowed_patterns:
 
 In the previous example, `key` is allowed in the `test` file, `keyword` and `pass` are allowed at the repository level.
 
+The `allowed_patterns` field also supports Golang regular expressions. Here is a simple code example where Golang RegExp can be useful: 
+
+```sh
+export AWS_ACCESS_KEY_ID = AKIAIO5FODNN7EXAMPLE
+export AWS_ACCESS_KEY_ID=$(vault read -field=value path/to/aws-access-key-id)
+```
+
+By default, Talisman will alert for both lines. In the second line, we are extracting the AWS Access Key ID from Hashicorp Vault which doesn't expose the secret to the code. If this type of usage is common in your code, you might want to tell Talisman to not alert when you use a Vault. This can be achieved with a configuration like:
+
+```yaml
+allowed_patterns:
+- export\ AWS[ \w]*KEY[ \w]*=.*vault\ read.*
+```
+
 ### Ignoring multiple files of same type (with wildcards)
 
 You can choose to ignore all files of a certain type, because you know they will always be safe, and you wouldn't want Talisman to scan them.
@@ -395,6 +409,20 @@ This will report all Medium severity issues and higher (Potential risks that are
 1. A list of all risks with their severity level can be found in this [configuration file](detector/severity/severity_config.go).
 2. By default, the threshold is set to low.
 3. Any custom search patterns you add, are considered to be of high severity.
+
+## Configuring custom severities
+
+You can customize the [security levels](detector/severity/severity_config.go) of the detectors provided by Talisman in the .talismanrc file:
+
+```yaml
+custom_severities:
+- detector: Base64Content
+  severity: medium
+- detector: HexContent
+  severity: low
+```
+
+By using custom severities and a severity threshold, Talisman can be configured to alert only on what is important based on your context. This can be useful to reduce the number of false positives.
 
 ## Talisman as a CLI utility
 
