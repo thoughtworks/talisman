@@ -13,7 +13,6 @@ import (
 )
 
 var Logger *logrus.Entry
-var gitConfigFile string
 
 type GitTesting struct {
 	gitRoot string
@@ -23,11 +22,10 @@ func Init(gitRoot string) *GitTesting {
 	os.MkdirAll(gitRoot, 0777)
 	testingRepo := &GitTesting{gitRoot}
 	testingRepo.ExecCommand("git", "init", ".")
-	gitConfigFileObject, _ := ioutil.TempFile(os.TempDir(), "gitConfigForTalismanTests")
-	gitConfigFile = gitConfigFileObject.Name()
-	testingRepo.CreateFileWithContents(gitConfigFile, `[user]
-	email = talisman-test-user@example.com
-	name = Talisman Test User`)
+	if (os.Getenv("CI") != "") {
+		testingRepo.ExecCommand("git", "config", "--global", "user.email", "talisman-test-user@example.com")
+		testingRepo.ExecCommand("git", "config", "--global", "user.name", "Talisman Test User")	
+	}
 	return testingRepo
 }
 
@@ -122,40 +120,39 @@ func (git *GitTesting) Add(fileName string) {
 }
 
 func (git *GitTesting) Commit(fileName string, message string) {
-	git.ExecCommand("git", "commit", fileName, "-m", message)
+	git.ExecCommand("git", "commit", "-m", message)
 }
 
+//GetBlobDetails returns git blob details for a path
 func (git *GitTesting) GetBlobDetails(fileName string) string {
 	var output []byte
-	object_hash_and_filename := ""
+	objectHashAndFilename := ""
 	git.doInGitRoot(func() {
 		fmt.Println("hello")
 		result := exec.Command("git", "rev-list", "--objects", "--all")
 		output, _ = result.Output()
 		objects := strings.Split(string(output), "\n")
 		for _, object := range objects {
-			object_details := strings.Split(object, " ")
-			if len(object_details) == 2 && object_details[1] == fileName {
-				object_hash_and_filename = object
+			objectDetails := strings.Split(object, " ")
+			if len(objectDetails) == 2 && objectDetails[1] == fileName {
+				objectHashAndFilename = object
 				return
 			}
 		}
 	})
-	return object_hash_and_filename
+	return objectHashAndFilename
 }
-
 
 //ExecCommand executes a command with given arguments in the git repo directory
 func (git *GitTesting) ExecCommand(commandName string, args ...string) string {
 	var output []byte
 	git.doInGitRoot(func() {
 		result := exec.Command(commandName, args...)
-		//Passes locally, but fails on CI
-		//result.Env = []string{"GIT_CONFIG=" + gitConfigFile}
 		var err error
 		output, err = result.Output()
-		git.die(fmt.Sprintf("when executing command %s %v in %s", commandName, args, git.gitRoot), err)
-		Logger.Debugf("Output of command %s %v in %s is: %s\n", commandName, args, git.gitRoot, string(output))
+		summaryMessage := fmt.Sprintf("Command: %s %v\nWorkingDirectory: %s\nOutput %s\nError: %v", commandName, args, git.gitRoot, string(output), err)
+		git.die(summaryMessage, err)
+		Logger.Debug(summaryMessage)
 	})
 	if len(output) > 0 {
 		return strings.Trim(string(output), "\n")
@@ -165,8 +162,8 @@ func (git *GitTesting) ExecCommand(commandName string, args ...string) string {
 
 func (git *GitTesting) die(msg string, err error) {
 	if err != nil {
-		Logger.Debugf("Error %s: %s\n", msg, err.Error())
-		panic(err)
+		Logger.Debugf(msg)
+		panic(msg)
 	}
 }
 
@@ -177,10 +174,12 @@ func (git *GitTesting) doInGitRoot(operation func()) {
 	operation()
 }
 
+//GetRoot returns the root directory of the git-testing repo
 func (git *GitTesting) GetRoot() string {
 	return git.gitRoot
 }
 
+//RemoveHooks removes all file-system hooks from git-test repo
 func (git *GitTesting) RemoveHooks() {
 	git.ExecCommand("rm", "-rf", ".git/hooks/")
 }

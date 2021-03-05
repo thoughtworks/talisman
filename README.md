@@ -4,7 +4,7 @@
 <h1 align="center">Talisman</h1>
 <p align="center">A tool to detect and prevent secrets from getting checked in</p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Go Report Card](https://goreportcard.com/badge/thoughtworks/talisman)](https://goreportcard.com/report/thoughtworks/talisman) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/thoughtworks/talisman/issues) [![Build Status](https://travis-ci.org/thoughtworks/talisman.svg?branch=master)](https://travis-ci.org/thoughtworks/talisman) [![Coverage Status](https://codecov.io/gh/thoughtworks/talisman/branch/master/graph/badge.svg)](https://codecov.io/gh/thoughtworks/talisman)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Go Report Card](https://goreportcard.com/badge/thoughtworks/talisman)](https://goreportcard.com/report/thoughtworks/talisman) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/thoughtworks/talisman/issues) [![Build Status](https://github.com/thoughtworks/talisman/actions/workflows/test-and-coverage.yml/badge.svg?branch=master)](https://github.com/thoughtworks/talisman/actions/workflows/test-and-coverage.yml) [![Coverage Status](https://codecov.io/gh/thoughtworks/talisman/branch/master/graph/badge.svg)](https://codecov.io/gh/thoughtworks/talisman)
 
 
 ## Table of Contents
