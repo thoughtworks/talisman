@@ -6,14 +6,13 @@ import (
 	"talisman/gitrepo"
 )
 
-type PreCommitHook struct{}
-
-func NewPreCommitHook() *PreCommitHook {
-	return &PreCommitHook{}
+type PreCommitHook struct{
+	runner
 }
 
-func (p *PreCommitHook) GetRepoAdditions() []gitrepo.Addition {
+func NewPreCommitHook() *PreCommitHook {
 	wd, _ := os.Getwd()
 	repo := gitrepo.RepoLocatedAt(wd)
-	return repo.GetDiffForStagedFiles()
+
+	return &PreCommitHook{*NewRunner(repo.GetDiffForStagedFiles())}
 }

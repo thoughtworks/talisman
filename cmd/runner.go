@@ -2,20 +2,13 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"os"
-	"talisman/checksumcalculator"
+	"github.com/spf13/afero"
 	"talisman/detector"
 	"talisman/detector/helpers"
 	"talisman/detector/severity"
 	"talisman/gitrepo"
 	"talisman/prompt"
-	"talisman/report"
-	"talisman/scanner"
 	"talisman/talismanrc"
-	"talisman/utility"
-
-	"github.com/spf13/afero"
 )
 
 const (
@@ -26,68 +19,29 @@ const (
 	CompletedWithErrors int = 1
 )
 
-//Runner represents a single run of the validations for a given commit range
-type Runner struct {
+//runner represents a single run of the validations for a given commit range
+type runner struct {
 	additions []gitrepo.Addition
 	results   *helpers.DetectionResults
 }
 
-//NewRunner returns a new Runner.
-func NewRunner(additions []gitrepo.Addition) *Runner {
-	return &Runner{
+//NewRunner returns a new runner.
+func NewRunner(additions []gitrepo.Addition) *runner {
+	return &runner{
 		additions: additions,
 		results:   helpers.NewDetectionResults(),
 	}
 }
 
-//RunWithoutErrors will validate the commit range for errors and return either COMPLETED_SUCCESSFULLY or COMPLETED_WITH_ERRORS
-func (r *Runner) RunWithoutErrors(promptContext prompt.PromptContext) int {
-	r.doRun()
-	r.printReport(promptContext)
-	return r.exitStatus()
-}
-
-//Scan scans git commit history for potential secrets and returns 0 or 1 as exit code
-func (r *Runner) Scan(reportDirectory string, tRC *talismanrc.TalismanRC, ignoreHistory bool) int {
-	fmt.Printf("\n\n")
-	utility.CreateArt("Running Scan..")
-	additions := scanner.GetAdditions(ignoreHistory)
-	rcConfig := talismanrc.Get()
-	setCustomSeverities(rcConfig)
-	detector.DefaultChain(rcConfig).Test(additions, rcConfig, r.results)
-	reportsPath, err := report.GenerateReport(r.results, reportDirectory)
-	if err != nil {
-		log.Printf("error while generating report: %v", err)
-		return CompletedWithErrors
-	}
-	fmt.Printf("\nPlease check '%s' folder for the talisman scan report\n", reportsPath)
-	fmt.Printf("\n")
-	return r.exitStatus()
-}
-
-//RunChecksumCalculator runs the checksum calculator against the patterns given as input
-func (r *Runner) RunChecksumCalculator(fileNamePatterns []string) int {
-	exitStatus := 1
-	wd, _ := os.Getwd()
-	repo := gitrepo.RepoLocatedAt(wd)
-	gitTrackedFilesAsAdditions := repo.TrackedFilesAsAdditions()
-	//Adding staged files for calculation
-	gitTrackedFilesAsAdditions = append(gitTrackedFilesAsAdditions, repo.StagedAdditions()...)
-	cc := checksumcalculator.NewChecksumCalculator(utility.DefaultSHA256Hasher{}, gitTrackedFilesAsAdditions)
-	rcSuggestion := cc.SuggestTalismanRC(fileNamePatterns)
-	if rcSuggestion != "" {
-		fmt.Print(rcSuggestion)
-		exitStatus = 0
-	}
-	return exitStatus
-}
-
-func (r *Runner) doRun() {
-	rcConfig := talismanrc.Get()
-	setCustomSeverities(rcConfig)
+//Run will validate the commit range for errors and return either COMPLETED_SUCCESSFULLY or COMPLETED_WITH_ERRORS
+func (r *runner) Run(tRC *talismanrc.TalismanRC, promptContext prompt.PromptContext) int {
+	setCustomSeverities(tRC)
 	scopeMap := getScopeConfig()
-	additionsToScan := rcConfig.IgnoreAdditionsByScope(r.additions, scopeMap)
-	detector.DefaultChain(rcConfig).Test(additionsToScan, rcConfig, r.results)
+	additionsToScan := tRC.IgnoreAdditionsByScope(r.additions, scopeMap)
+	detector.DefaultChain(tRC).Test(additionsToScan, tRC, r.results)
+	r.printReport(promptContext)
+	exitStatus := r.exitStatus()
+	return exitStatus
 }
 
 func setCustomSeverities(tRC *talismanrc.TalismanRC) {
@@ -104,7 +58,7 @@ func getScopeConfig() map[string][]string {
 	return scopeConfig
 }
 
-func (r *Runner) printReport(promptContext prompt.PromptContext) {
+func (r *runner) printReport(promptContext prompt.PromptContext) {
 	if r.results.HasWarnings() {
 		fmt.Println(r.results.ReportWarnings())
 	}
@@ -114,7 +68,7 @@ func (r *Runner) printReport(promptContext prompt.PromptContext) {
 	}
 }
 
-func (r *Runner) exitStatus() int {
+func (r *runner) exitStatus() int {
 	if r.results.HasFailures() {
 		return CompletedWithErrors
 	}
