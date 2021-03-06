@@ -116,7 +116,7 @@ func run(stdin io.Reader, _options options, promptContext prompt.PromptContext) 
 		return NewRunner(make([]gitrepo.Addition, 0)).Scan("talisman_html_report", talismanrc.Get(), _options.ignoreHistory)
 	} else if _options.pattern != "" {
 		log.Infof("Running %s pattern", _options.pattern)
-		directoryHook := NewDirectoryHook()
+		directoryHook := NewPatternCmd()
 		additions = directoryHook.GetFilesFromDirectory(_options.pattern)
 	} else if _options.githook == PreCommit {
 		log.Infof("Running %s hook", _options.githook)
