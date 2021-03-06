@@ -32,11 +32,15 @@ func NewTalismanRC(fileContents []byte) *TalismanRC {
 		logr.Errorf("Unable to parse .talismanrc : %v",err)
 		return &TalismanRC{}
 	}
+	if talismanRCFromFile.Version == "" {
+		talismanRCFromFile.Version = DefaultRCVersion
+	}
 	return &talismanRCFromFile
 }
 
 const (
 	//DefaultRCFileName represents the name of default file in which all the ignore patterns are configured in new version
+	DefaultRCVersion         = "1.0"
 	DefaultRCFileName string = ".talismanrc"
 )
 
@@ -56,4 +60,8 @@ func readRepoFile() func(string) ([]byte, error) {
 
 func Get() *TalismanRC {
 	return ReadConfigFromRCFile(readRepoFile())
+}
+
+func MakeWithFileIgnores(fileIgnoreConfigs []FileIgnoreConfig) *TalismanRC {
+	return &TalismanRC{FileIgnoreConfig: fileIgnoreConfigs, Version: DefaultRCVersion}
 }
