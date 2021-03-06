@@ -36,8 +36,7 @@ func NewRunner(additions []gitrepo.Addition) *runner {
 //Run will validate the commit range for errors and return either COMPLETED_SUCCESSFULLY or COMPLETED_WITH_ERRORS
 func (r *runner) Run(tRC *talismanrc.TalismanRC, promptContext prompt.PromptContext) int {
 	setCustomSeverities(tRC)
-	scopeMap := getScopeConfig()
-	additionsToScan := tRC.IgnoreAdditionsByScope(r.additions, scopeMap)
+	additionsToScan := tRC.FilterAdditions(r.additions)
 	detector.DefaultChain(tRC).Test(additionsToScan, tRC, r.results)
 	r.printReport(promptContext)
 	exitStatus := r.exitStatus()
@@ -48,14 +47,6 @@ func setCustomSeverities(tRC *talismanrc.TalismanRC) {
 	for _, cs := range tRC.CustomSeverities {
 		severity.SeverityConfiguration[cs.Detector] = cs.Severity
 	}
-}
-
-func getScopeConfig() map[string][]string {
-	scopeConfig := map[string][]string{
-		"node": {"yarn.lock", "package-lock.json", "node_modules/"},
-		"go":   {"makefile", "go.mod", "go.sum", "Gopkg.toml", "Gopkg.lock", "glide.yaml", "glide.lock", "vendor/"},
-	}
-	return scopeConfig
 }
 
 func (r *runner) printReport(promptContext prompt.PromptContext) {

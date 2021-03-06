@@ -55,8 +55,8 @@ func TestIgnoreAdditionsByScope(t *testing.T) {
 	javaIgnores := []string{"java.lock"}
 	goIgnores := []string{"go.lock", "Gopkg.lock", "vendors/"}
 	scopesMap := map[string][]string{"node": nodeIgnores, "java": javaIgnores, "go": goIgnores}
-
-	filteredAdditions := talismanRCConfig.IgnoreAdditionsByScope(additions, scopesMap)
+	knownScopes = scopesMap
+	filteredAdditions := talismanRCConfig.FilterAdditions(additions)
 
 	assert.NotContains(t, filteredAdditions, file1)
 	assert.NotContains(t, filteredAdditions, file2)
