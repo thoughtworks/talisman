@@ -93,9 +93,7 @@ func (r *Runner) doRun() {
 
 func setCustomSeverities(tRC *talismanrc.TalismanRC) {
 	for _, cs := range tRC.CustomSeverities {
-		severity.SeverityConfiguration[cs.Detector] = severity.Severity{
-															Value: severity.SeverityStringToValue(cs.Severity),
-														}
+		severity.SeverityConfiguration[cs.Detector] = cs.Severity
 	}
 }
 

@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"io/ioutil"
 	"strings"
 	"talisman/detector/severity"
 	mock "talisman/internal/mock/prompt"
@@ -12,7 +13,12 @@ import (
 	"github.com/spf13/afero"
 
 	"github.com/stretchr/testify/assert"
+	logr "github.com/Sirupsen/logrus"
 )
+
+func init() {
+	logr.SetOutput(ioutil.Discard)
+}
 
 func TestNewDetectionResultsAreSuccessful(t *testing.T) {
 	results := NewDetectionResults()
@@ -22,25 +28,25 @@ func TestNewDetectionResultsAreSuccessful(t *testing.T) {
 
 func TestCallingFailOnDetectionResultsFails(t *testing.T) {
 	results := NewDetectionResults()
-	results.Fail("some_filename", "filename", "Bomb", []string{}, severity.Low())
+	results.Fail("some_filename", "filename", "Bomb", []string{}, severity.Low)
 	assert.False(t, results.Successful(), "Calling fail on a result should not make it succeed")
 	assert.True(t, results.HasFailures(), "Calling fail on a result should make it fail")
 }
 
 func TestCanRecordMultipleErrorsAgainstASingleFile(t *testing.T) {
 	results := NewDetectionResults()
-	results.Fail("some_filename", "filename", "Bomb", []string{}, severity.Low())
-	results.Fail("some_filename", "filename", "Complete & utter failure", []string{}, severity.Low())
-	results.Fail("another_filename", "filename", "Complete & utter failure", []string{}, severity.Low())
+	results.Fail("some_filename", "filename", "Bomb", []string{}, severity.Low)
+	results.Fail("some_filename", "filename", "Complete & utter failure", []string{}, severity.Low)
+	results.Fail("another_filename", "filename", "Complete & utter failure", []string{}, severity.Low)
 	assert.Len(t, results.GetFailures("some_filename"), 2, "Expected two errors against some_filename.")
 	assert.Len(t, results.GetFailures("another_filename"), 1, "Expected one error against another_filename")
 }
 
 func TestResultsReportsFailures(t *testing.T) {
 	results := NewDetectionResults()
-	results.Fail("some_filename", "", "Bomb", []string{}, severity.Low())
-	results.Fail("some_filename", "", "Complete & utter failure", []string{}, severity.Low())
-	results.Fail("another_filename", "", "Complete & utter failure", []string{}, severity.Low())
+	results.Fail("some_filename", "", "Bomb", []string{}, severity.Low)
+	results.Fail("some_filename", "", "Complete & utter failure", []string{}, severity.Low)
+	results.Fail("another_filename", "", "Complete & utter failure", []string{}, severity.Low)
 
 	actualErrorReport := results.ReportFileFailures("some_filename")
 	firstErrorMessage := strings.Join(actualErrorReport[0], " ")
@@ -108,7 +114,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 	t.Run("when user declines, entry should not be added to talismanrc", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add some_file.pem with above checksum in talismanrc ?").Return(false)
-		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low())
+		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 
 		results.Report(fs, ignoreFile, promptContext)
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
@@ -121,7 +127,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 	t.Run("when interactive flag is set to false, it should not ask user", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(false, prompter)
 		prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
-		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low())
+		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 
 		results.Report(fs, ignoreFile, promptContext)
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
@@ -135,7 +141,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add some_file.pem with above checksum in talismanrc ?").Return(true)
 
-		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low())
+		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 
 		expectedFileContent := `fileignoreconfig:
 - filename: some_file.pem
@@ -153,7 +159,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add existing.pem with above checksum in talismanrc ?").Return(true)
 		results := NewDetectionResults()
-		results.Fail("existing.pem", "filecontent", "This will bomb!", []string{}, severity.Low())
+		results.Fail("existing.pem", "filecontent", "This will bomb!", []string{}, severity.Low)
 
 		expectedFileContent := `fileignoreconfig:
 - filename: existing.pem
@@ -173,8 +179,8 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 		prompter.EXPECT().Confirm("Do you want to add some_file.pem with above checksum in talismanrc ?").Return(true)
 		prompter.EXPECT().Confirm("Do you want to add another.pem with above checksum in talismanrc ?").Return(true)
 
-		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low())
-		results.Fail("another.pem", "filecontent", "password", []string{}, severity.Low())
+		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
+		results.Fail("another.pem", "filecontent", "password", []string{}, severity.Low)
 
 		expectedFileContent := `fileignoreconfig:
 - filename: another.pem
