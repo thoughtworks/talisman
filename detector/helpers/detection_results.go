@@ -61,13 +61,13 @@ type DetectionResults struct {
 }
 
 func (r *ResultsDetails) getWarningDataByCategoryAndMessage(failureMessage string, category string) *Details {
-	detail := getDetaisByCategoryAndMessage(r.WarningList, category, failureMessage)
+	detail := getDetailsByCategoryAndMessage(r.WarningList, category, failureMessage)
 	r.WarningList = append(r.WarningList, *detail)
 	return detail
 }
 
 func (r *ResultsDetails) getFailureDataByCategoryAndMessage(failureMessage string, category string) *Details {
-	detail := getDetaisByCategoryAndMessage(r.FailureList, category, failureMessage)
+	detail := getDetailsByCategoryAndMessage(r.FailureList, category, failureMessage)
 	if detail == nil {
 		detail = &Details{category, failureMessage, make([]string, 0), severity.Low}
 		r.FailureList = append(r.FailureList, *detail)
@@ -88,7 +88,7 @@ func (r *ResultsDetails) addIgnoreDataByCategory(category string) {
 	}
 }
 
-func getDetaisByCategoryAndMessage(detailsList []Details, category string, failureMessage string) *Details {
+func getDetailsByCategoryAndMessage(detailsList []Details, category string, failureMessage string) *Details {
 	for _, detail := range detailsList {
 		if strings.Compare(detail.Category, category) == 0 && strings.Compare(detail.Message, failureMessage) == 0 {
 			return &detail
@@ -213,14 +213,14 @@ func createNewResultForFile(category string, message string, commits []string, f
 }
 
 func (r *DetectionResults) updateResultsSummary(category string) {
-	if strings.Compare("filecontent", category) == 0 {
+	switch category {
+	case "filecontent":
 		r.Summary.Types.Filecontent++
-	} else if strings.Compare("filename", category) == 0 {
+	case "filename":
 		r.Summary.Types.Filename++
-	} else if strings.Compare("filesize", category) == 0 {
+	case "filesize":
 		r.Summary.Types.Filesize++
 	}
-
 }
 
 //HasFailures answers if any Failures were detected for any FilePath in the current run
