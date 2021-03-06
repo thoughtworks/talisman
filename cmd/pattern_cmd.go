@@ -9,28 +9,27 @@ import (
 	"github.com/bmatcuk/doublestar"
 )
 
-type PatternCmd struct{}
-
-func NewPatternCmd() *PatternCmd {
-	return &PatternCmd{}
+type PatternCmd struct{
+	*runner
 }
 
-func (p *PatternCmd) GetFilesFromDirectory(globPattern string) []gitrepo.Addition {
-	var result []gitrepo.Addition
+func NewPatternCmd(pattern string) *PatternCmd {
+	var additions []gitrepo.Addition
 
-	files, _ := doublestar.Glob(globPattern)
+	files, _ := doublestar.Glob(pattern)
 	for _, file := range files {
 		data, err := ReadFile(file)
 
 		if err != nil {
+			log.Warnf("Error reading file: %s. Skipping", file)
 			continue
 		}
 
 		newAddition := gitrepo.NewAddition(file, data)
-		result = append(result, newAddition)
+		additions = append(additions, newAddition)
 	}
 
-	return result
+	return &PatternCmd{NewRunner(additions)}
 }
 
 func ReadFile(filepath string) ([]byte, error) {
