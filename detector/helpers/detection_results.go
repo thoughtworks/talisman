@@ -398,11 +398,3 @@ func (r *DetectionResults) ReportFileWarnings(filePath gitrepo.FilePath) [][]str
 	}
 	return data
 }
-
-func keys(aMap map[gitrepo.FilePath][]string) []gitrepo.FilePath {
-	var result []gitrepo.FilePath
-	for filePath := range aMap {
-		result = append(result, filePath)
-	}
-	return result
-}
