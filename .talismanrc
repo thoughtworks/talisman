@@ -11,11 +11,11 @@ fileignoreconfig:
 - filename: detector/filename/filename_detector.go
   checksum: 5404565683a7e812fa98ff2d14237c4d1ba7dc5b4aca2dd3ba663b33dc8ddae7
 - filename: detector/filename/filename_detector_test.go
-  checksum: 0a9c9f113e203ca29d3a9bf0b4802a252e990c2132e1f168a46ab49ed532e6c9
+  checksum: d04b9a2cc51e6835c1b3c13fc0872837b34bde2a5f2c070b1047b055299d5cf9
 - filename: detector/match_pattern_test.go
   checksum: d68aa0e06355e3b848941727d1fcb32cf47e3d615f9921f0db39855325010446
 - filename: detector/pattern/match_pattern_test.go
-  checksum: b90530d286fbc0ee864d2350fc0c532e0fb2f01149d51e81339b420439014238
+  checksum: c95b8106ced5ad34ec1d00773a05f8789715034a734197c93cdaa4ed5036c177
 - filename: detector/pattern/pattern_detector.go
   checksum: 98c4edddc95b4b974ed9b3e4f48079f2503b5c85309fadf37878a3d28de31e72
 - filename: detector/pattern/pattern_detector_test.go
@@ -23,14 +23,14 @@ fileignoreconfig:
 - filename: detector/pattern_detector_test.go
   checksum: 4d70b790f28f2d23d506f808d489aa43f1efd2514549ae6a83a535e1223382e3
 - filename: detector/severity/severity_config.go
-  checksum: b66d979756af47c780b1fda356f48b1ab354488ae77f7e93283a5ec360ac93a0
+  checksum: a9b041a6f5a5c93146a79dfc7b3d2d26c4a6cf621aa0aa92db7e8c343c6926a5
 - filename: global_install_scripts/install.bash
   checksum: 5d659125ecbe619ea99f5bc71c2d761b586ce3ec9ccab7683ee54f4ebde9f748
-- filename: upx_compress.sh
-  checksum: 1a5d9b0ebd627646650c86236f4a21df5b4a2bcf26d77c439dd81c7b28ff9aa0
-- filename: install.sh
-  checksum: 871261b64e3321d1e15c02e7fcb84b7f31ff18dabd7b8d6459d8c1f6fc443c3a
 - filename: install.sh
   checksum: c909f6a1caefba3f196d489f9262608044be596a44793c2173ec55b98ecec649
+- filename: talismanrc/talismanrc-type.go
+  checksum: e23d065c99d35bc96725e64fc2257c49104ae61316af43e2101acffc03775b54
+- filename: upx_compress.sh
+  checksum: 1a5d9b0ebd627646650c86236f4a21df5b4a2bcf26d77c439dd81c7b28ff9aa0
 scopeconfig:
 - scope: go

@@ -13,10 +13,10 @@ import (
 	"talisman/talismanrc"
 	"talisman/utility"
 
-	"github.com/spf13/afero"
 	"gopkg.in/yaml.v2"
 
 	"github.com/olekukonko/tablewriter"
+	"github.com/spf13/afero"
 )
 
 type Details struct {
@@ -69,7 +69,7 @@ func (r *ResultsDetails) getWarningDataByCategoryAndMessage(failureMessage strin
 func (r *ResultsDetails) getFailureDataByCategoryAndMessage(failureMessage string, category string) *Details {
 	detail := getDetaisByCategoryAndMessage(r.FailureList, category, failureMessage)
 	if detail == nil {
-		detail = &Details{category, failureMessage, make([]string, 0), severity.Low()}
+		detail = &Details{category, failureMessage, make([]string, 0), severity.Low}
 		r.FailureList = append(r.FailureList, *detail)
 	}
 	return detail
@@ -83,7 +83,7 @@ func (r *ResultsDetails) addIgnoreDataByCategory(category string) {
 		}
 	}
 	if !isCategoryAlreadyPresent {
-		detail := Details{category, "", make([]string, 0), severity.Low()}
+		detail := Details{category, "", make([]string, 0), severity.Low}
 		r.IgnoreList = append(r.IgnoreList, detail)
 	}
 }
@@ -186,13 +186,13 @@ func (r *DetectionResults) Ignore(filePath gitrepo.FilePath, category string) {
 				}
 			}
 			if !isEntryPresentForGivenCategory {
-				detail := Details{category, "", make([]string, 0), severity.Low()}
+				detail := Details{category, "", make([]string, 0), severity.Low}
 				r.Results[resultIndex].IgnoreList = append(r.Results[resultIndex].IgnoreList, detail)
 			}
 		}
 	}
 	if !isFilePresentInResults {
-		ignoreDetails := Details{category, "", make([]string, 0), severity.Low()}
+		ignoreDetails := Details{category, "", make([]string, 0), severity.Low}
 		resultDetails := ResultsDetails{filePath, make([]Details, 0), make([]Details, 0), make([]Details, 0)}
 		resultDetails.IgnoreList = append(resultDetails.IgnoreList, ignoreDetails)
 		r.Results = append(r.Results, resultDetails)

@@ -2,8 +2,15 @@ package scanner
 
 import (
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	"testing"
+	logr "github.com/Sirupsen/logrus"
 )
+
+
+func init() {
+	logr.SetOutput(ioutil.Discard)
+}
 
 func Test_getBlobsFromChannel(t *testing.T) {
 	ch := make(chan []string)
