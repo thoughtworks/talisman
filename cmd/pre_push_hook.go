@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bufio"
+	"io"
 	"os"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"talisman/gitrepo"
@@ -16,15 +19,24 @@ const (
 
 type PrePushHook struct {
 	localRef, localCommit, remoteRef, remoteCommit string
+	*runner
 }
 
-func NewPrePushHook(localRef, localCommit, remoteRef, remoteCommit string) *PrePushHook {
-	return &PrePushHook{localRef, localCommit, remoteRef, remoteCommit}
+func NewPrePushHook(stdin io.Reader) *PrePushHook {
+	localRef, localCommit, remoteRef, remoteCommit := readRefAndSha(stdin)
+	prePushHook := &PrePushHook{
+		localRef,
+		localCommit,
+		remoteRef,
+		remoteCommit,
+		NewRunner(nil)}
+	prePushHook.additions = prePushHook.getRepoAdditions()
+	return prePushHook
 }
 
 //If the outgoing ref does not exist on the remote, all commits on the local ref will be checked
 //If the outgoing ref already exists, all additions in the range between "localSha" and "remoteSha" will be validated
-func (p *PrePushHook) GetRepoAdditions() []gitrepo.Addition {
+func (p *PrePushHook) getRepoAdditions() []gitrepo.Addition {
 	if p.runningOnDeletedRef() {
 		log.WithFields(log.Fields{
 			"localRef":     p.localRef,
@@ -54,7 +66,7 @@ func (p *PrePushHook) GetRepoAdditions() []gitrepo.Addition {
 		"remoteCommit": p.remoteCommit,
 	}).Info("Running on an existing ref. All changes in the commit range will be verified.")
 
-	return p.getRepoAdditions()
+	return p.getRepoAdditionsFrom(p.remoteCommit, p.localCommit)
 }
 
 func (p *PrePushHook) runningOnDeletedRef() bool {
@@ -65,12 +77,17 @@ func (p *PrePushHook) runningOnNewRef() bool {
 	return p.remoteCommit == EmptySha
 }
 
-func (p *PrePushHook) getRepoAdditions() []gitrepo.Addition {
-	return p.getRepoAdditionsFrom(p.remoteCommit, p.localCommit)
-}
-
 func (p *PrePushHook) getRepoAdditionsFrom(oldCommit, newCommit string) []gitrepo.Addition {
 	wd, _ := os.Getwd()
 	repo := gitrepo.RepoLocatedAt(wd)
 	return repo.AdditionsWithinRange(oldCommit, newCommit)
+}
+
+func readRefAndSha(file io.Reader) (string, string, string, string) {
+	text, _ := bufio.NewReader(file).ReadString('\n')
+	refsAndShas := strings.Split(strings.Trim(string(text), "\n"), " ")
+	if len(refsAndShas) < 4 {
+		return EmptySha, EmptySha, "", ""
+	}
+	return refsAndShas[0], refsAndShas[1], refsAndShas[2], refsAndShas[3]
 }

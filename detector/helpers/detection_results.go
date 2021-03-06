@@ -111,8 +111,13 @@ func (r *DetectionResults) getResultDetailsForFilePath(fileName gitrepo.FilePath
 
 //NewDetectionResults is a new DetectionResults struct. It represents the pre-run state of a Detection run.
 func NewDetectionResults() *DetectionResults {
-	result := DetectionResults{ResultsSummary{FailureTypes{0, 0, 0, 0, 0}}, make([]ResultsDetails, 0)}
-	return &result
+	return &DetectionResults{
+		ResultsSummary{
+			FailureTypes{0, 0, 0, 0, 0},
+		},
+		make([]ResultsDetails, 0),
+	}
+
 }
 
 //Fail is used to mark the supplied FilePath as failing a detection for a supplied reason.
