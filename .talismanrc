@@ -2,6 +2,8 @@ fileignoreconfig:
 - filename: README.md
   ignore_detectors:
   - filecontent
+- filename: checksumcalculator/checksumcalculator_test.go
+  checksum: d74273fe8cb37c2c4a7469785eb21b4f1d23a3437927612f8a5964f5011f0998
 - filename: detector/detection_results_test.go
   checksum: 69fed055782cddfe0f0d23ea440cef9f9dd0b9e8a3c8a73856741bb26257b223
   ignore_detectors:

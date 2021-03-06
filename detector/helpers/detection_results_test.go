@@ -146,6 +146,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 		expectedFileContent := `fileignoreconfig:
 - filename: some_file.pem
   checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
+version: "1.0"
 `
 		results.Report(fs, ignoreFile, promptContext)
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
@@ -164,7 +165,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 		expectedFileContent := `fileignoreconfig:
 - filename: existing.pem
   checksum: 5bc0b0692a316bb2919263addaef0ffba3a21b9e1cca62a1028390e97e861e4e
-
+version: "1.0"
 `
 		results.Report(fs, ignoreFile, promptContext)
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
@@ -187,6 +188,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
   checksum: 117e23557c02cbd472854ebce4933d6daec1fd207971286f6ffc9f1774c1a83b
 - filename: some_file.pem
   checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
+version: "1.0"
 `
 		results.Report(fs, ignoreFile, promptContext)
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)

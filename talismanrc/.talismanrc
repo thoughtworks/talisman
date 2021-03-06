@@ -1,5 +1,6 @@
 fileignoreconfig:
 - filename: Foo
   checksum: SomeCheckSum
-  ignore_detectors: []
+version: "1.0"
+ors: []
 scopeconfig: []
