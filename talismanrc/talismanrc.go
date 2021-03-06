@@ -41,12 +41,12 @@ func (tRC *TalismanRC) Accept(addition gitrepo.Addition, detectorName string) bo
 	return !tRC.Deny(addition, detectorName)
 }
 
-func (tRC *TalismanRC) IgnoreAdditionsByScope(additions []gitrepo.Addition, scopeMap map[string][]string) []gitrepo.Addition {
+func (tRC *TalismanRC) FilterAdditions(additions []gitrepo.Addition) []gitrepo.Addition {
 	var applicableScopeFileNames []string
 	if tRC.ScopeConfig != nil {
 		for _, scope := range tRC.ScopeConfig {
-			if len(scopeMap[scope.ScopeName]) > 0 {
-				applicableScopeFileNames = append(applicableScopeFileNames, scopeMap[scope.ScopeName]...)
+			if len(knownScopes[scope.ScopeName]) > 0 {
+				applicableScopeFileNames = append(applicableScopeFileNames, knownScopes[scope.ScopeName]...)
 			}
 		}
 	}
