@@ -1,7 +1,12 @@
 #!/bin/bash
+set -e
 VERSION=$(git describe --tags HEAD)
+rm -rf dist/
 mkdir -p dist/
-gox -os="linux darwin windows" -arch="386 amd64" -ldflags="-s -w -X main.Version=${VERSION}" --output "dist/{{.Dir}}_{{.OS}}_{{.Arch}}"
+gox -osarch="linux/amd64 linux/386 darwin/amd64 windows/amd64 windows/386" \
+    -ldflags="-s -w -X main.Version=${VERSION}" \
+    --output "dist/talisman_{{.OS}}_{{.Arch}}" \
+    talisman/cmd
 cd dist
 upx --lzma talisman*
 upx -t talisman*

@@ -45,7 +45,7 @@ fileignoreconfig:
 
 func init() {
 	git_testing.Logger = logrus.WithField("Environment", "Debug")
-	git_testing.Logger.Debug("Accetpance test started")
+	git_testing.Logger.Debug("Acceptance test started")
 }
 
 func TestNotHavingAnyOutgoingChangesShouldNotFail(t *testing.T) {
