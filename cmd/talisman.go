@@ -20,17 +20,9 @@ import (
 )
 
 var (
-	fdebug      bool
-	githook     string
 	showVersion bool
-	pattern     string
 	//Version : Version of talisman
 	Version         = "Development Build"
-	scan            bool
-	ignoreHistory   bool
-	checksum        string
-	reportdirectory string
-	scanWithHtml    bool
 	interactive     bool
 )
 
@@ -58,15 +50,16 @@ type options struct {
 
 //Logger is the default log device, set to emit at the Error level by default
 func main() {
-	flag.BoolVarP(&fdebug, "debug", "d", false, "enable debug mode (warning: very verbose)")
+	_options := options{}
+	flag.BoolVarP(&_options.debug, "debug", "d", false, "enable debug mode (warning: very verbose)")
 	flag.BoolVarP(&showVersion, "version", "v", false, "show current version of talisman")
-	flag.StringVarP(&pattern, "pattern", "p", "", "pattern (glob-like) of files to scan (ignores githooks)")
-	flag.StringVarP(&githook, "githook", "g", PrePush, "either pre-push or pre-commit")
-	flag.BoolVarP(&scan, "scan", "s", false, "scanner scans the git commit history for potential secrets")
-	flag.BoolVar(&ignoreHistory, "ignoreHistory", false, "scanner scans all files on current head, will not scan through git commit history")
-	flag.StringVarP(&checksum, "checksum", "c", "", "checksum calculator calculates checksum and suggests .talismanrc format")
-	flag.StringVarP(&reportdirectory, "reportdirectory", "r", "", "directory where the scan reports will be stored")
-	flag.BoolVarP(&scanWithHtml, "scanWithHtml", "w", false, "generate html report (**Make sure you have installed talisman_html_report to use this, as mentioned in Readme**)")
+	flag.StringVarP(&_options.pattern, "pattern", "p", "", "pattern (glob-like) of files to scan (ignores githooks)")
+	flag.StringVarP(&_options.githook, "githook", "g", PrePush, "either pre-push or pre-commit")
+	flag.BoolVarP(&_options.scan, "scan", "s", false, "scanner scans the git commit history for potential secrets")
+	flag.BoolVar(&_options.ignoreHistory, "ignoreHistory", false, "scanner scans all files on current head, will not scan through git commit history")
+	flag.StringVarP(&_options.checksum, "checksum", "c", "", "checksum calculator calculates checksum and suggests .talismanrc format")
+	flag.StringVarP(&_options.reportdirectory, "reportdirectory", "r", "", "directory where the scan reports will be stored")
+	flag.BoolVarP(&_options.scanWithHtml, "scanWithHtml", "w", false, "generate html report (**Make sure you have installed talisman_html_report to use this, as mentioned in Readme**)")
 	flag.BoolVarP(&interactive, "interactive", "i", false, "interactively update talismanrc (only makes sense with -g/--githook)")
 
 	flag.Parse()
@@ -81,22 +74,11 @@ func main() {
 		os.Exit(0)
 	}
 
-	if githook != "" {
-		if !(githook == PreCommit || githook == PrePush) {
-			fmt.Println(fmt.Errorf("githook should be %s or %s, but got %s", PreCommit, PrePush, githook))
+	if _options.githook != "" {
+		if !(_options.githook == PreCommit || _options.githook == PrePush) {
+			fmt.Println(fmt.Errorf("githook should be %s or %s, but got %s", PreCommit, PrePush, _options.githook))
 			os.Exit(1)
 		}
-	}
-
-	_options := options{
-		debug:           fdebug,
-		githook:         githook,
-		pattern:         pattern,
-		scan:            scan,
-		ignoreHistory:   ignoreHistory,
-		checksum:        checksum,
-		reportdirectory: reportdirectory,
-		scanWithHtml:    scanWithHtml,
 	}
 
 	prompter := prompt.NewPrompt()
@@ -107,7 +89,8 @@ func main() {
 
 func run(stdin io.Reader, _options options, promptContext prompt.PromptContext) (returnCode int) {
 	if err := validateGitExecutable(afero.NewOsFs(), runtime.GOOS); err != nil {
-		log.Printf("error validating git executable: %v", err)
+		log.Printf("error validating git executable:" +
+			" %v", err)
 		return 1
 	}
 
