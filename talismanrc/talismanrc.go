@@ -29,6 +29,7 @@ type TalismanRC struct {
 		Experimental     ExperimentalConfig     `yaml:"experimental,omitempty"`
 		Threshold        severity.Severity      `default:"1" yaml:"threshold,omitempty"`
 	} `yaml:"scanconfig,omitempty"`
+	Version string `default:"1" yaml:"version,required"`
 }
 
 //AcceptsAll returns true if there are no rules specified
