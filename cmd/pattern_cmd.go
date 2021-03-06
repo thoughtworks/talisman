@@ -9,13 +9,13 @@ import (
 	"github.com/bmatcuk/doublestar"
 )
 
-type DirectoryHook struct{}
+type PatternCmd struct{}
 
-func NewDirectoryHook() *DirectoryHook {
-	return &DirectoryHook{}
+func NewPatternCmd() *PatternCmd {
+	return &PatternCmd{}
 }
 
-func (p *DirectoryHook) GetFilesFromDirectory(globPattern string) []gitrepo.Addition {
+func (p *PatternCmd) GetFilesFromDirectory(globPattern string) []gitrepo.Addition {
 	var result []gitrepo.Addition
 
 	files, _ := doublestar.Glob(globPattern)

@@ -1,16 +1,5 @@
 package talismanrc
 
-import (
-	"regexp"
-	"github.com/spf13/afero"
-)
-
-var (
-	emptyStringPattern = regexp.MustCompile(`^\s*$`)
-	fs                 = afero.NewOsFs()
-	currentRCFileName  = DefaultRCFileName
-)
-
 func isEmptyString(str string) bool {
 	return emptyStringPattern.MatchString(str)
 }
