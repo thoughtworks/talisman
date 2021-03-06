@@ -115,7 +115,7 @@ func (detector PatternDetector) processIgnore(ignoredFilePath gitrepo.FilePath, 
 	result.Ignore(ignoredFilePath, "filecontent")
 }
 
-func (detector PatternDetector) processMatch(match match, result *helpers.DetectionResults, threshold severity.SeverityValue) {
+func (detector PatternDetector) processMatch(match match, result *helpers.DetectionResults, threshold severity.Severity) {
 	for _, detectionWithSeverity := range match.detections {
 		for _, detection := range detectionWithSeverity.detections {
 			if detection != "" {

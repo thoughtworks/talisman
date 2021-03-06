@@ -3,13 +3,19 @@ package helpers
 import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	"talisman/gitrepo"
 	mockchecksumcalculator "talisman/internal/mock/checksumcalculator"
 	mockutility "talisman/internal/mock/utility"
 	"talisman/talismanrc"
+	logr "github.com/Sirupsen/logrus"
+
 	"testing"
 )
 
+func init() {
+	logr.SetOutput(ioutil.Discard)
+}
 func TestChecksumCompare_IsScanNotRequired(t *testing.T) {
 
 	t.Run("should return false if talismanrc is empty", func(t *testing.T) {

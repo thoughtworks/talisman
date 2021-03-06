@@ -69,16 +69,16 @@ var (
 //The Paths of the supplied Additions are tested against the configured patterns and if any of them match, it is logged as a failure during the run
 type FileNameDetector struct {
 	flagPatterns []*severity.PatternSeverity
-	threshold    severity.SeverityValue
+	threshold    severity.Severity
 }
 
 //DefaultFileNameDetector returns a FileNameDetector that tests Additions against the pre-configured patterns
-func DefaultFileNameDetector(threshold severity.SeverityValue) detector.Detector {
+func DefaultFileNameDetector(threshold severity.Severity) detector.Detector {
 	return NewFileNameDetector(filenamePatterns, threshold)
 }
 
 //NewFileNameDetector returns a FileNameDetector that tests Additions against the supplied patterns
-func NewFileNameDetector(patternsWithSeverity []*severity.PatternSeverity, threshold severity.SeverityValue) detector.Detector {
+func NewFileNameDetector(patternsWithSeverity []*severity.PatternSeverity, threshold severity.Severity) detector.Detector {
 	return FileNameDetector{patternsWithSeverity, threshold}
 }
 

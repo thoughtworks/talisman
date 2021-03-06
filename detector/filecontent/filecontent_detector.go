@@ -161,7 +161,7 @@ func processIgnoredFilepath(path gitrepo.FilePath, result *helpers.DetectionResu
 	result.Ignore(path, "filecontent")
 }
 
-func processContent(c content, threshold severity.SeverityValue, result *helpers.DetectionResults) {
+func processContent(c content, threshold severity.Severity, result *helpers.DetectionResults) {
 	for _, res := range c.results {
 		if res != "" {
 			log.WithFields(log.Fields{

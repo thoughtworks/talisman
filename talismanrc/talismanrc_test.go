@@ -1,13 +1,19 @@
 package talismanrc
 
 import (
+	"io/ioutil"
 	"testing"
 
 	"talisman/detector/severity"
 	"talisman/gitrepo"
 
 	"github.com/stretchr/testify/assert"
+	logr "github.com/Sirupsen/logrus"
 )
+
+func init() {
+	logr.SetOutput(ioutil.Discard)
+}
 
 func TestShouldIgnoreEmptyLinesInTheFile(t *testing.T) {
 	for _, s := range []string{"", " ", "  "} {
@@ -23,7 +29,7 @@ func TestShouldIgnoreUnformattedFiles(t *testing.T) {
 
 func TestShouldConvertThresholdToValue(t *testing.T) {
 	talismanRCContents := []byte("threshold: high")
-	assert.Equal(t, NewTalismanRC(talismanRCContents).Threshold, severity.HighSeverity)
+	assert.Equal(t, NewTalismanRC(talismanRCContents).Threshold, severity.High)
 }
 
 func TestDirectoryPatterns(t *testing.T) {
