@@ -1,6 +1,0 @@
-fileignoreconfig:
-- filename: Foo
-  checksum: SomeCheckSum
-version: "1.0"
-ors: []
-scopeconfig: []
