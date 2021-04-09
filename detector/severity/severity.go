@@ -26,12 +26,12 @@ func FromString(severity string) (Severity, error) {
 }
 type Severity int
 
-func (s *Severity) String() string {
-	return String(*s)
+func (s Severity) String() string {
+	return String(s)
 }
 
-func (s *Severity) ExceedsThreshold(threshold Severity) bool {
-	return *s >= threshold
+func (s Severity) ExceedsThreshold(threshold Severity) bool {
+	return s >= threshold
 }
 
 func (s *Severity) UnmarshalYAML(get func(interface{}) error) error {
@@ -44,8 +44,8 @@ func (s *Severity) UnmarshalYAML(get func(interface{}) error) error {
 	return err
 }
 
-func (s *Severity) MarshalYAML() (interface{}, error) {
-	return String(*s), nil
+func (s Severity) MarshalYAML() (interface{}, error) {
+	return String(s), nil
 }
 
 func (s *Severity) UnmarshalJSON(input []byte) error {
@@ -57,8 +57,8 @@ func (s *Severity) UnmarshalJSON(input []byte) error {
 	return nil
 }
 
-func (s *Severity) MarshalJSON() ([]byte, error) {
-	return []byte(String(*s)), nil
+func (s Severity) MarshalJSON() ([]byte, error) {
+	return []byte(String(s)), nil
 }
 
 const (
