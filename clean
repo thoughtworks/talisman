@@ -1,2 +1,2 @@
-#!/bin/bash
-rm -f checksums talisman_{d,l,w}*
+#!/bin/sh
+rm -vf dist/checksums dist/talisman_{d,l,w}*

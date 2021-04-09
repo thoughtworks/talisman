@@ -20,8 +20,8 @@ jobs:
 
     - name: Test
       run: |
-        git config user.email talisman-github-actions@github.com
-        git config user.name "Talisman GH Actions User"
+        git config user.email "talisman-maintainers@thoughtworks.com"
+        git config user.name "Talisman Maintainers"
         go test -covermode=count -coverprofile=coverage.out -v ./...
       
     - name: Codecov
