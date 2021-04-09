@@ -30,9 +30,5 @@ fileignoreconfig:
   checksum: 5d659125ecbe619ea99f5bc71c2d761b586ce3ec9ccab7683ee54f4ebde9f748
 - filename: install.sh
   checksum: c909f6a1caefba3f196d489f9262608044be596a44793c2173ec55b98ecec649
-- filename: talismanrc/talismanrc-type.go
-  checksum: e23d065c99d35bc96725e64fc2257c49104ae61316af43e2101acffc03775b54
-- filename: upx_compress.sh
-  checksum: 1a5d9b0ebd627646650c86236f4a21df5b4a2bcf26d77c439dd81c7b28ff9aa0
 scopeconfig:
 - scope: go

@@ -19,15 +19,15 @@ type TalismanRC struct {
 	CustomSeverities []CustomSeverityConfig `yaml:"custom_severities,omitempty"`
 	AllowedPatterns  []string               `yaml:"allowed_patterns,omitempty"`
 	Experimental     ExperimentalConfig     `yaml:"experimental,omitempty"`
-	Threshold        severity.Severity      `default:"1" yaml:"threshold,omitempty"`
+	Threshold        severity.Severity      `default:"low" yaml:"threshold,omitempty"`
 	ScanConfig       struct {
-		FileIgnoreConfig []ScanFileIgnoreConfig `yaml:"fileignoreconfig,omitempty"`
+		FileIgnoreConfig []ScanFileIgnoreConfig `yaml:"scanfileignoreconfig,omitempty"`
 		ScopeConfig      []ScopeConfig          `yaml:"scopeconfig,omitempty"`
 		CustomPatterns   []PatternString        `yaml:"custom_patterns,omitempty"`
 		CustomSeverities []CustomSeverityConfig `yaml:"custom_severities,omitempty"`
 		AllowedPatterns  []string               `yaml:"allowed_patterns,omitempty"`
 		Experimental     ExperimentalConfig     `yaml:"experimental,omitempty"`
-		Threshold        severity.Severity      `default:"1" yaml:"threshold,omitempty"`
+		Threshold        severity.Severity      `default:"low" yaml:"threshold,omitempty"`
 	} `yaml:"scanconfig,omitempty"`
 	Version string `default:"1.0" yaml:"version"`
 }
