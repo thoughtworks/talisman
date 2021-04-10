@@ -20,7 +20,7 @@ fileignoreconfig:
 var talismanRC = &talismanrc.TalismanRC{}
 
 func TestShouldNotFlagSafeText(t *testing.T) {
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	content := []byte("prettySafe")
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
@@ -30,7 +30,7 @@ func TestShouldNotFlagSafeText(t *testing.T) {
 }
 
 func TestShouldIgnoreFileIfNeeded(t *testing.T) {
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	content := []byte("prettySafe")
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
@@ -44,7 +44,7 @@ func TestShouldNotFlag4CharSafeText(t *testing.T) {
 	input is actually a b64 encoded value. In other words, abcd will match, but it is not necessarily represent
 	 the encoded value of i· rather just a plain abcd input
 	 see stackoverflow.com/questions/8571501/how-to-check-whether-the-string-is-base64-encoded-or-not#comment23919648_8571649*/
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	content := []byte("abcd")
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
@@ -55,7 +55,7 @@ func TestShouldNotFlag4CharSafeText(t *testing.T) {
 
 func TestShouldNotFlagLowEntropyBase64Text(t *testing.T) {
 	const lowEntropyString string = "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWEK"
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	content := []byte(lowEntropyString)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
@@ -66,7 +66,7 @@ func TestShouldNotFlagLowEntropyBase64Text(t *testing.T) {
 
 func TestShouldFlagPotentialAWSSecretKeys(t *testing.T) {
 	const awsSecretAccessKey string = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	content := []byte(awsSecretAccessKey)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
@@ -81,7 +81,7 @@ func TestShouldFlagPotentialAWSSecretKeys(t *testing.T) {
 
 func TestShouldFlagPotentialSecretWithoutTrimmingWhenLengthLessThan50Characters(t *testing.T) {
 	const secret string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9asdfa"
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	content := []byte(secret)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
@@ -96,7 +96,7 @@ func TestShouldFlagPotentialSecretWithoutTrimmingWhenLengthLessThan50Characters(
 
 func TestShouldFlagPotentialJWT(t *testing.T) {
 	const jwt string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzY290Y2guaW8iLCJleHAiOjEzMDA4MTkzODAsIm5hbWUiOiJDaHJpcyBTZXZpbGxlamEiLCJhZG1pbiI6dHJ1ZX0.03f329983b86f7d9a9f5fef85305880101d5e302afafa20154d094b229f757"
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	content := []byte(jwt)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
@@ -111,7 +111,7 @@ func TestShouldFlagPotentialJWT(t *testing.T) {
 
 func TestShouldFlagPotentialSecretsWithinJavaCode(t *testing.T) {
 	const dangerousJavaCode string = "public class HelloWorld {\r\n\r\n    public static void main(String[] args) {\r\n        // Prints \"Hello, World\" to the terminal window.\r\n        accessKey=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\";\r\n        System.out.println(\"Hello, World\");\r\n    }\r\n\r\n}"
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	content := []byte(dangerousJavaCode)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
@@ -126,7 +126,7 @@ func TestShouldFlagPotentialSecretsWithinJavaCode(t *testing.T) {
 
 func TestShouldNotFlagPotentialSecretsWithinSafeJavaCode(t *testing.T) {
 	const safeJavaCode string = "public class HelloWorld {\r\n\r\n    public static void main(String[] args) {\r\n        // Prints \"Hello, World\" to the terminal window.\r\n        System.out.println(\"Hello, World\");\r\n    }\r\n\r\n}"
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	content := []byte(safeJavaCode)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
@@ -137,7 +137,7 @@ func TestShouldNotFlagPotentialSecretsWithinSafeJavaCode(t *testing.T) {
 
 func TestShouldNotFlagPotentialSecretsWithinSafeLongMethodName(t *testing.T) {
 	const safeLongMethodName string = "TestBase64DetectorShouldNotDetectLongMethodNamesEvenWithRidiculousHighEntropyWordsMightExist"
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	content := []byte(safeLongMethodName)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
@@ -148,7 +148,7 @@ func TestShouldNotFlagPotentialSecretsWithinSafeLongMethodName(t *testing.T) {
 
 func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
 	const hex string = "68656C6C6F20776F726C6421"
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	content := []byte(hex)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
@@ -162,7 +162,7 @@ func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
 
 func TestShouldNotFlagPotentialCreditCardNumberIfAboveThreshold(t *testing.T) {
 	const creditCardNumber string = "340000000000009"
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	content := []byte(creditCardNumber)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
@@ -179,7 +179,7 @@ func TestResultsShouldContainHexTextsIfHexAndBase64ExistInFile(t *testing.T) {
 	const hex string = "68656C6C6F20776F726C6421"
 	const base64 string = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 	const hexAndBase64 = hex + "\n" + base64
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	content := []byte(hexAndBase64)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
@@ -196,7 +196,7 @@ func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) 
 	const hex string = "68656C6C6F20776F726C6421"
 	const base64 string = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 	const hexAndBase64 = hex + "\n" + base64
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	content := []byte(hexAndBase64)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
@@ -211,7 +211,7 @@ func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) 
 
 func TestResultsShouldContainCreditCardNumberIfCreditCardNumberExistInFile(t *testing.T) {
 	const creditCardNumber string = "340000000000009"
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	content := []byte(creditCardNumber)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}

@@ -46,7 +46,6 @@ type ResultsSummary struct {
 }
 
 //
-//
 //type FailureData struct {
 //	FailuresInCommits map[string][]string
 //}
@@ -56,6 +55,7 @@ type ResultsSummary struct {
 //Currently, it keeps track of failures and ignored files.
 //The results are grouped by FilePath for easy reporting of all detected problems with individual files.
 type DetectionResults struct {
+	mode    talismanrc.Mode  `json:""`
 	Summary ResultsSummary   `json:"summary"`
 	Results []ResultsDetails `json:"results"`
 }
@@ -110,8 +110,9 @@ func (r *DetectionResults) getResultDetailsForFilePath(fileName gitrepo.FilePath
 }
 
 //NewDetectionResults is a new DetectionResults struct. It represents the pre-run state of a Detection run.
-func NewDetectionResults() *DetectionResults {
+func NewDetectionResults(mode talismanrc.Mode) *DetectionResults {
 	return &DetectionResults{
+		mode,
 		ResultsSummary{
 			FailureTypes{0, 0, 0, 0, 0},
 		},
@@ -314,27 +315,27 @@ func (r *DetectionResults) Report(fs afero.Fs, ignoreFile string, promptContext 
 }
 
 func (r *DetectionResults) suggestTalismanRC(filePaths []string, promptContext prompt.PromptContext) {
-	var entriesToAdd []talismanrc.FileIgnoreConfig
+	var entriesToAdd []talismanrc.IgnoreConfig
 
 	for _, filePath := range filePaths {
 		currentChecksum := utility.DefaultSHA256Hasher{}.CollectiveSHA256Hash([]string{filePath})
-		fileIgnoreConfig := talismanrc.FileIgnoreConfig{FileName: filePath, Checksum: currentChecksum, IgnoreDetectors: []string{}}
+		fileIgnoreConfig := talismanrc.BuildIgnoreConfig(r.mode, filePath, currentChecksum, []string{})
 		entriesToAdd = append(entriesToAdd, fileIgnoreConfig)
 	}
 
 	if promptContext.Interactive && runtime.GOOS != "windows" {
 		confirmedEntries := getUserConfirmation(entriesToAdd, promptContext)
-		talismanrc.Get().AddFileIgnores(confirmedEntries)
+		talismanrc.Get().AddIgnores(r.mode, confirmedEntries)
 		exec.Command("git", "add", ".talismanrc").CombinedOutput()
 	} else {
-		printTalismanIgnoreSuggestion(entriesToAdd)
+		printTalismanIgnoreSuggestion(entriesToAdd, r.mode)
 		return
 	}
 
 }
 
-func getUserConfirmation(configs []talismanrc.FileIgnoreConfig, promptContext prompt.PromptContext) []talismanrc.FileIgnoreConfig {
-	confirmed := []talismanrc.FileIgnoreConfig{}
+func getUserConfirmation(configs []talismanrc.IgnoreConfig, promptContext prompt.PromptContext) []talismanrc.IgnoreConfig {
+	confirmed := []talismanrc.IgnoreConfig{}
 	if len(configs) != 0 {
 		fmt.Println("==== Interactively adding to talismanrc ====")
 	}
@@ -346,8 +347,8 @@ func getUserConfirmation(configs []talismanrc.FileIgnoreConfig, promptContext pr
 	return confirmed
 }
 
-func printTalismanIgnoreSuggestion(entriesToAdd []talismanrc.FileIgnoreConfig) {
-	talismanRCConfig := talismanrc.TalismanRC{FileIgnoreConfig: entriesToAdd}
+func printTalismanIgnoreSuggestion(entriesToAdd []talismanrc.IgnoreConfig, mode talismanrc.Mode) {
+	talismanRCConfig := makeTalismanRC(mode, entriesToAdd)
 	ignoreEntries, _ := yaml.Marshal(&talismanRCConfig)
 	suggestString := fmt.Sprintf("\n\x1b[33mIf you are absolutely sure that you want to ignore the " +
 		"above files from talisman detectors, consider pasting the following format in .talismanrc file" +
@@ -356,7 +357,27 @@ func printTalismanIgnoreSuggestion(entriesToAdd []talismanrc.FileIgnoreConfig) {
 	fmt.Println(string(ignoreEntries))
 }
 
-func confirm(config talismanrc.FileIgnoreConfig, promptContext prompt.PromptContext) bool {
+func makeTalismanRC(mode talismanrc.Mode, entries []talismanrc.IgnoreConfig) *talismanrc.TalismanRC {
+	tRC := &talismanrc.TalismanRC{}
+	switch mode {
+	case talismanrc.Hook:
+		fileIgnoreEntries := make([]talismanrc.FileIgnoreConfig, len(entries))
+		for idx, value := range entries {
+			fileIgnoreEntries[idx] = *(value.(*talismanrc.FileIgnoreConfig))
+		}
+		tRC.FileIgnoreConfig = fileIgnoreEntries
+
+	case talismanrc.Scan:
+		fileIgnoreEntries := make([]talismanrc.ScanFileIgnoreConfig, len(entries))
+		for idx, value := range entries {
+			fileIgnoreEntries[idx] = *(value.(*talismanrc.ScanFileIgnoreConfig))
+		}
+		tRC.ScanConfig.FileIgnoreConfig = fileIgnoreEntries
+	}
+	return tRC
+}
+
+func confirm(config talismanrc.IgnoreConfig, promptContext prompt.PromptContext) bool {
 	bytes, err := yaml.Marshal(&config)
 	if err != nil {
 		log.Printf("error marshalling file ignore config: %s", err)
@@ -365,7 +386,7 @@ func confirm(config talismanrc.FileIgnoreConfig, promptContext prompt.PromptCont
 	fmt.Println()
 	fmt.Println(string(bytes))
 
-	confirmationString := fmt.Sprintf("Do you want to add %s with above checksum in talismanrc ?", config.FileName)
+	confirmationString := fmt.Sprintf("Do you want to add %s with above checksum in talismanrc ?", config.GetFileName())
 
 	return promptContext.Prompt.Confirm(confirmationString)
 }

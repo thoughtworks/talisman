@@ -23,7 +23,7 @@ func NewBase64Detector(tRC *talismanrc.TalismanRC) *Base64Detector {
 	bd.AggressiveDetector = nil
 
 	bd.base64EntropyThreshold = BASE64_ENTROPY_THRESHOLD
-	if tRC.Experimental.Base64EntropyThreshold > 0.0 {
+	if tRC.GetExperimental().Base64EntropyThreshold > 0.0 {
 		bd.base64EntropyThreshold = tRC.Experimental.Base64EntropyThreshold
 		log.Debugf("Setting b64 entropy threshold to %f", bd.base64EntropyThreshold)
 	}
