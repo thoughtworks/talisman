@@ -149,7 +149,7 @@ func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentA
 				contentChanHasMore = false
 				continue
 			}
-			processContent(c, ignoreConfig.Threshold, result)
+			processContent(c, ignoreConfig.GetThreshold(), result)
 		}
 	}
 }

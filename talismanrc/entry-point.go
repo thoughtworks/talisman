@@ -16,7 +16,6 @@ var (
 	currentRCFileName  = DefaultRCFileName
 )
 
-
 func ReadConfigFromRCFile(repoFileRead func(string) ([]byte, error)) *TalismanRC {
 	fileContents, error := repoFileRead(currentRCFileName)
 	if error != nil {
@@ -29,7 +28,7 @@ func NewTalismanRC(fileContents []byte) *TalismanRC {
 	talismanRCFromFile := TalismanRC{}
 	err := yaml.Unmarshal(fileContents, &talismanRCFromFile)
 	if err != nil {
-		logr.Errorf("Unable to parse .talismanrc : %v",err)
+		logr.Errorf("Unable to parse .talismanrc : %v", err)
 		return &TalismanRC{}
 	}
 	if talismanRCFromFile.Version == "" {
@@ -64,4 +63,15 @@ func Get() *TalismanRC {
 
 func MakeWithFileIgnores(fileIgnoreConfigs []FileIgnoreConfig) *TalismanRC {
 	return &TalismanRC{FileIgnoreConfig: fileIgnoreConfigs, Version: DefaultRCVersion}
+}
+
+func BuildIgnoreConfig(mode Mode, filepath, checksum string, detectors []string) IgnoreConfig {
+	switch mode {
+	case Hook:
+		return &FileIgnoreConfig{FileName: filepath, Checksum: checksum, IgnoreDetectors: detectors}
+	case Scan:
+		return &ScanFileIgnoreConfig{FileName: filepath, Checksums: []string{checksum}, IgnoreDetectors: detectors}
+	default:
+		return &FileIgnoreConfig{FileName: filepath, Checksum: checksum, IgnoreDetectors: detectors}
+	}
 }

@@ -13,7 +13,7 @@ import (
 
 func TestShouldFlagPotentialAWSAccessKeysInAggressiveMode(t *testing.T) {
 	const awsAccessKeyIDExample string = "AKIAIOSFODNN7EXAMPLE\n"
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	content := []byte(awsAccessKeyIDExample)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
@@ -24,7 +24,7 @@ func TestShouldFlagPotentialAWSAccessKeysInAggressiveMode(t *testing.T) {
 
 func TestShouldFlagPotentialAWSAccessKeysAtPropertyDefinitionInAggressiveMode(t *testing.T) {
 	const awsAccessKeyIDExample string = "accessKey=AKIAIOSFODNN7EXAMPLE"
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	content := []byte(awsAccessKeyIDExample)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
@@ -35,7 +35,7 @@ func TestShouldFlagPotentialAWSAccessKeysAtPropertyDefinitionInAggressiveMode(t 
 
 func TestShouldNotFlagPotentialSecretsWithinSafeJavaCodeEvenInAggressiveMode(t *testing.T) {
 	const awsAccessKeyIDExample string = "public class HelloWorld {\r\n\r\n    public static void main(String[] args) {\r\n        // Prints \"Hello, World\" to the terminal window.\r\n        System.out.println(\"Hello, World\");\r\n    }\r\n\r\n}"
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	content := []byte(awsAccessKeyIDExample)
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}

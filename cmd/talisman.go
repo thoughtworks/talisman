@@ -18,8 +18,8 @@ import (
 var (
 	showVersion bool
 	//Version : Version of talisman
-	Version         = "Development Build"
-	interactive     bool
+	Version     = "Development Build"
+	interactive bool
 )
 
 const (
@@ -39,7 +39,7 @@ var options struct {
 	reportDirectory string
 	scanWithHtml    bool
 	input           io.Reader
-};
+}
 
 //var options Options
 
@@ -86,7 +86,7 @@ func main() {
 
 func run(promptContext prompt.PromptContext) (returnCode int) {
 	if err := validateGitExecutable(afero.NewOsFs(), runtime.GOOS); err != nil {
-		log.Errorf("error validating git executable:" + " %v", err)
+		log.Errorf("error validating git executable:"+" %v", err)
 		return 1
 	}
 
@@ -106,10 +106,10 @@ func run(promptContext prompt.PromptContext) (returnCode int) {
 		return NewChecksumCmd(strings.Fields(options.checksum)).Run()
 	} else if options.scan {
 		log.Infof("Running scanner")
-		return NewScannerCmd(options.ignoreHistory, options.reportDirectory).Run(talismanRC)
+		return NewScannerCmd(options.ignoreHistory, options.reportDirectory, talismanrc.Scan).Run(talismanRC)
 	} else if options.scanWithHtml {
 		log.Infof("Running scanner with html report")
-		return NewScannerCmd(options.ignoreHistory, "talisman_html_report").Run(talismanRC)
+		return NewScannerCmd(options.ignoreHistory, "talisman_html_report", talismanrc.Scan).Run(talismanRC)
 	} else if options.pattern != "" {
 		log.Infof("Running scan for %s", options.pattern)
 		return NewPatternCmd(options.pattern).Run(talismanRC, promptContext)
