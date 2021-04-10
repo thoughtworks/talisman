@@ -12,7 +12,15 @@ import (
 	"talisman/gitrepo"
 )
 
+type Mode int
+
+const (
+	Hook = Mode(iota + 1)
+	Scan
+)
+
 type TalismanRC struct {
+	mode             Mode                   `yaml:""`
 	FileIgnoreConfig []FileIgnoreConfig     `yaml:"fileignoreconfig,omitempty"`
 	ScopeConfig      []ScopeConfig          `yaml:"scopeconfig,omitempty"`
 	CustomPatterns   []PatternString        `yaml:"custom_patterns,omitempty"`
@@ -66,11 +74,25 @@ func (tRC *TalismanRC) FilterAdditions(additions []gitrepo.Addition) []gitrepo.A
 	return result
 }
 
-func (tRC *TalismanRC) AddFileIgnores(entriesToAdd []FileIgnoreConfig) {
+func (tRC *TalismanRC) AddIgnores(mode Mode, entriesToAdd []IgnoreConfig) {
 	if len(entriesToAdd) > 0 {
 		logr.Debugf("Adding entries: %v", entriesToAdd)
 		talismanRCConfig := Get()
-		talismanRCConfig.FileIgnoreConfig = combineFileIgnores(talismanRCConfig.FileIgnoreConfig, entriesToAdd)
+		if mode == Hook {
+			fileIgnoreEntries := make([]FileIgnoreConfig, len(entriesToAdd))
+			for idx, entry := range entriesToAdd {
+				newVal, _ := entry.(*FileIgnoreConfig)
+				fileIgnoreEntries[idx] = *newVal
+			}
+			talismanRCConfig.FileIgnoreConfig = combineFileIgnores(talismanRCConfig.FileIgnoreConfig, fileIgnoreEntries)
+		} else {
+			scanFileIgnoreEntries := make([]ScanFileIgnoreConfig, len(entriesToAdd))
+			for idx, entry := range entriesToAdd {
+				newVal, _ := entry.(*ScanFileIgnoreConfig)
+				scanFileIgnoreEntries[idx] = *newVal
+			}
+			talismanRCConfig.ScanConfig.FileIgnoreConfig = combineScanFileIgnores(talismanRCConfig.ScanConfig.FileIgnoreConfig, scanFileIgnoreEntries)
+		}
 		ignoreEntries, _ := yaml.Marshal(&talismanRCConfig)
 		file, err := fs.OpenFile(currentRCFileName, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
@@ -117,6 +139,32 @@ func combineFileIgnores(exsiting, incoming []FileIgnoreConfig) []FileIgnoreConfi
 	return result
 }
 
+func combineScanFileIgnores(exsiting, incoming []ScanFileIgnoreConfig) []ScanFileIgnoreConfig {
+	existingMap := make(map[string]ScanFileIgnoreConfig)
+	for _, fIC := range exsiting {
+		existingMap[fIC.FileName] = fIC
+	}
+	for _, fIC := range incoming {
+		existingMap[fIC.FileName] = fIC
+	}
+	result := make([]ScanFileIgnoreConfig, len(existingMap))
+	resultKeys := make([]string, len(existingMap))
+	index := 0
+	//sort keys in alphabetical order
+	for k, _ := range existingMap {
+		resultKeys[index] = k
+		index++
+	}
+	sort.Strings(resultKeys)
+	//add result entries based on sorted keys
+	index = 0
+	for _, k := range resultKeys {
+		result[index] = existingMap[k]
+		index++
+	}
+	return result
+}
+
 //Deny answers true if the Addition.Path is configured to be ignored and not checked by the detectors
 func (tRC *TalismanRC) Deny(addition gitrepo.Addition, detectorName string) bool {
 	result := false
@@ -138,4 +186,41 @@ func (tRC *TalismanRC) effectiveRules(detectorName string) []string {
 
 func (tRC *TalismanRC) IsEmpty() bool {
 	return reflect.DeepEqual(TalismanRC{}, tRC)
+}
+
+func (tRC *TalismanRC) SetMode(mode Mode) {
+	tRC.mode = mode
+}
+
+func (tRC *TalismanRC) GetThreshold() severity.Severity {
+	switch tRC.mode {
+	case Hook:
+		return tRC.Threshold
+	case Scan:
+		return tRC.ScanConfig.Threshold
+	default:
+		return tRC.Threshold
+	}
+}
+
+func (tRC *TalismanRC) GetCustomPatterns() []PatternString {
+	switch tRC.mode {
+	case Hook:
+		return tRC.CustomPatterns
+	case Scan:
+		return tRC.ScanConfig.CustomPatterns
+	default:
+		return tRC.CustomPatterns
+	}
+}
+
+func (tRC *TalismanRC) GetExperimental() ExperimentalConfig {
+	switch tRC.mode {
+	case Hook:
+		return tRC.Experimental
+	case Scan:
+		return tRC.ScanConfig.Experimental
+	default:
+		return tRC.Experimental
+	}
 }

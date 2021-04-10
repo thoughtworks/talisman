@@ -12,8 +12,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/spf13/afero"
 
-	"github.com/stretchr/testify/assert"
 	logr "github.com/Sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
 func init() {
@@ -21,20 +21,20 @@ func init() {
 }
 
 func TestNewDetectionResultsAreSuccessful(t *testing.T) {
-	results := NewDetectionResults()
+	results := NewDetectionResults(talismanrc.Hook)
 	assert.True(t, results.Successful(), "New detection result is always expected to succeed")
 	assert.False(t, results.HasFailures(), "New detection result is not expected to fail")
 }
 
 func TestCallingFailOnDetectionResultsFails(t *testing.T) {
-	results := NewDetectionResults()
+	results := NewDetectionResults(talismanrc.Hook)
 	results.Fail("some_filename", "filename", "Bomb", []string{}, severity.Low)
 	assert.False(t, results.Successful(), "Calling fail on a result should not make it succeed")
 	assert.True(t, results.HasFailures(), "Calling fail on a result should make it fail")
 }
 
 func TestCanRecordMultipleErrorsAgainstASingleFile(t *testing.T) {
-	results := NewDetectionResults()
+	results := NewDetectionResults(talismanrc.Hook)
 	results.Fail("some_filename", "filename", "Bomb", []string{}, severity.Low)
 	results.Fail("some_filename", "filename", "Complete & utter failure", []string{}, severity.Low)
 	results.Fail("another_filename", "filename", "Complete & utter failure", []string{}, severity.Low)
@@ -43,7 +43,7 @@ func TestCanRecordMultipleErrorsAgainstASingleFile(t *testing.T) {
 }
 
 func TestResultsReportsFailures(t *testing.T) {
-	results := NewDetectionResults()
+	results := NewDetectionResults(talismanrc.Hook)
 	results.Fail("some_filename", "", "Bomb", []string{}, severity.Low)
 	results.Fail("some_filename", "", "Complete & utter failure", []string{}, severity.Low)
 	results.Fail("another_filename", "", "Complete & utter failure", []string{}, severity.Low)
@@ -60,7 +60,7 @@ func TestResultsReportsFailures(t *testing.T) {
 
 // Presently not showing the ignored files in the log
 // func TestLoggingIgnoredFilesDoesNotCauseFailure(t *testing.T) {
-// 	results := NewDetectionResults()
+// 	results := NewDetectionResults(talismanrc.Hook)
 // 	results.Ignore("some_file", "some-detector")
 // 	results.Ignore("some/other_file", "some-other-detector")
 // 	results.Ignore("some_file_ignored_for_multiple_things", "some-detector")
@@ -79,7 +79,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 	defer ctrl.Finish()
 
 	prompter := mock.NewMockPrompt(ctrl)
-	results := NewDetectionResults()
+	results := NewDetectionResults(talismanrc.Hook)
 
 	// Creating temp file with some content
 	fs := afero.NewMemMapFs()
@@ -159,7 +159,7 @@ version: "1.0"
 	t.Run("when user confirms, entry for existing file should updated", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add existing.pem with above checksum in talismanrc ?").Return(true)
-		results := NewDetectionResults()
+		results := NewDetectionResults(talismanrc.Hook)
 		results.Fail("existing.pem", "filecontent", "This will bomb!", []string{}, severity.Low)
 
 		expectedFileContent := `fileignoreconfig:

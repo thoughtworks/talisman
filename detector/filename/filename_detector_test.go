@@ -137,7 +137,7 @@ func TestShouldIgnoreFilesWhenAskedToDoSoByIgnores(t *testing.T) {
 }
 
 func TestShouldIgnoreIfErrorIsBelowThreshold(t *testing.T) {
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	severity := severity.High
 	fileName := ".bash_aliases"
 	DefaultFileNameDetector(severity).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additionsNamed(fileName), talismanRC, results, func() {})
@@ -156,7 +156,7 @@ func shouldIgnoreFilesWhichWouldOtherwiseTriggerErrors(fileName, ignore string, 
 }
 
 func shouldNotFailWithDefaultDetectorAndIgnores(fileName, ignore string, threshold severity.Severity, t *testing.T) {
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 
 	fileIgnoreConfig := talismanrc.FileIgnoreConfig{}
 	fileIgnoreConfig.FileName = ignore
@@ -171,14 +171,14 @@ func shouldNotFailWithDefaultDetectorAndIgnores(fileName, ignore string, thresho
 }
 
 func shouldFailWithSpecificPattern(fileName, pattern string, threshold severity.Severity, t *testing.T) {
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	pt := []*severity.PatternSeverity{{Pattern: regexp.MustCompile(pattern), Severity: severity.Low}}
 	NewFileNameDetector(pt, threshold).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additionsNamed(fileName), talismanRC, results, func() {})
 	assert.True(t, results.HasFailures(), "Expected file %s to fail the check against the %s pattern", fileName, pattern)
 }
 
 func shouldFailWithDefaultDetector(fileName, pattern string, severity severity.Severity, t *testing.T) {
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.Hook)
 	DefaultFileNameDetector(severity).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additionsNamed(fileName), talismanRC, results, func() {})
 	assert.True(t, results.HasFailures(), "Expected file %s to fail the check against default detector. Missing pattern %s?", fileName, pattern)
 }

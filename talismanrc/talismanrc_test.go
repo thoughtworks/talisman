@@ -7,8 +7,8 @@ import (
 	"talisman/detector/severity"
 	"talisman/gitrepo"
 
-	"github.com/stretchr/testify/assert"
 	logr "github.com/Sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
 func init() {
@@ -72,7 +72,7 @@ func TestIgnoringDetectors(t *testing.T) {
 
 func TestAddIgnoreFiles(t *testing.T) {
 	talismanRCConfig := CreatetalismanRCWithScopeIgnore([]string{})
-	talismanRCConfig.AddFileIgnores([]FileIgnoreConfig{FileIgnoreConfig{"Foo", "SomeCheckSum", []string{}, []string{}}})
+	talismanRCConfig.AddIgnores(Hook, []IgnoreConfig{&FileIgnoreConfig{"Foo", "SomeCheckSum", []string{}, []string{}}})
 	talismanRCConfig = Get()
 	assert.Equal(t, 1, len(talismanRCConfig.FileIgnoreConfig))
 }
