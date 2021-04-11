@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/spf13/afero"
 	"talisman/detector"
 	"talisman/detector/helpers"
 	"talisman/detector/severity"
@@ -13,10 +12,10 @@ import (
 
 const (
 	//CompletedSuccessfully is an exit status that says that the current runners run completed without errors
-	CompletedSuccessfully int = 0
+	CompletedSuccessfully = 0
 
 	//CompletedWithErrors is an exit status that says that the current runners run completed with failures
-	CompletedWithErrors int = 1
+	CompletedWithErrors = 1
 )
 
 //runner represents a single run of the validations for a given commit range
@@ -29,7 +28,7 @@ type runner struct {
 func NewRunner(additions []gitrepo.Addition) *runner {
 	return &runner{
 		additions: additions,
-		results:   helpers.NewDetectionResults(talismanrc.Hook),
+		results:   helpers.NewDetectionResults(talismanrc.HookMode),
 	}
 }
 
@@ -54,8 +53,7 @@ func (r *runner) printReport(promptContext prompt.PromptContext) {
 		fmt.Println(r.results.ReportWarnings())
 	}
 	if r.results.HasIgnores() || r.results.HasFailures() {
-		fs := afero.NewOsFs()
-		r.results.Report(fs, talismanrc.DefaultRCFileName, promptContext)
+		r.results.Report(promptContext)
 	}
 }
 

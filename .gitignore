@@ -15,3 +15,8 @@ coverage.txt
 talisman_reports/
 *.iml
 dist/
+*.out
+*.pprof
+*.mprof
+.envrc
+talisman_html_report

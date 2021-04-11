@@ -77,31 +77,18 @@ func (detector PatternDetector) Test(comparator helpers.ChecksumCompare, current
 	}
 }
 
-var knownPatterns = make(map[string]*regexp.Regexp)
-
-func replaceAllStrings(str string, pattern string) string {
-	var pat *regexp.Regexp
-	var ok bool
-
-	if pat, ok = knownPatterns[pattern]; !ok {
-		pat = regexp.MustCompile(fmt.Sprintf("(?i)%s", pattern))
-		knownPatterns[pattern] = pat
-	}
-
-	return pat.ReplaceAllString(str, "")
-}
-
 func processAllowedPatterns(addition gitrepo.Addition, tRC *talismanrc.TalismanRC) string {
+	additionPathAsString := string(addition.Path)
 	// Processing global allowed patterns
 	for _, pattern := range tRC.AllowedPatterns {
-		addition.Data = []byte(replaceAllStrings(string(addition.Data), pattern))
+		addition.Data = []byte(pattern.ReplaceAllString(string(addition.Data), ""))
 	}
 
 	// Processing allowed patterns based on file path
-	for _, fileignoreconfig := range tRC.FileIgnoreConfig {
-		if fileignoreconfig.FileName == string(addition.Path) {
-			for _, pattern := range fileignoreconfig.AllowedPatterns {
-				addition.Data = []byte(replaceAllStrings(string(addition.Data), pattern))
+	for _, ignoreConfig := range tRC.IgnoreConfigs {
+		if ignoreConfig.GetFileName() == additionPathAsString {
+			for _, pattern := range ignoreConfig.GetAllowedPatterns() {
+				addition.Data = []byte(pattern.ReplaceAllString(string(addition.Data), ""))
 			}
 		}
 	}

@@ -46,11 +46,11 @@ const (
 func (ct contentType) getInfo() string {
 	switch ct {
 	case base64Content:
-		return "Failing file as it contains a base64 encoded text."
+		return "Base64Detector: Failing file as it contains a base64 encoded text."
 	case hexContent:
-		return "Failing file as it contains a hex encoded text."
+		return "HexDetector: Failing file as it contains a hex encoded text."
 	case creditCardContent:
-		return "Failing file as it contains a potential credit card number."
+		return "CreditCardDetector: Failing file as it contains a potential credit card number."
 	}
 	return ""
 }
@@ -76,7 +76,7 @@ type content struct {
 	severity    severity.Severity
 }
 
-func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *helpers.DetectionResults, additionCompletionCallback func()) {
+func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, talismanRC *talismanrc.TalismanRC, result *helpers.DetectionResults, additionCompletionCallback func()) {
 	contentTypes := []struct {
 		contentType
 		fn
@@ -109,7 +109,7 @@ func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentA
 		go func(addition gitrepo.Addition) {
 			defer waitGroup.Done()
 			defer additionCompletionCallback()
-			if ignoreConfig.Deny(addition, "filecontent") || comparator.IsScanNotRequired(addition) {
+			if talismanRC.Deny(addition, "filecontent") || comparator.IsScanNotRequired(addition) {
 				ignoredFilePaths <- addition.Path
 				return
 			}
@@ -149,7 +149,7 @@ func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentA
 				contentChanHasMore = false
 				continue
 			}
-			processContent(c, ignoreConfig.GetThreshold(), result)
+			processContent(c, talismanRC.Threshold, result)
 		}
 	}
 }

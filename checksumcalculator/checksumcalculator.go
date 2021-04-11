@@ -6,7 +6,7 @@ import (
 	"talisman/talismanrc"
 	"talisman/utility"
 
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 type ChecksumCalculator interface {
@@ -45,6 +45,7 @@ func (cc *DefaultChecksumCalculator) SuggestTalismanRC(fileNamePatterns []string
 	return result
 }
 
+//CalculateCollectiveChecksumForPattern calculates and returns the checksum for files matching the input pattern
 func (cc *DefaultChecksumCalculator) CalculateCollectiveChecksumForPattern(fileNamePattern string) string {
 	var patternPaths []string
 	currentCollectiveChecksum := ""

@@ -58,7 +58,8 @@ func (s *Severity) UnmarshalJSON(input []byte) error {
 }
 
 func (s Severity) MarshalJSON() ([]byte, error) {
-	return []byte(String(s)), nil
+	bytes := []byte(fmt.Sprintf("\"%s\"",String(s)))
+	return bytes, nil
 }
 
 const (
