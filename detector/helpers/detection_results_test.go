@@ -21,20 +21,20 @@ func init() {
 }
 
 func TestNewDetectionResultsAreSuccessful(t *testing.T) {
-	results := NewDetectionResults(talismanrc.Hook)
+	results := NewDetectionResults(talismanrc.HookMode)
 	assert.True(t, results.Successful(), "New detection result is always expected to succeed")
 	assert.False(t, results.HasFailures(), "New detection result is not expected to fail")
 }
 
 func TestCallingFailOnDetectionResultsFails(t *testing.T) {
-	results := NewDetectionResults(talismanrc.Hook)
+	results := NewDetectionResults(talismanrc.HookMode)
 	results.Fail("some_filename", "filename", "Bomb", []string{}, severity.Low)
 	assert.False(t, results.Successful(), "Calling fail on a result should not make it succeed")
 	assert.True(t, results.HasFailures(), "Calling fail on a result should make it fail")
 }
 
 func TestCanRecordMultipleErrorsAgainstASingleFile(t *testing.T) {
-	results := NewDetectionResults(talismanrc.Hook)
+	results := NewDetectionResults(talismanrc.HookMode)
 	results.Fail("some_filename", "filename", "Bomb", []string{}, severity.Low)
 	results.Fail("some_filename", "filename", "Complete & utter failure", []string{}, severity.Low)
 	results.Fail("another_filename", "filename", "Complete & utter failure", []string{}, severity.Low)
@@ -43,7 +43,7 @@ func TestCanRecordMultipleErrorsAgainstASingleFile(t *testing.T) {
 }
 
 func TestResultsReportsFailures(t *testing.T) {
-	results := NewDetectionResults(talismanrc.Hook)
+	results := NewDetectionResults(talismanrc.HookMode)
 	results.Fail("some_filename", "", "Bomb", []string{}, severity.Low)
 	results.Fail("some_filename", "", "Complete & utter failure", []string{}, severity.Low)
 	results.Fail("another_filename", "", "Complete & utter failure", []string{}, severity.Low)
@@ -60,7 +60,7 @@ func TestResultsReportsFailures(t *testing.T) {
 
 // Presently not showing the ignored files in the log
 // func TestLoggingIgnoredFilesDoesNotCauseFailure(t *testing.T) {
-// 	results := NewDetectionResults(talismanrc.Hook)
+// 	results := NewDetectionResults(talismanrc.HookMode)
 // 	results.Ignore("some_file", "some-detector")
 // 	results.Ignore("some/other_file", "some-other-detector")
 // 	results.Ignore("some_file_ignored_for_multiple_things", "some-detector")
@@ -79,7 +79,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 	defer ctrl.Finish()
 
 	prompter := mock.NewMockPrompt(ctrl)
-	results := NewDetectionResults(talismanrc.Hook)
+	results := NewDetectionResults(talismanrc.HookMode)
 
 	// Creating temp file with some content
 	fs := afero.NewMemMapFs()
@@ -103,7 +103,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
 
-		results.Report(fs, ignoreFile, promptContext)
+		results.Report(promptContext)
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
@@ -116,7 +116,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 		prompter.EXPECT().Confirm("Do you want to add some_file.pem with above checksum in talismanrc ?").Return(false)
 		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 
-		results.Report(fs, ignoreFile, promptContext)
+		results.Report(promptContext)
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
@@ -129,7 +129,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 		prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
 		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 
-		results.Report(fs, ignoreFile, promptContext)
+		results.Report(promptContext)
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
@@ -148,7 +148,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
   checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
 version: "1.0"
 `
-		results.Report(fs, ignoreFile, promptContext)
+		results.Report(promptContext)
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
@@ -159,7 +159,7 @@ version: "1.0"
 	t.Run("when user confirms, entry for existing file should updated", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add existing.pem with above checksum in talismanrc ?").Return(true)
-		results := NewDetectionResults(talismanrc.Hook)
+		results := NewDetectionResults(talismanrc.HookMode)
 		results.Fail("existing.pem", "filecontent", "This will bomb!", []string{}, severity.Low)
 
 		expectedFileContent := `fileignoreconfig:
@@ -167,7 +167,7 @@ version: "1.0"
   checksum: 5bc0b0692a316bb2919263addaef0ffba3a21b9e1cca62a1028390e97e861e4e
 version: "1.0"
 `
-		results.Report(fs, ignoreFile, promptContext)
+		results.Report(promptContext)
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
@@ -190,7 +190,7 @@ version: "1.0"
   checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
 version: "1.0"
 `
-		results.Report(fs, ignoreFile, promptContext)
+		results.Report(promptContext)
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)

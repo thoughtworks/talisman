@@ -2,7 +2,7 @@ package helpers
 
 import (
 	"fmt"
-	"log"
+	"github.com/Sirupsen/logrus"
 	"os"
 	"os/exec"
 	"runtime"
@@ -16,7 +16,6 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/olekukonko/tablewriter"
-	"github.com/spf13/afero"
 )
 
 type Details struct {
@@ -45,17 +44,12 @@ type ResultsSummary struct {
 	Types FailureTypes `json:"types"`
 }
 
-//
-//type FailureData struct {
-//	FailuresInCommits map[string][]string
-//}
-
 //DetectionResults represents all interesting information collected during a detection run.
 //It serves as a collecting parameter for the tests performed by the various Detectors in the DetectorChain
 //Currently, it keeps track of failures and ignored files.
 //The results are grouped by FilePath for easy reporting of all detected problems with individual files.
 type DetectionResults struct {
-	mode    talismanrc.Mode  `json:""`
+	mode    talismanrc.Mode
 	Summary ResultsSummary   `json:"summary"`
 	Results []ResultsDetails `json:"results"`
 }
@@ -104,8 +98,6 @@ func (r *DetectionResults) getResultDetailsForFilePath(fileName gitrepo.FilePath
 			return &resultDetail
 		}
 	}
-	//resultDetail := ResultsDetails{fileName, make([]Details, 0), make([]Details, 0), make([]Details, 0)}
-	//r.Results = append(r.Results, resultDetail)
 	return nil
 }
 
@@ -206,13 +198,6 @@ func (r *DetectionResults) Ignore(filePath gitrepo.FilePath, category string) {
 	r.Summary.Types.Ignores++
 }
 
-func createNewResultForFile(category string, message string, commits []string, filePath gitrepo.FilePath, severity severity.Severity) ResultsDetails {
-	failureDetails := Details{category, message, commits, severity}
-	resultDetails := ResultsDetails{filePath, make([]Details, 0), make([]Details, 0), make([]Details, 0)}
-	resultDetails.FailureList = append(resultDetails.FailureList, failureDetails)
-	return resultDetails
-}
-
 func (r *DetectionResults) updateResultsSummary(category string) {
 	switch category {
 	case "filecontent":
@@ -285,7 +270,7 @@ func (r *DetectionResults) ReportWarnings() string {
 }
 
 //Report returns a string documenting the various failures and ignored files for the current run
-func (r *DetectionResults) Report(fs afero.Fs, ignoreFile string, promptContext prompt.PromptContext) string {
+func (r *DetectionResults) Report(promptContext prompt.PromptContext) string {
 	var result string
 	var filePathsForIgnoresAndFailures []string
 	var data [][]string
@@ -325,10 +310,13 @@ func (r *DetectionResults) suggestTalismanRC(filePaths []string, promptContext p
 
 	if promptContext.Interactive && runtime.GOOS != "windows" {
 		confirmedEntries := getUserConfirmation(entriesToAdd, promptContext)
-		talismanrc.Get().AddIgnores(r.mode, confirmedEntries)
-		exec.Command("git", "add", ".talismanrc").CombinedOutput()
+		talismanrc.ConfigFromFile().AddIgnores(r.mode, confirmedEntries)
+		output, err := exec.Command("git", "add", ".talismanrc").CombinedOutput()
+		if err != nil {
+			logrus.Errorf("Error appending to talismanrc %v", output)
+		}
 	} else {
-		printTalismanIgnoreSuggestion(entriesToAdd, r.mode)
+		printTalismanIgnoreSuggestion(entriesToAdd)
 		return
 	}
 
@@ -347,8 +335,8 @@ func getUserConfirmation(configs []talismanrc.IgnoreConfig, promptContext prompt
 	return confirmed
 }
 
-func printTalismanIgnoreSuggestion(entriesToAdd []talismanrc.IgnoreConfig, mode talismanrc.Mode) {
-	talismanRCConfig := makeTalismanRC(mode, entriesToAdd)
+func printTalismanIgnoreSuggestion(entriesToAdd []talismanrc.IgnoreConfig) {
+	talismanRCConfig := makeTalismanRC(entriesToAdd)
 	ignoreEntries, _ := yaml.Marshal(&talismanRCConfig)
 	suggestString := fmt.Sprintf("\n\x1b[33mIf you are absolutely sure that you want to ignore the " +
 		"above files from talisman detectors, consider pasting the following format in .talismanrc file" +
@@ -357,30 +345,16 @@ func printTalismanIgnoreSuggestion(entriesToAdd []talismanrc.IgnoreConfig, mode 
 	fmt.Println(string(ignoreEntries))
 }
 
-func makeTalismanRC(mode talismanrc.Mode, entries []talismanrc.IgnoreConfig) *talismanrc.TalismanRC {
-	tRC := &talismanrc.TalismanRC{}
-	switch mode {
-	case talismanrc.Hook:
-		fileIgnoreEntries := make([]talismanrc.FileIgnoreConfig, len(entries))
-		for idx, value := range entries {
-			fileIgnoreEntries[idx] = *(value.(*talismanrc.FileIgnoreConfig))
-		}
-		tRC.FileIgnoreConfig = fileIgnoreEntries
-
-	case talismanrc.Scan:
-		fileIgnoreEntries := make([]talismanrc.ScanFileIgnoreConfig, len(entries))
-		for idx, value := range entries {
-			fileIgnoreEntries[idx] = *(value.(*talismanrc.ScanFileIgnoreConfig))
-		}
-		tRC.ScanConfig.FileIgnoreConfig = fileIgnoreEntries
-	}
-	return tRC
+func makeTalismanRC(entries []talismanrc.IgnoreConfig) *talismanrc.TalismanRC {
+	tRC := talismanrc.TalismanRC{}
+	tRC.IgnoreConfigs = entries
+	return &tRC
 }
 
 func confirm(config talismanrc.IgnoreConfig, promptContext prompt.PromptContext) bool {
 	bytes, err := yaml.Marshal(&config)
 	if err != nil {
-		log.Printf("error marshalling file ignore config: %s", err)
+		logrus.Errorf("error marshalling file ignore config: %s", err)
 	}
 
 	fmt.Println()

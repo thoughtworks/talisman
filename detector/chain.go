@@ -31,9 +31,9 @@ func NewChain() *Chain {
 //DefaultChain returns a DetectorChain with pre-configured detectors
 func DefaultChain(tRC *talismanrc.TalismanRC) *Chain {
 	result := NewChain()
-	result.AddDetector(filename.DefaultFileNameDetector(tRC.GetThreshold()))
+	result.AddDetector(filename.DefaultFileNameDetector(tRC.Threshold))
 	result.AddDetector(filecontent.NewFileContentDetector(tRC))
-	result.AddDetector(pattern.NewPatternDetector(tRC.GetCustomPatterns()))
+	result.AddDetector(pattern.NewPatternDetector(tRC.CustomPatterns))
 	return result
 }
 

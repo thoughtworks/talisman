@@ -20,12 +20,11 @@ func NewChecksumCompare(calculator checksumcalculator.ChecksumCalculator, hasher
 
 func (cc *ChecksumCompare) IsScanNotRequired(addition gitrepo.Addition) bool {
 	currentCollectiveChecksum := cc.hasher.CollectiveSHA256Hash([]string{string(addition.Path)})
-	declaredCheckSum := ""
-	for _, ignore := range cc.talismanRC.FileIgnoreConfig {
-		if addition.Matches(ignore.FileName) {
-			currentCollectiveChecksum = cc.calculator.CalculateCollectiveChecksumForPattern(ignore.FileName)
-			declaredCheckSum = ignore.Checksum
+	for _, ignore := range cc.talismanRC.IgnoreConfigs {
+		if addition.Matches(ignore.GetFileName()) {
+			currentCollectiveChecksum = cc.calculator.CalculateCollectiveChecksumForPattern(ignore.GetFileName())
+			return ignore.ChecksumMatches(currentCollectiveChecksum)
 		}
 	}
-	return currentCollectiveChecksum == declaredCheckSum
+	return false;
 }

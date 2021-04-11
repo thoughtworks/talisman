@@ -37,7 +37,7 @@ func TestChecksumCompare_IsScanNotRequired(t *testing.T) {
 		defer ctrl.Finish()
 		mockSHA256Hasher := mockutility.NewMockSHA256Hasher(ctrl)
 		checksumCalculator := mockchecksumcalculator.NewMockChecksumCalculator(ctrl)
-		ignoreConfig := talismanrc.TalismanRC{
+		ignoreConfig := talismanrc.talismanRC{
 			FileIgnoreConfig: []talismanrc.FileIgnoreConfig{
 				{
 					FileName: "some.txt",
