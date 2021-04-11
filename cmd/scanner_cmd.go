@@ -21,10 +21,7 @@ type ScannerCmd struct {
 //Run scans git commit history for potential secrets and returns 0 or 1 as exit code
 func (s *ScannerCmd) Run(tRC *talismanrc.TalismanRC) int {
 	fmt.Printf("\n\n")
-	utility.CreateArt("Running Scan..")
-
-	setCustomSeverities(tRC)
-	tRC.SetMode(talismanrc.Scan)
+	utility.CreateArt("Running ScanMode..")
 	detector.DefaultChain(tRC).Test(s.additions, tRC, s.results)
 	reportsPath, err := report.GenerateReport(s.results, s.reportDirectory)
 	if err != nil {
@@ -43,12 +40,12 @@ func (s *ScannerCmd) exitStatus() int {
 	return CompletedSuccessfully
 }
 
-//Returns a new scanner command
-func NewScannerCmd(ignoreHistory bool, reportDirectory string, mode talismanrc.Mode) *ScannerCmd {
+//NewScannerCmd Returns a new scanner command
+func NewScannerCmd(ignoreHistory bool, reportDirectory string) *ScannerCmd {
 	additions := scanner.GetAdditions(ignoreHistory)
 	return &ScannerCmd{
 		additions:       additions,
-		results:         helpers.NewDetectionResults(mode),
+		results:         helpers.NewDetectionResults(talismanrc.ScanMode),
 		reportDirectory: reportDirectory,
 	}
 }

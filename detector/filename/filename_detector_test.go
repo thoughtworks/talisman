@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var talismanRC = &talismanrc.TalismanRC{}
+var talismanRC = &talismanrc.talismanRC{}
 
 func TestShouldFlagPotentialSSHPrivateKeys(t *testing.T) {
 	shouldFail("id_rsa", "^.+_rsa$", severity.Low, t)
@@ -137,7 +137,7 @@ func TestShouldIgnoreFilesWhenAskedToDoSoByIgnores(t *testing.T) {
 }
 
 func TestShouldIgnoreIfErrorIsBelowThreshold(t *testing.T) {
-	results := helpers.NewDetectionResults(talismanrc.Hook)
+	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	severity := severity.High
 	fileName := ".bash_aliases"
 	DefaultFileNameDetector(severity).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additionsNamed(fileName), talismanRC, results, func() {})
@@ -156,13 +156,13 @@ func shouldIgnoreFilesWhichWouldOtherwiseTriggerErrors(fileName, ignore string, 
 }
 
 func shouldNotFailWithDefaultDetectorAndIgnores(fileName, ignore string, threshold severity.Severity, t *testing.T) {
-	results := helpers.NewDetectionResults(talismanrc.Hook)
+	results := helpers.NewDetectionResults(talismanrc.HookMode)
 
 	fileIgnoreConfig := talismanrc.FileIgnoreConfig{}
 	fileIgnoreConfig.FileName = ignore
 	fileIgnoreConfig.IgnoreDetectors = make([]string, 1)
 	fileIgnoreConfig.IgnoreDetectors[0] = "filename"
-	talismanRC := &talismanrc.TalismanRC{}
+	talismanRC := &talismanrc.talismanRC{}
 	talismanRC.FileIgnoreConfig = make([]talismanrc.FileIgnoreConfig, 1)
 	talismanRC.FileIgnoreConfig[0] = fileIgnoreConfig
 
@@ -171,14 +171,14 @@ func shouldNotFailWithDefaultDetectorAndIgnores(fileName, ignore string, thresho
 }
 
 func shouldFailWithSpecificPattern(fileName, pattern string, threshold severity.Severity, t *testing.T) {
-	results := helpers.NewDetectionResults(talismanrc.Hook)
+	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	pt := []*severity.PatternSeverity{{Pattern: regexp.MustCompile(pattern), Severity: severity.Low}}
 	NewFileNameDetector(pt, threshold).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additionsNamed(fileName), talismanRC, results, func() {})
 	assert.True(t, results.HasFailures(), "Expected file %s to fail the check against the %s pattern", fileName, pattern)
 }
 
 func shouldFailWithDefaultDetector(fileName, pattern string, severity severity.Severity, t *testing.T) {
-	results := helpers.NewDetectionResults(talismanrc.Hook)
+	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	DefaultFileNameDetector(severity).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additionsNamed(fileName), talismanRC, results, func() {})
 	assert.True(t, results.HasFailures(), "Expected file %s to fail the check against default detector. Missing pattern %s?", fileName, pattern)
 }

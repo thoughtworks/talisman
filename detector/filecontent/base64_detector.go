@@ -2,6 +2,7 @@ package filecontent
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"math"
 	"talisman/talismanrc"
 )
 
@@ -23,7 +24,7 @@ func NewBase64Detector(tRC *talismanrc.TalismanRC) *Base64Detector {
 	bd.AggressiveDetector = nil
 
 	bd.base64EntropyThreshold = BASE64_ENTROPY_THRESHOLD
-	if tRC.GetExperimental().Base64EntropyThreshold > 0.0 {
+	if tRC.Experimental.Base64EntropyThreshold > 0.0 {
 		bd.base64EntropyThreshold = tRC.Experimental.Base64EntropyThreshold
 		log.Debugf("Setting b64 entropy threshold to %f", bd.base64EntropyThreshold)
 	}
@@ -43,7 +44,8 @@ func (bd *Base64Detector) CheckBase64Encoding(word string) string {
 	entropyCandidates := bd.entropy.GetEntropyCandidatesWithinWord(word, MIN_BASE64_SECRET_LENGTH, bd.base64Map)
 	for _, candidate := range entropyCandidates {
 		entropy := bd.entropy.GetShannonEntropy(candidate, BASE64_CHARS)
-		log.Debugf("Detected entropy for word %s = %f", candidate, entropy)
+		sliceLimit := int(math.Min(50, float64(len(candidate))))
+		log.Debugf("Detected entropy for word %s = %f", candidate[0:sliceLimit], entropy)
 		if entropy > bd.base64EntropyThreshold && !bd.wordCheck.containsWordsOnly(candidate) {
 			return word
 		}

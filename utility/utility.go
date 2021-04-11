@@ -57,7 +57,6 @@ func File(src, dst string) error {
 }
 
 func Dir(src string, dst string) error {
-
 	var err error
 	var fds []os.FileInfo
 	var srcinfo os.FileInfo

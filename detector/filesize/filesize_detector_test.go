@@ -11,10 +11,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var talismanRC = &talismanrc.TalismanRC{}
+var talismanRC = &talismanrc.talismanRC{}
 
 func TestShouldFlagLargeFiles(t *testing.T) {
-	results := helpers.NewDetectionResults(talismanrc.Hook)
+	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	content := []byte("more than one byte")
 	additions := []gitrepo.Addition{gitrepo.NewAddition("filename", content)}
 	NewFileSizeDetector(2).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additions, talismanRC, results, func() {})
@@ -22,7 +22,7 @@ func TestShouldFlagLargeFiles(t *testing.T) {
 }
 
 func TestShouldNotFlagLargeFilesIfThresholdIsBelowSeverity(t *testing.T) {
-	results := helpers.NewDetectionResults(talismanrc.Hook)
+	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	content := []byte("more than one byte")
 	var talismanRCContents = "threshold: high"
 	talismanRCWithThreshold := talismanrc.NewTalismanRC([]byte(talismanRCContents))
@@ -33,7 +33,7 @@ func TestShouldNotFlagLargeFilesIfThresholdIsBelowSeverity(t *testing.T) {
 }
 
 func TestShouldNotFlagSmallFiles(t *testing.T) {
-	results := helpers.NewDetectionResults(talismanrc.Hook)
+	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	content := []byte("m")
 	additions := []gitrepo.Addition{gitrepo.NewAddition("filename", content)}
 	NewFileSizeDetector(2).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additions, talismanRC, results, func() {})
@@ -41,7 +41,7 @@ func TestShouldNotFlagSmallFiles(t *testing.T) {
 }
 
 func TestShouldNotFlagIgnoredLargeFiles(t *testing.T) {
-	results := helpers.NewDetectionResults(talismanrc.Hook)
+	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	content := []byte("more than one byte")
 
 	filename := "filename"
