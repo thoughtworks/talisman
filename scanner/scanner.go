@@ -52,8 +52,8 @@ func putBlobsInChannel(commit string, result chan []string) {
 func getBlobsFromChannel(blobsInCommits BlobsInCommits, result chan []string) {
 	blobs := <-result
 	commit := blobs[len(blobs)-1]
-	for _, blob := range blobs[:len(blobs)] {
-		if blob != "" && blob != commit {
+	for _, blob := range blobs[:len(blobs)-1] {
+		if blob != "" {
 			blobDetailsString := strings.Split(blob, " ")
 			blobDetails := strings.Split(blobDetailsString[2], "	")
 			blobHash := blobDetails[0] + "\t" + blobDetails[1]
