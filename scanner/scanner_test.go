@@ -1,8 +1,9 @@
 package scanner
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_getBlobsFromChannel(t *testing.T) {
@@ -14,11 +15,11 @@ func Test_getBlobsFromChannel(t *testing.T) {
 			"commitSha",
 		}
 	}()
-	blobsInCommits := BlobsInCommits{commits: map[string][]string{}}
+	blobsInCommits := BlobsInCommits{commits: map[blobDetails][]string{}}
 	getBlobsFromChannel(blobsInCommits, ch)
 
 	commits := blobsInCommits.commits
 	assert.Len(t, commits, 2)
-	assert.Equal(t, []string{"commitSha"}, commits["351324aa7b3c66043e484c2f2c7b7f1842152f35	.gitignore"])
-	assert.Equal(t, []string{"commitSha"}, commits["8715df9907604c8ee8fc5e377821817f84f014fa	.pre-commit-hooks.yaml"])
+	assert.Equal(t, []string{"commitSha"}, commits[blobDetails{"351324aa7b3c66043e484c2f2c7b7f1842152f35", ".gitignore"}])
+	assert.Equal(t, []string{"commitSha"}, commits[blobDetails{"8715df9907604c8ee8fc5e377821817f84f014fa", ".pre-commit-hooks.yaml"}])
 }

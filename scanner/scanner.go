@@ -7,9 +7,13 @@ import (
 	"talisman/gitrepo"
 )
 
+type blobDetails struct {
+	hash, filePath string
+}
+
 // BlobsInCommits is a map of blob and list of the commits the blobs is present in.
 type BlobsInCommits struct {
-	commits map[string][]string
+	commits map[blobDetails][]string
 }
 
 // GetAdditions will get all the additions for entire git history
@@ -17,11 +21,7 @@ func GetAdditions(ignoreHistory bool) []gitrepo.Addition {
 	blobsInCommits := getBlobsInCommit(ignoreHistory)
 	var additions []gitrepo.Addition
 	for blob := range blobsInCommits.commits {
-		objectDetails := strings.Split(blob, "\t")
-		objectHash := objectDetails[0]
-		data := getData(objectHash)
-		filePath := objectDetails[1]
-		newAddition := gitrepo.NewScannerAddition(filePath, blobsInCommits.commits[blob], data)
+		newAddition := gitrepo.NewScannerAddition(blob.filePath, blobsInCommits.commits[blob], getData(blob.hash))
 		additions = append(additions, newAddition)
 	}
 	return additions
@@ -50,14 +50,13 @@ func putBlobsInChannel(commit string, result chan []string) {
 }
 
 func getBlobsFromChannel(blobsInCommits BlobsInCommits, result chan []string) {
-	blobs := <-result
-	commit := blobs[len(blobs)-1]
-	for _, blob := range blobs[:len(blobs)-1] {
-		if blob != "" {
-			blobDetailsString := strings.Split(blob, " ")
-			blobDetails := strings.Split(blobDetailsString[2], "\t")
-			blobHash := blobDetails[0] + "\t" + blobDetails[1]
-			blobsInCommits.commits[blobHash] = append(blobsInCommits.commits[blobHash], commit)
+	blobEntries := <-result
+	commit := blobEntries[len(blobEntries)-1]
+	for _, blobEntry := range blobEntries[:len(blobEntries)-1] {
+		if blobEntry != "" {
+			blobHashAndName := strings.Split(strings.Split(blobEntry, " ")[2], "\t")
+			blob := blobDetails{hash: blobHashAndName[0], filePath: blobHashAndName[1]}
+			blobsInCommits.commits[blob] = append(blobsInCommits.commits[blob], commit)
 		}
 	}
 }
@@ -80,6 +79,6 @@ func getData(objectHash string) []byte {
 }
 
 func newBlobsInCommit() BlobsInCommits {
-	commits := make(map[string][]string)
+	commits := make(map[blobDetails][]string)
 	return BlobsInCommits{commits: commits}
 }
