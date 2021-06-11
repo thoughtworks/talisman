@@ -1,7 +1,7 @@
 package filecontent
 
 import (
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"talisman/talismanrc"
 )
 

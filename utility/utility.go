@@ -2,11 +2,12 @@ package utility
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"os"
 	"path"
+
+	log "github.com/sirupsen/logrus"
 
 	figure "github.com/common-nighthawk/go-figure"
 )

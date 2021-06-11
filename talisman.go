@@ -16,7 +16,7 @@ import (
 	"strings"
 	"talisman/gitrepo"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 var (

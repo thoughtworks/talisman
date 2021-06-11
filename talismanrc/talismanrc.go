@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"sort"
 
-	logr "github.com/Sirupsen/logrus"
+	logr "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	"gopkg.in/yaml.v2"
 
