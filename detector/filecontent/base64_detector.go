@@ -1,9 +1,10 @@
 package filecontent
 
 import (
-	log "github.com/Sirupsen/logrus"
 	"math"
 	"talisman/talismanrc"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const BASE64_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="

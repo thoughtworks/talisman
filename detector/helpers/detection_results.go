@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"fmt"
-	"github.com/Sirupsen/logrus"
 	"os"
 	"os/exec"
 	"runtime"
@@ -12,6 +11,8 @@ import (
 	"talisman/prompt"
 	"talisman/talismanrc"
 	"talisman/utility"
+
+	"github.com/sirupsen/logrus"
 
 	"gopkg.in/yaml.v2"
 

@@ -8,7 +8,7 @@ import (
 	"talisman/talismanrc"
 	"testing"
 
-	logr "github.com/Sirupsen/logrus"
+	logr "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 

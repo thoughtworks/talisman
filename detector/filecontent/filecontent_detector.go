@@ -10,7 +10,7 @@ import (
 	"talisman/gitrepo"
 	"talisman/talismanrc"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 type fn func(fc *FileContentDetector, word string) string

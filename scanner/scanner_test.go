@@ -1,12 +1,12 @@
 package scanner
 
 import (
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"testing"
-	logr "github.com/Sirupsen/logrus"
-)
 
+	logr "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
+)
 
 func init() {
 	logr.SetOutput(ioutil.Discard)

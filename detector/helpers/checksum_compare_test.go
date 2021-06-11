@@ -1,14 +1,15 @@
 package helpers
 
 import (
-	logr "github.com/Sirupsen/logrus"
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"talisman/gitrepo"
 	mockchecksumcalculator "talisman/internal/mock/checksumcalculator"
 	mockutility "talisman/internal/mock/utility"
 	"talisman/talismanrc"
+
+	"github.com/golang/mock/gomock"
+	logr "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 
 	"testing"
 )

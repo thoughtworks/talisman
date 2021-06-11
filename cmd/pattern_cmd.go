@@ -4,7 +4,7 @@ import (
 	"talisman/gitrepo"
 	"talisman/utility"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/bmatcuk/doublestar"
 )

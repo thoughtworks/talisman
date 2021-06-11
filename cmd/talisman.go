@@ -12,10 +12,11 @@ import (
 	"talisman/prompt"
 	"talisman/talismanrc"
 
-	log "github.com/Sirupsen/logrus"
+	"runtime"
+
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/afero"
 	flag "github.com/spf13/pflag"
-	"runtime"
 )
 
 var (
@@ -43,7 +44,7 @@ var options struct {
 	reportDirectory string
 	scanWithHtml    bool
 	input           io.Reader
-	shouldProfile	bool
+	shouldProfile   bool
 }
 
 //var options Options
@@ -94,7 +95,7 @@ func main() {
 func run(promptContext prompt.PromptContext) (returnCode int) {
 	if options.shouldProfile {
 		log.Info("Profiling initiated")
-		defer func() { log.Info("Profiling completed") } ()
+		defer func() { log.Info("Profiling completed") }()
 		f, err := os.Create("talisman.pprof")
 		if err != nil {
 			log.Fatal(err)
@@ -129,12 +130,17 @@ func run(promptContext prompt.PromptContext) (returnCode int) {
 		return 1
 	}
 
-	switch(options.loglevel) {
-	case "info": log.SetLevel(log.InfoLevel)
-	case "debug": log.SetLevel(log.DebugLevel)
-	case "error": log.SetLevel(log.ErrorLevel)
-	case "warn": log.SetLevel(log.WarnLevel)
-	default: log.SetLevel(log.ErrorLevel)
+	switch options.loglevel {
+	case "info":
+		log.SetLevel(log.InfoLevel)
+	case "debug":
+		log.SetLevel(log.DebugLevel)
+	case "error":
+		log.SetLevel(log.ErrorLevel)
+	case "warn":
+		log.SetLevel(log.WarnLevel)
+	default:
+		log.SetLevel(log.ErrorLevel)
 	}
 	if options.debug {
 		log.SetLevel(log.DebugLevel)

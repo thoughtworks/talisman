@@ -6,7 +6,7 @@ import (
 	"talisman/detector/severity"
 	"talisman/talismanrc"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 type PatternMatcher struct {

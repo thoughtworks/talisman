@@ -12,7 +12,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/spf13/afero"
 
-	logr "github.com/Sirupsen/logrus"
+	logr "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 

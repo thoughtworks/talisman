@@ -1,12 +1,14 @@
 package talismanrc
 
 import (
-	logr "github.com/Sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 	"log"
 	"os"
 	"regexp"
 	"sort"
+
+	logr "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
+
 	"talisman/detector/severity"
 
 	"talisman/gitrepo"

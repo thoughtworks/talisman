@@ -7,9 +7,8 @@ import (
 	"talisman/talismanrc"
 	"testing"
 
+	logr "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	logr "github.com/Sirupsen/logrus"
-
 )
 
 func init() {

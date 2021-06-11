@@ -1,10 +1,11 @@
 package talismanrc
 
 import (
-	logr "github.com/Sirupsen/logrus"
 	"os"
 	"regexp"
 	"talisman/gitrepo"
+
+	logr "github.com/sirupsen/logrus"
 
 	"github.com/spf13/afero"
 	"gopkg.in/yaml.v2"

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	logr "github.com/Sirupsen/logrus"
 	"talisman/detector"
 	"talisman/detector/helpers"
 	"talisman/gitrepo"
@@ -10,6 +9,8 @@ import (
 	"talisman/scanner"
 	"talisman/talismanrc"
 	"talisman/utility"
+
+	logr "github.com/sirupsen/logrus"
 )
 
 type ScannerCmd struct {

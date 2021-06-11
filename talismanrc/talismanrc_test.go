@@ -8,7 +8,7 @@ import (
 	"talisman/detector/severity"
 	"talisman/gitrepo"
 
-	logr "github.com/Sirupsen/logrus"
+	logr "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -122,7 +122,7 @@ func TestAddIgnoreFilesInHookMode(t *testing.T) {
 func TestAddIgnoreFilesInScanMode(t *testing.T) {
 	ignoreConfig := &ScanFileIgnoreConfig{
 		FileName:        "Foo",
-		Checksums:        []string{"SomeCheckSum"},
+		Checksums:       []string{"SomeCheckSum"},
 		IgnoreDetectors: []string{},
 		AllowedPatterns: []string{}}
 	os.Remove(DefaultRCFileName)
@@ -177,10 +177,10 @@ func createTalismanRCWithScopeIgnores(scopesToIgnore []string) *TalismanRC {
 
 func TestFileIgnoreConfig_ChecksumMatches(t *testing.T) {
 	fileIgnoreConfig := &FileIgnoreConfig{
-		FileName:         "some_filename",
-		Checksum:         "some_checksum",
-		IgnoreDetectors:  nil,
-		AllowedPatterns:  nil,
+		FileName:        "some_filename",
+		Checksum:        "some_checksum",
+		IgnoreDetectors: nil,
+		AllowedPatterns: nil,
 	}
 
 	assert.True(t, fileIgnoreConfig.ChecksumMatches("some_checksum"))
@@ -189,10 +189,10 @@ func TestFileIgnoreConfig_ChecksumMatches(t *testing.T) {
 
 func TestFileIgnoreConfig_GetAllowedPatterns(t *testing.T) {
 	fileIgnoreConfig := &FileIgnoreConfig{
-		FileName:         "some_filename",
-		Checksum:         "some_checksum",
-		IgnoreDetectors:  nil,
-		AllowedPatterns:  nil,
+		FileName:        "some_filename",
+		Checksum:        "some_checksum",
+		IgnoreDetectors: nil,
+		AllowedPatterns: nil,
 	}
 
 	//No allowed patterns specified
@@ -208,10 +208,10 @@ func TestFileIgnoreConfig_GetAllowedPatterns(t *testing.T) {
 
 func TestScanFileIgnoreConfig_ChecksumMatches(t *testing.T) {
 	fileIgnoreConfig := &ScanFileIgnoreConfig{
-		FileName:         "some_filename",
-		Checksums:         []string{"some_checksum", "some_other_checksum"},
-		IgnoreDetectors:  nil,
-		AllowedPatterns:  nil,
+		FileName:        "some_filename",
+		Checksums:       []string{"some_checksum", "some_other_checksum"},
+		IgnoreDetectors: nil,
+		AllowedPatterns: nil,
 	}
 
 	assert.True(t, fileIgnoreConfig.ChecksumMatches("some_checksum"))
@@ -221,10 +221,10 @@ func TestScanFileIgnoreConfig_ChecksumMatches(t *testing.T) {
 
 func TestScanFileIgnoreConfig_isEffective(t *testing.T) {
 	fileIgnoreConfig := &ScanFileIgnoreConfig{
-		FileName:         "some_filename",
-		Checksums:         []string{"some_checksum", "some_other_checksum"},
-		IgnoreDetectors:  nil,
-		AllowedPatterns:  nil,
+		FileName:        "some_filename",
+		Checksums:       []string{"some_checksum", "some_other_checksum"},
+		IgnoreDetectors: nil,
+		AllowedPatterns: nil,
 	}
 	//Ignore config does not apply when detector not ignored
 	assert.False(t, fileIgnoreConfig.isEffective("filename"))
@@ -240,10 +240,10 @@ func TestScanFileIgnoreConfig_isEffective(t *testing.T) {
 
 func TestScanFileIgnoreConfig_GetAllowedPatterns(t *testing.T) {
 	fileIgnoreConfig := &ScanFileIgnoreConfig{
-		FileName:         "some_filename",
-		Checksums:         nil,
-		IgnoreDetectors:  nil,
-		AllowedPatterns:  nil,
+		FileName:        "some_filename",
+		Checksums:       nil,
+		IgnoreDetectors: nil,
+		AllowedPatterns: nil,
 	}
 
 	//No allowed patterns specified
