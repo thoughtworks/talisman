@@ -9,6 +9,7 @@ codecov:
       default:
         target: 69%    # the required coverage value
         threshold: 1%  # the leniency in hitting the target
+    patch: off
   notify:
     after_n_builds: 2
     wait_for_ci: yes
