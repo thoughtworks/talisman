@@ -72,12 +72,12 @@ func MakeWithFileIgnores(fileIgnoreConfigs []FileIgnoreConfig) *persistedRC {
 }
 
 func BuildIgnoreConfig(mode Mode, filepath, checksum string, detectors []string) IgnoreConfig {
+	var result IgnoreConfig
 	switch mode {
 	case HookMode:
-		return &FileIgnoreConfig{FileName: filepath, Checksum: checksum, IgnoreDetectors: detectors}
+		result = &FileIgnoreConfig{FileName: filepath, Checksum: checksum, IgnoreDetectors: detectors}
 	case ScanMode:
-		return &ScanFileIgnoreConfig{FileName: filepath, Checksums: []string{checksum}, IgnoreDetectors: detectors}
-	default:
-		return &FileIgnoreConfig{FileName: filepath, Checksum: checksum, IgnoreDetectors: detectors}
+		result = &ScanFileIgnoreConfig{FileName: filepath, Checksums: []string{checksum}, IgnoreDetectors: detectors}
 	}
+	return result
 }

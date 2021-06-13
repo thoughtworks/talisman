@@ -83,6 +83,22 @@ func TestIgnoringDetectors(t *testing.T) {
 	assertAcceptsDetector("foo", "someDetector", "foo", "someOtherDetector", t)
 }
 
+func TestMakeWithFileIgnores(t *testing.T) {
+	ignoreConfigs := []FileIgnoreConfig{}
+	builtConfig := MakeWithFileIgnores(ignoreConfigs)
+	assert.Equal(t, builtConfig.FileIgnoreConfig, ignoreConfigs)
+	assert.Equal(t, builtConfig.Version, DefaultRCVersion)
+}
+
+func TestBuildIgnoreConfig(t *testing.T) {
+	var ignoreConfig IgnoreConfig
+	ignoreConfig = BuildIgnoreConfig(HookMode, "filename", "asdfasdfasdfasdfasdf", nil)
+	assert.IsType(t, &FileIgnoreConfig{}, ignoreConfig)
+
+	ignoreConfig = BuildIgnoreConfig(ScanMode, "filename", "asdfasdfasdfasdfasdf", nil)
+	assert.IsType(t, &ScanFileIgnoreConfig{}, ignoreConfig)
+}
+
 func TestAddIgnoreFiles(t *testing.T) {
 	talismanRCConfig := CreateTalismanRCWithScopeIgnores([]string{})
 	fileIgnoreConfig := &FileIgnoreConfig{
