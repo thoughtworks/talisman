@@ -5,7 +5,6 @@ import (
 	"gopkg.in/yaml.v2"
 	"log"
 	"os"
-	"reflect"
 	"regexp"
 	"sort"
 	"talisman/detector/severity"
@@ -214,10 +213,6 @@ func (tRC *TalismanRC) effectiveRules(detectorName string) []string {
 	}
 
 	return result
-}
-
-func (tRC *persistedRC) IsEmpty() bool {
-	return reflect.DeepEqual(&persistedRC{}, tRC)
 }
 
 func fromPersistedRC(configFromTalismanRCFile *persistedRC, mode Mode) *TalismanRC {
