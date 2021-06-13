@@ -20,11 +20,12 @@ type IgnoreConfig interface {
 }
 
 type FileIgnoreConfig struct {
+	FileName        string   `yaml:"filename"`
+	Checksum        string   `yaml:"checksum,omitempty"`
+	IgnoreDetectors []string `yaml:"ignore_detectors,omitempty"`
+	AllowedPatterns []string `yaml:"allowed_patterns,omitempty"`
+
 	compiledPatterns []*regexp.Regexp
-	FileName         string   `yaml:"filename"`
-	Checksum         string   `yaml:"checksum,omitempty"`
-	IgnoreDetectors  []string `yaml:"ignore_detectors,omitempty"`
-	AllowedPatterns  []string `yaml:"allowed_patterns,omitempty"`
 }
 
 func (i *FileIgnoreConfig) isEffective(detectorName string) bool {
@@ -51,11 +52,12 @@ func (i *FileIgnoreConfig) GetAllowedPatterns() []*regexp.Regexp {
 }
 
 type ScanFileIgnoreConfig struct {
+	FileName        string   `yaml:"filename"`
+	Checksums       []string `yaml:"checksums,omitempty"`
+	IgnoreDetectors []string `yaml:"ignore_detectors,omitempty"`
+	AllowedPatterns []string `yaml:"allowed_patterns,omitempty"`
+
 	compiledPatterns []*regexp.Regexp
-	FileName         string   `yaml:"filename"`
-	Checksums        []string `yaml:"checksums,omitempty"`
-	IgnoreDetectors  []string `yaml:"ignore_detectors,omitempty"`
-	AllowedPatterns  []string `yaml:"allowed_patterns,omitempty"`
 }
 
 func (i *ScanFileIgnoreConfig) isEffective(detectorName string) bool {
@@ -70,7 +72,7 @@ func (i *ScanFileIgnoreConfig) GetFileName() string {
 func (i *ScanFileIgnoreConfig) GetAllowedPatterns() []*regexp.Regexp {
 	if i.compiledPatterns == nil {
 		i.compiledPatterns = make([]*regexp.Regexp, len(i.AllowedPatterns))
-		for idx,p := range i.AllowedPatterns {
+		for idx, p := range i.AllowedPatterns {
 			i.compiledPatterns[idx] = regexp.MustCompile(p)
 		}
 	}

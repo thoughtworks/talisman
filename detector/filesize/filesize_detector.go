@@ -19,8 +19,8 @@ func NewFileSizeDetector(size int) detector.Detector {
 	return FileSizeDetector{size}
 }
 
-func (fd FileSizeDetector) Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.talismanRC, result *helpers.DetectionResults, additionCompletionCallback func()) {
-	severity := severity.SeverityConfiguration["LargeFileSize"]
+func (fd FileSizeDetector) Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *helpers.DetectionResults, additionCompletionCallback func()) {
+	largeFileSizeSeverity := severity.SeverityConfiguration["LargeFileSize"]
 	for _, addition := range currentAdditions {
 		if ignoreConfig.Deny(addition, "filesize") || comparator.IsScanNotRequired(addition) {
 			log.WithFields(log.Fields{
@@ -37,10 +37,10 @@ func (fd FileSizeDetector) Test(comparator helpers.ChecksumCompare, currentAddit
 				"fileSize": size,
 				"maxSize":  fd.size,
 			}).Info("Failing file as it is larger than max allowed file size.")
-			if severity.ExceedsThreshold(ignoreConfig.Threshold) {
-				result.Fail(addition.Path, "filesize", fmt.Sprintf("The file name %q with file size %d is larger than max allowed file size(%d)", addition.Path, size, fd.size), addition.Commits, severity)
+			if largeFileSizeSeverity.ExceedsThreshold(ignoreConfig.Threshold) {
+				result.Fail(addition.Path, "filesize", fmt.Sprintf("The file name %q with file size %d is larger than max allowed file size(%d)", addition.Path, size, fd.size), addition.Commits, largeFileSizeSeverity)
 			} else {
-				result.Warn(addition.Path, "filesize", fmt.Sprintf("The file name %q with file size %d is larger than max allowed file size(%d)", addition.Path, size, fd.size), addition.Commits, severity)
+				result.Warn(addition.Path, "filesize", fmt.Sprintf("The file name %q with file size %d is larger than max allowed file size(%d)", addition.Path, size, fd.size), addition.Commits, largeFileSizeSeverity)
 			}
 		}
 		additionCompletionCallback()

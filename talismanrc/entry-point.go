@@ -16,15 +16,15 @@ var (
 	currentRCFileName  = DefaultRCFileName
 )
 
-func ReadConfigFromRCFile(repoFileRead func(string) ([]byte, error)) *persistedRC {
-	fileContents, err := repoFileRead(currentRCFileName)
+func ReadConfigFromRCFile(fileReader func(string) ([]byte, error)) *persistedRC {
+	fileContents, err := fileReader(currentRCFileName)
 	if err != nil {
 		panic(err)
 	}
-	return NewTalismanRC(fileContents)
+	return newPersistedRC(fileContents)
 }
 
-func NewTalismanRC(fileContents []byte) *persistedRC {
+func newPersistedRC(fileContents []byte) *persistedRC {
 	talismanRCFromFile := persistedRC{}
 	err := yaml.Unmarshal(fileContents, &talismanRCFromFile)
 	if err != nil {
@@ -43,22 +43,28 @@ const (
 	DefaultRCFileName string = ".talismanrc"
 )
 
-func SetFs(_fs afero.Fs) {
+func SetFs__(_fs afero.Fs) {
 	fs = _fs
 }
 
-func SetRcFilename(rcFileName string) {
+func SetRcFilename__(rcFileName string) {
 	currentRCFileName = rcFileName
 }
 
-func readRepoFile() func(string) ([]byte, error) {
+type RepoFileReader func(string) ([]byte, error)
+
+var repoFileReader = func() RepoFileReader {
 	wd, _ := os.Getwd()
 	repo := gitrepo.RepoLocatedAt(wd)
 	return repo.ReadRepoFileOrNothing
 }
 
+func setRepoFileReader(rfr RepoFileReader) {
+	repoFileReader = func() RepoFileReader { return rfr }
+}
+
 func ConfigFromFile() *persistedRC {
-	return ReadConfigFromRCFile(readRepoFile())
+	return ReadConfigFromRCFile(repoFileReader())
 }
 
 func MakeWithFileIgnores(fileIgnoreConfigs []FileIgnoreConfig) *persistedRC {
