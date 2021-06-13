@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	logr "github.com/Sirupsen/logrus"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
@@ -8,7 +9,6 @@ import (
 	mockchecksumcalculator "talisman/internal/mock/checksumcalculator"
 	mockutility "talisman/internal/mock/utility"
 	"talisman/talismanrc"
-	logr "github.com/Sirupsen/logrus"
 
 	"testing"
 )
@@ -22,7 +22,9 @@ func TestChecksumCompare_IsScanNotRequired(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		mockSHA256Hasher := mockutility.NewMockSHA256Hasher(ctrl)
-		ignoreConfig := talismanrc.NewTalismanRC(nil)
+		ignoreConfig := &talismanrc.TalismanRC{
+			IgnoreConfigs: []talismanrc.IgnoreConfig{},
+		}
 		cc := NewChecksumCompare(nil, mockSHA256Hasher, ignoreConfig)
 		addition := gitrepo.Addition{Path: "some.txt"}
 		mockSHA256Hasher.EXPECT().CollectiveSHA256Hash([]string{string(addition.Path)}).Return("somesha")
@@ -37,16 +39,16 @@ func TestChecksumCompare_IsScanNotRequired(t *testing.T) {
 		defer ctrl.Finish()
 		mockSHA256Hasher := mockutility.NewMockSHA256Hasher(ctrl)
 		checksumCalculator := mockchecksumcalculator.NewMockChecksumCalculator(ctrl)
-		ignoreConfig := talismanrc.talismanRC{
-			FileIgnoreConfig: []talismanrc.FileIgnoreConfig{
-				{
+		ignoreConfig := talismanrc.TalismanRC{
+			IgnoreConfigs: []talismanrc.IgnoreConfig{
+				&talismanrc.FileIgnoreConfig{
 					FileName: "some.txt",
 					Checksum: "sha1",
 				},
 			},
 		}
 		cc := NewChecksumCompare(checksumCalculator, mockSHA256Hasher, &ignoreConfig)
-		addition := gitrepo.Addition{Name: "some.txt",}
+		addition := gitrepo.Addition{Name: "some.txt"}
 		mockSHA256Hasher.EXPECT().CollectiveSHA256Hash([]string{string(addition.Path)}).Return("somesha")
 		checksumCalculator.EXPECT().CalculateCollectiveChecksumForPattern("some.txt").Return("sha1")
 

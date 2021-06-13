@@ -81,14 +81,14 @@ func processAllowedPatterns(addition gitrepo.Addition, tRC *talismanrc.TalismanR
 	additionPathAsString := string(addition.Path)
 	// Processing global allowed patterns
 	for _, pattern := range tRC.AllowedPatterns {
-		addition.Data = []byte(pattern.ReplaceAllString(string(addition.Data), ""))
+		addition.Data = pattern.ReplaceAll(addition.Data, []byte(""))
 	}
 
 	// Processing allowed patterns based on file path
 	for _, ignoreConfig := range tRC.IgnoreConfigs {
 		if ignoreConfig.GetFileName() == additionPathAsString {
 			for _, pattern := range ignoreConfig.GetAllowedPatterns() {
-				addition.Data = []byte(pattern.ReplaceAllString(string(addition.Data), ""))
+				addition.Data = pattern.ReplaceAll(addition.Data, []byte(""))
 			}
 		}
 	}

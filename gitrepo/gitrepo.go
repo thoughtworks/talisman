@@ -134,7 +134,11 @@ func (repo GitRepo) StagedAdditions() []Addition {
 
 //AllAdditions returns all the outgoing additions and modifications in a GitRepo. This does not include files that were deleted.
 func (repo GitRepo) AllAdditions() []Addition {
-	return repo.AdditionsWithinRange("origin/master", "master")
+	result := string(repo.executeRepoCommand("git", "rev-parse", "--abbrev-ref", "origin/HEAD"))
+	log.Debugf("Result of getting default branch %v", result)
+	oldCommit := strings.ReplaceAll(result, "\n", "")
+	newCommit := strings.Split(oldCommit, "/")[1]
+	return repo.AdditionsWithinRange(oldCommit, newCommit)
 }
 
 //AdditionsWithinRange returns the outgoing additions and modifications in a GitRepo that are in the given commit range. This does not include files that were deleted.

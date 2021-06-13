@@ -87,8 +87,8 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 	assert.NoError(t, err)
 	ignoreFile := file.Name()
 
-	talismanrc.SetFs(fs)
-	talismanrc.SetRcFilename(ignoreFile)
+	talismanrc.SetFs__(fs)
+	talismanrc.SetRcFilename__(ignoreFile)
 
 	existingContent := `fileignoreconfig:
 - filename: existing.pem

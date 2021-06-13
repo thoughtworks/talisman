@@ -24,6 +24,7 @@ func Init(gitRoot string) *GitTesting {
 	output := testingRepo.ExecCommand("git", "init", ".")
 	logrus.Debugf("Git init result %v", string(output))
 	if os.Getenv("CI") != "" {
+		fmt.Println("Setting up git_repo")
 		testingRepo.ExecCommand("git", "config", "--global", "user.email", "talisman-test-user@example.com")
 		testingRepo.ExecCommand("git", "config", "--global", "user.name", "Talisman Test User")
 	}
