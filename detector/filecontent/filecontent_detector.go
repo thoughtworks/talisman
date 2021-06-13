@@ -135,16 +135,17 @@ func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentA
 		close(ignoredFilePaths)
 		close(contents)
 	}()
-
 	for ignoredChanHasMore, contentChanHasMore := true, true; ignoredChanHasMore || contentChanHasMore; {
 		select {
 		case ignoredFilePath, hasMore := <-ignoredFilePaths:
+			log.Debugf("Processing results for ignored file %v", ignoredFilePath)
 			if !hasMore {
 				ignoredChanHasMore = false
 				continue
 			}
 			processIgnoredFilepath(ignoredFilePath, result)
 		case c, hasMore := <-contents:
+			log.Debugf("Processing results for file %v", c.path)
 			if !hasMore {
 				contentChanHasMore = false
 				continue

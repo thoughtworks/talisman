@@ -16,20 +16,33 @@ func init() {
 }
 
 func TestShouldIgnoreEmptyLinesInTheFile(t *testing.T) {
-	for _, s := range []string{"", " ", "  "} {
-		assert.True(t, NewTalismanRC([]byte(s)).AcceptsAll(), "Expected '%s' to result in no ignore patterns.", s)
+	defaultRepoFileReader := repoFileReader()
+	for _, s := range []string{"", " ", "  ", "\t", " \t", "\t\t \t"} {
+		setRepoFileReader(func(string) ([]byte, error) {
+			return []byte(s), nil
+		})
+		talismanRC := For(HookMode)
+		assert.True(t, talismanRC.AcceptsAll(), "Expected '%s' to result in no ignore patterns.", s)
 	}
+	setRepoFileReader(defaultRepoFileReader)
 }
 
 func TestShouldIgnoreUnformattedFiles(t *testing.T) {
+	defaultRepoFileReader := repoFileReader()
 	for _, s := range []string{"#", "#monkey", "# this monkey likes bananas  "} {
-		assert.True(t, NewTalismanRC([]byte(s)).AcceptsAll(), "Expected commented line '%s' to result in no ignore patterns", s)
+		setRepoFileReader(func(string) ([]byte, error) {
+			return []byte(s), nil
+		})
+
+		talismanRC := For(HookMode)
+		assert.True(t, talismanRC.AcceptsAll(), "Expected commented line '%s' to result in no ignore patterns", s)
 	}
+	setRepoFileReader(defaultRepoFileReader)
 }
 
 func TestShouldConvertThresholdToValue(t *testing.T) {
 	talismanRCContents := []byte("threshold: high")
-	assert.Equal(t, NewTalismanRC(talismanRCContents).Threshold, severity.High)
+	assert.Equal(t, newPersistedRC(talismanRCContents).Threshold, severity.High)
 }
 
 func TestDirectoryPatterns(t *testing.T) {
@@ -49,7 +62,7 @@ func TestIgnoreAdditionsByScope(t *testing.T) {
 	additions := []gitrepo.Addition{file1, file2, file3, file4, file5}
 
 	scopesToIgnore := []string{"node", "go"}
-	talismanRCConfig := CreatetalismanRCWithScopeIgnore(scopesToIgnore)
+	talismanRCConfig := CreateTalismanRCWithScopeIgnores(scopesToIgnore)
 
 	nodeIgnores := []string{"node.lock", "*yarn.lock"}
 	javaIgnores := []string{"java.lock"}
@@ -71,10 +84,15 @@ func TestIgnoringDetectors(t *testing.T) {
 }
 
 func TestAddIgnoreFiles(t *testing.T) {
-	talismanRCConfig := CreatetalismanRCWithScopeIgnore([]string{})
-	talismanRCConfig.AddIgnores(HookMode, []IgnoreConfig{&FileIgnoreConfig{"Foo", "SomeCheckSum", []string{}, []string{}}})
-	talismanRCConfig = ConfigFromFile()
-	assert.Equal(t, 1, len(talismanRCConfig.FileIgnoreConfig))
+	talismanRCConfig := CreateTalismanRCWithScopeIgnores([]string{})
+	fileIgnoreConfig := &FileIgnoreConfig{
+		FileName:        "Foo",
+		Checksum:        "SomeCheckSum",
+		IgnoreDetectors: []string{},
+		AllowedPatterns: []string{}}
+	talismanRCConfig.base.AddIgnores(HookMode, []IgnoreConfig{fileIgnoreConfig})
+	talismanRCConfigFromFile := ConfigFromFile()
+	assert.Equal(t, 1, len(talismanRCConfigFromFile.FileIgnoreConfig))
 }
 
 func assertDenies(line, ignoreDetector string, path string, t *testing.T) {
@@ -82,7 +100,7 @@ func assertDenies(line, ignoreDetector string, path string, t *testing.T) {
 }
 
 func assertDeniesDetector(line, ignoreDetector string, path string, detectorName string, t *testing.T) {
-	assert.True(t, CreatetalismanRCWithFileName(line, ignoreDetector).Deny(testAddition(path), detectorName), "%s is expected to deny a file named %s.", line, path)
+	assert.True(t, CreateTalismanRCWithFileIgnores(line, ignoreDetector).Deny(testAddition(path), detectorName), "%s is expected to deny a file named %s.", line, path)
 }
 
 func assertAccepts(line, ignoreDetector string, path string, t *testing.T, detectorNames ...string) {
@@ -90,27 +108,24 @@ func assertAccepts(line, ignoreDetector string, path string, t *testing.T, detec
 }
 
 func assertAcceptsDetector(line, ignoreDetector string, path string, detectorName string, t *testing.T) {
-	assert.True(t, CreatetalismanRCWithFileName(line, ignoreDetector).Accept(testAddition(path), detectorName), "%s is expected to accept a file named %s.", line, path)
+	assert.True(t, CreateTalismanRCWithFileIgnores(line, ignoreDetector).Accept(testAddition(path), detectorName), "%s is expected to accept a file named %s.", line, path)
 }
 
 func testAddition(path string) gitrepo.Addition {
 	return gitrepo.NewAddition(path, make([]byte, 0))
 }
 
-func CreatetalismanRCWithFileName(filename string, detector string) *persistedRC {
-	fileIgnoreConfig := FileIgnoreConfig{}
+func CreateTalismanRCWithFileIgnores(filename string, detector string) *TalismanRC {
+	fileIgnoreConfig := &FileIgnoreConfig{}
 	fileIgnoreConfig.FileName = filename
 	if detector != "" {
-		fileIgnoreConfig.IgnoreDetectors = make([]string, 1)
-		fileIgnoreConfig.IgnoreDetectors[0] = detector
+		fileIgnoreConfig.IgnoreDetectors = []string{detector}
 	}
-	talismanRC := persistedRC{}
-	talismanRC.FileIgnoreConfig = make([]FileIgnoreConfig, 1)
-	talismanRC.FileIgnoreConfig[0] = fileIgnoreConfig
-	return &talismanRC
+
+	return &TalismanRC{IgnoreConfigs: []IgnoreConfig{fileIgnoreConfig}}
 }
 
-func CreatetalismanRCWithScopeIgnore(scopesToIgnore []string) *persistedRC {
+func CreateTalismanRCWithScopeIgnores(scopesToIgnore []string) *TalismanRC {
 	var scopeConfigs []ScopeConfig
 	for _, scopeIgnore := range scopesToIgnore {
 		scopeIgnoreConfig := ScopeConfig{}
@@ -118,6 +133,5 @@ func CreatetalismanRCWithScopeIgnore(scopesToIgnore []string) *persistedRC {
 		scopeConfigs = append(scopeConfigs, scopeIgnoreConfig)
 	}
 
-	talismanRC := persistedRC{ScopeConfig: scopeConfigs}
-	return &talismanRC
+	return &TalismanRC{ScopeConfig: scopeConfigs}
 }
