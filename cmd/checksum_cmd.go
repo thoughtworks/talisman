@@ -17,7 +17,6 @@ func NewChecksumCmd(fileNamePatterns []string) *ChecksumCmd {
 }
 
 func (s *ChecksumCmd) Run() int {
-	exitStatus := 1
 	wd, _ := os.Getwd()
 	repo := gitrepo.RepoLocatedAt(wd)
 	gitTrackedFilesAsAdditions := repo.TrackedFilesAsAdditions()
@@ -26,7 +25,7 @@ func (s *ChecksumCmd) Run() int {
 	rcSuggestion := cc.SuggestTalismanRC(s.fileNamePatterns)
 	if rcSuggestion != "" {
 		fmt.Print(rcSuggestion)
-		exitStatus = 0
+		return 0
 	}
-	return exitStatus
+	return 1
 }
