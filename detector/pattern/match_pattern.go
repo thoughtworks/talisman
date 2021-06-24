@@ -6,7 +6,7 @@ import (
 	"talisman/detector/severity"
 	"talisman/talismanrc"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 type PatternMatcher struct {
@@ -18,7 +18,7 @@ type DetectionsWithSeverity struct {
 	severity   severity.Severity
 }
 
-func (pm *PatternMatcher) check(content string, thresholdValue severity.SeverityValue) []DetectionsWithSeverity {
+func (pm *PatternMatcher) check(content string, thresholdValue severity.Severity) []DetectionsWithSeverity {
 	var detectionsWithSeverity []DetectionsWithSeverity
 	for _, pattern := range pm.regexes {
 		var detected []string

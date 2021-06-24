@@ -15,10 +15,10 @@ import (
 
 const jsonFileName string = "report.json"
 const htmlReportDir string = "talisman_html_report"
+const jsonReportDir string = "talisman_html_report"
 
 // GenerateReport generates a talisman scan report in html format
-func GenerateReport(r *helpers.DetectionResults, directory string) (path string, err error) {
-
+func GenerateReport(r *helpers.DetectionResults, directory string) (string, error) {
 	var jsonFilePath string
 	var homeDir string
 	var baseReportDirPath string
@@ -28,7 +28,7 @@ func GenerateReport(r *helpers.DetectionResults, directory string) (path string,
 		return "", fmt.Errorf("error getting current user: %v", err.Error())
 	}
 	homeDir = usr.HomeDir
-
+	path := jsonReportDir
 	if directory == htmlReportDir {
 		path = directory
 		baseReportDirPath = filepath.Join(homeDir, ".talisman", htmlReportDir)
@@ -50,10 +50,18 @@ func GenerateReport(r *helpers.DetectionResults, directory string) (path string,
 		return "", fmt.Errorf("error creating path %s: %v", path, err)
 	}
 
+	_, err = generateAndWriteToFile(r, jsonFilePath)
+	if err != nil {
+		return "", err
+	}
+	return path, nil
+}
+
+func generateAndWriteToFile(r *helpers.DetectionResults, jsonFilePath string) (path string, err error) {
 	jsonFile, err := os.Create(jsonFilePath)
 	defer func() {
 		if err = jsonFile.Close(); err != nil {
-			err = fmt.Errorf("error closing file %s: %v", jsonFilePath, err)
+			err = fmt.Errorf("error closing file %s: %v %#v", jsonFilePath, err, err)
 		}
 	}()
 
@@ -63,13 +71,13 @@ func GenerateReport(r *helpers.DetectionResults, directory string) (path string,
 
 	jsonString, err := json.Marshal(r)
 	if err != nil {
-		return "", fmt.Errorf("error while marshal the report: %v", err)
+		return "", fmt.Errorf("error while rendering report json: %v : %#v", err, err)
 	}
 	_, err = jsonFile.Write(jsonString)
 	if err != nil {
-		return "", fmt.Errorf("error while writing report to file: %v", err)
+		return "", fmt.Errorf("error while writing report json to file: %v %#v", err, err)
 	}
-	return path, nil
+	return jsonFilePath, nil
 }
 
 func generateErrorMsg() {

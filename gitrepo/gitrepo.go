@@ -2,7 +2,7 @@ package gitrepo
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
 	"path"
@@ -51,21 +51,21 @@ func (repo GitRepo) GetDiffForStagedFiles() []Addition {
 
 	// Standard git diff header pattern
 	// ref: https://git-scm.com/docs/diff-format#_generating_patches_with_p
-	headerRegex := regexp.MustCompile("^diff --git a/([^ ]+) ")
 
 	lineNumberOfFirstHeader := 0
 	var additionFilename string
 	for ; lineNumberOfFirstHeader < len(lines); lineNumberOfFirstHeader++ {
-		if headerRegex.MatchString(lines[lineNumberOfFirstHeader]) {
-			matches := headerRegex.FindStringSubmatch(lines[lineNumberOfFirstHeader])
-			additionFilename = matches[1]
+		match, stagedFilename := MatchGitDiffLine(lines[lineNumberOfFirstHeader])
+		if match {
+			additionFilename = stagedFilename
 			break
 		}
 	}
 
 	additionContentBuffer := &strings.Builder{}
 	for i := lineNumberOfFirstHeader + 1; i < len(lines); i++ {
-		if headerRegex.MatchString(lines[i]) {
+		match, stagedFilename := MatchGitDiffLine(lines[i])
+		if match {
 			// It is a new diff header
 			// which means we have reached the next file's header
 
@@ -79,8 +79,7 @@ func (repo GitRepo) GetDiffForStagedFiles() []Addition {
 			}
 
 			// get next file name and reset buffer for next iteration
-			matches := headerRegex.FindStringSubmatch(lines[i])
-			additionFilename = matches[1]
+			additionFilename = stagedFilename
 			additionContentBuffer.Reset()
 		} else {
 			additionContentBuffer.WriteString(lines[i])
@@ -102,6 +101,22 @@ func (repo GitRepo) GetDiffForStagedFiles() []Addition {
 	return result
 }
 
+func MatchGitDiffLine(gitDiffString string) (bool, string) {
+	if strings.Contains(gitDiffString, "diff --git") {
+		fileNameLength := (len(gitDiffString) - len("diff --git a/ b/"))/2
+		regexPattern := fmt.Sprintf("^diff --git a/(.{%v}) b/(.{%v})$", fileNameLength, fileNameLength);
+		headerRegex := regexp.MustCompile(regexPattern)
+
+		if headerRegex.MatchString(gitDiffString) {
+			matches := headerRegex.FindStringSubmatch(gitDiffString)
+			if matches[1] == matches[2] {
+				return true, matches[1]
+			}
+		}
+	}
+	return false, ""
+}
+
 //StagedAdditions returns the files staged for commit in a GitRepo
 func (repo GitRepo) StagedAdditions() []Addition {
 	files := repo.stagedFiles()
@@ -119,7 +134,11 @@ func (repo GitRepo) StagedAdditions() []Addition {
 
 //AllAdditions returns all the outgoing additions and modifications in a GitRepo. This does not include files that were deleted.
 func (repo GitRepo) AllAdditions() []Addition {
-	return repo.AdditionsWithinRange("origin/master", "master")
+	result := string(repo.executeRepoCommand("git", "rev-parse", "--abbrev-ref", "origin/HEAD"))
+	log.Debugf("Result of getting default branch %v", result)
+	oldCommit := strings.ReplaceAll(result, "\n", "")
+	newCommit := strings.Split(oldCommit, "/")[1]
+	return repo.AdditionsWithinRange(oldCommit, newCommit)
 }
 
 //AdditionsWithinRange returns the outgoing additions and modifications in a GitRepo that are in the given commit range. This does not include files that were deleted.

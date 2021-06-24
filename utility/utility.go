@@ -2,11 +2,12 @@ package utility
 
 import (
 	"fmt"
-	log "github.com/Sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"os"
 	"path"
+
+	log "github.com/sirupsen/logrus"
 
 	figure "github.com/common-nighthawk/go-figure"
 )
@@ -57,7 +58,6 @@ func File(src, dst string) error {
 }
 
 func Dir(src string, dst string) error {
-
 	var err error
 	var fds []os.FileInfo
 	var srcinfo os.FileInfo

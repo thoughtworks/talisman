@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"runtime"
@@ -13,7 +12,8 @@ import (
 	"talisman/talismanrc"
 	"talisman/utility"
 
-	"github.com/spf13/afero"
+	"github.com/sirupsen/logrus"
+
 	"gopkg.in/yaml.v2"
 
 	"github.com/olekukonko/tablewriter"
@@ -45,31 +45,26 @@ type ResultsSummary struct {
 	Types FailureTypes `json:"types"`
 }
 
-//
-//
-//type FailureData struct {
-//	FailuresInCommits map[string][]string
-//}
-
 //DetectionResults represents all interesting information collected during a detection run.
 //It serves as a collecting parameter for the tests performed by the various Detectors in the DetectorChain
 //Currently, it keeps track of failures and ignored files.
 //The results are grouped by FilePath for easy reporting of all detected problems with individual files.
 type DetectionResults struct {
+	mode    talismanrc.Mode
 	Summary ResultsSummary   `json:"summary"`
 	Results []ResultsDetails `json:"results"`
 }
 
 func (r *ResultsDetails) getWarningDataByCategoryAndMessage(failureMessage string, category string) *Details {
-	detail := getDetaisByCategoryAndMessage(r.WarningList, category, failureMessage)
+	detail := getDetailsByCategoryAndMessage(r.WarningList, category, failureMessage)
 	r.WarningList = append(r.WarningList, *detail)
 	return detail
 }
 
 func (r *ResultsDetails) getFailureDataByCategoryAndMessage(failureMessage string, category string) *Details {
-	detail := getDetaisByCategoryAndMessage(r.FailureList, category, failureMessage)
+	detail := getDetailsByCategoryAndMessage(r.FailureList, category, failureMessage)
 	if detail == nil {
-		detail = &Details{category, failureMessage, make([]string, 0), severity.Low()}
+		detail = &Details{category, failureMessage, make([]string, 0), severity.Low}
 		r.FailureList = append(r.FailureList, *detail)
 	}
 	return detail
@@ -83,12 +78,12 @@ func (r *ResultsDetails) addIgnoreDataByCategory(category string) {
 		}
 	}
 	if !isCategoryAlreadyPresent {
-		detail := Details{category, "", make([]string, 0), severity.Low()}
+		detail := Details{category, "", make([]string, 0), severity.Low}
 		r.IgnoreList = append(r.IgnoreList, detail)
 	}
 }
 
-func getDetaisByCategoryAndMessage(detailsList []Details, category string, failureMessage string) *Details {
+func getDetailsByCategoryAndMessage(detailsList []Details, category string, failureMessage string) *Details {
 	for _, detail := range detailsList {
 		if strings.Compare(detail.Category, category) == 0 && strings.Compare(detail.Message, failureMessage) == 0 {
 			return &detail
@@ -104,15 +99,19 @@ func (r *DetectionResults) getResultDetailsForFilePath(fileName gitrepo.FilePath
 			return &resultDetail
 		}
 	}
-	//resultDetail := ResultsDetails{fileName, make([]Details, 0), make([]Details, 0), make([]Details, 0)}
-	//r.Results = append(r.Results, resultDetail)
 	return nil
 }
 
 //NewDetectionResults is a new DetectionResults struct. It represents the pre-run state of a Detection run.
-func NewDetectionResults() *DetectionResults {
-	result := DetectionResults{ResultsSummary{FailureTypes{0, 0, 0, 0, 0}}, make([]ResultsDetails, 0)}
-	return &result
+func NewDetectionResults(mode talismanrc.Mode) *DetectionResults {
+	return &DetectionResults{
+		mode,
+		ResultsSummary{
+			FailureTypes{0, 0, 0, 0, 0},
+		},
+		make([]ResultsDetails, 0),
+	}
+
 }
 
 //Fail is used to mark the supplied FilePath as failing a detection for a supplied reason.
@@ -186,13 +185,13 @@ func (r *DetectionResults) Ignore(filePath gitrepo.FilePath, category string) {
 				}
 			}
 			if !isEntryPresentForGivenCategory {
-				detail := Details{category, "", make([]string, 0), severity.Low()}
+				detail := Details{category, "", make([]string, 0), severity.Low}
 				r.Results[resultIndex].IgnoreList = append(r.Results[resultIndex].IgnoreList, detail)
 			}
 		}
 	}
 	if !isFilePresentInResults {
-		ignoreDetails := Details{category, "", make([]string, 0), severity.Low()}
+		ignoreDetails := Details{category, "", make([]string, 0), severity.Low}
 		resultDetails := ResultsDetails{filePath, make([]Details, 0), make([]Details, 0), make([]Details, 0)}
 		resultDetails.IgnoreList = append(resultDetails.IgnoreList, ignoreDetails)
 		r.Results = append(r.Results, resultDetails)
@@ -200,22 +199,15 @@ func (r *DetectionResults) Ignore(filePath gitrepo.FilePath, category string) {
 	r.Summary.Types.Ignores++
 }
 
-func createNewResultForFile(category string, message string, commits []string, filePath gitrepo.FilePath, severity severity.Severity) ResultsDetails {
-	failureDetails := Details{category, message, commits, severity}
-	resultDetails := ResultsDetails{filePath, make([]Details, 0), make([]Details, 0), make([]Details, 0)}
-	resultDetails.FailureList = append(resultDetails.FailureList, failureDetails)
-	return resultDetails
-}
-
 func (r *DetectionResults) updateResultsSummary(category string) {
-	if strings.Compare("filecontent", category) == 0 {
+	switch category {
+	case "filecontent":
 		r.Summary.Types.Filecontent++
-	} else if strings.Compare("filename", category) == 0 {
+	case "filename":
 		r.Summary.Types.Filename++
-	} else if strings.Compare("filesize", category) == 0 {
+	case "filesize":
 		r.Summary.Types.Filesize++
 	}
-
 }
 
 //HasFailures answers if any Failures were detected for any FilePath in the current run
@@ -279,7 +271,7 @@ func (r *DetectionResults) ReportWarnings() string {
 }
 
 //Report returns a string documenting the various failures and ignored files for the current run
-func (r *DetectionResults) Report(fs afero.Fs, ignoreFile string, promptContext prompt.PromptContext) string {
+func (r *DetectionResults) Report(promptContext prompt.PromptContext) string {
 	var result string
 	var filePathsForIgnoresAndFailures []string
 	var data [][]string
@@ -309,18 +301,21 @@ func (r *DetectionResults) Report(fs afero.Fs, ignoreFile string, promptContext 
 }
 
 func (r *DetectionResults) suggestTalismanRC(filePaths []string, promptContext prompt.PromptContext) {
-	var entriesToAdd []talismanrc.FileIgnoreConfig
+	var entriesToAdd []talismanrc.IgnoreConfig
 
 	for _, filePath := range filePaths {
 		currentChecksum := utility.DefaultSHA256Hasher{}.CollectiveSHA256Hash([]string{filePath})
-		fileIgnoreConfig := talismanrc.FileIgnoreConfig{FileName: filePath, Checksum: currentChecksum, IgnoreDetectors: []string{}}
+		fileIgnoreConfig := talismanrc.BuildIgnoreConfig(r.mode, filePath, currentChecksum, []string{})
 		entriesToAdd = append(entriesToAdd, fileIgnoreConfig)
 	}
 
 	if promptContext.Interactive && runtime.GOOS != "windows" {
 		confirmedEntries := getUserConfirmation(entriesToAdd, promptContext)
-		talismanrc.Get().AddFileIgnores(confirmedEntries)
-		exec.Command("git", "add", ".talismanrc").CombinedOutput()
+		talismanrc.ConfigFromFile().AddIgnores(r.mode, confirmedEntries)
+		output, err := exec.Command("git", "add", ".talismanrc").CombinedOutput()
+		if err != nil {
+			logrus.Errorf("Error appending to talismanrc %v", output)
+		}
 	} else {
 		printTalismanIgnoreSuggestion(entriesToAdd)
 		return
@@ -328,8 +323,8 @@ func (r *DetectionResults) suggestTalismanRC(filePaths []string, promptContext p
 
 }
 
-func getUserConfirmation(configs []talismanrc.FileIgnoreConfig, promptContext prompt.PromptContext) []talismanrc.FileIgnoreConfig {
-	confirmed := []talismanrc.FileIgnoreConfig{}
+func getUserConfirmation(configs []talismanrc.IgnoreConfig, promptContext prompt.PromptContext) []talismanrc.IgnoreConfig {
+	confirmed := []talismanrc.IgnoreConfig{}
 	if len(configs) != 0 {
 		fmt.Println("==== Interactively adding to talismanrc ====")
 	}
@@ -341,9 +336,9 @@ func getUserConfirmation(configs []talismanrc.FileIgnoreConfig, promptContext pr
 	return confirmed
 }
 
-func printTalismanIgnoreSuggestion(entriesToAdd []talismanrc.FileIgnoreConfig) {
-	talismanRCConfig := talismanrc.TalismanRC{FileIgnoreConfig: entriesToAdd}
-	ignoreEntries, _ := yaml.Marshal(&talismanRCConfig)
+func printTalismanIgnoreSuggestion(entriesToAdd []talismanrc.IgnoreConfig) {
+	talismanRC := &talismanrc.TalismanRC{IgnoreConfigs: entriesToAdd}
+	ignoreEntries, _ := yaml.Marshal(talismanRC)
 	suggestString := fmt.Sprintf("\n\x1b[33mIf you are absolutely sure that you want to ignore the " +
 		"above files from talisman detectors, consider pasting the following format in .talismanrc file" +
 		" in the project root\x1b[0m\n")
@@ -351,16 +346,16 @@ func printTalismanIgnoreSuggestion(entriesToAdd []talismanrc.FileIgnoreConfig) {
 	fmt.Println(string(ignoreEntries))
 }
 
-func confirm(config talismanrc.FileIgnoreConfig, promptContext prompt.PromptContext) bool {
+func confirm(config talismanrc.IgnoreConfig, promptContext prompt.PromptContext) bool {
 	bytes, err := yaml.Marshal(&config)
 	if err != nil {
-		log.Printf("error marshalling file ignore config: %s", err)
+		logrus.Errorf("error marshalling file ignore config: %s", err)
 	}
 
 	fmt.Println()
 	fmt.Println(string(bytes))
 
-	confirmationString := fmt.Sprintf("Do you want to add %s with above checksum in talismanrc ?", config.FileName)
+	confirmationString := fmt.Sprintf("Do you want to add %s with above checksum in talismanrc ?", config.GetFileName())
 
 	return promptContext.Prompt.Confirm(confirmationString)
 }
@@ -392,12 +387,4 @@ func (r *DetectionResults) ReportFileWarnings(filePath gitrepo.FilePath) [][]str
 		}
 	}
 	return data
-}
-
-func keys(aMap map[gitrepo.FilePath][]string) []gitrepo.FilePath {
-	var result []gitrepo.FilePath
-	for filePath := range aMap {
-		result = append(result, filePath)
-	}
-	return result
 }

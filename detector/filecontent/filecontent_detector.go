@@ -10,7 +10,7 @@ import (
 	"talisman/gitrepo"
 	"talisman/talismanrc"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 type fn func(fc *FileContentDetector, word string) string
@@ -46,11 +46,11 @@ const (
 func (ct contentType) getInfo() string {
 	switch ct {
 	case base64Content:
-		return "Failing file as it contains a base64 encoded text."
+		return "Base64Detector: Failing file as it contains a base64 encoded text."
 	case hexContent:
-		return "Failing file as it contains a hex encoded text."
+		return "HexDetector: Failing file as it contains a hex encoded text."
 	case creditCardContent:
-		return "Failing file as it contains a potential credit card number."
+		return "CreditCardDetector: Failing file as it contains a potential credit card number."
 	}
 	return ""
 }
@@ -76,7 +76,7 @@ type content struct {
 	severity    severity.Severity
 }
 
-func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *helpers.DetectionResults, additionCompletionCallback func()) {
+func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, talismanRC *talismanrc.TalismanRC, result *helpers.DetectionResults, additionCompletionCallback func()) {
 	contentTypes := []struct {
 		contentType
 		fn
@@ -109,7 +109,7 @@ func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentA
 		go func(addition gitrepo.Addition) {
 			defer waitGroup.Done()
 			defer additionCompletionCallback()
-			if ignoreConfig.Deny(addition, "filecontent") || comparator.IsScanNotRequired(addition) {
+			if talismanRC.Deny(addition, "filecontent") || comparator.IsScanNotRequired(addition) {
 				ignoredFilePaths <- addition.Path
 				return
 			}
@@ -135,21 +135,22 @@ func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentA
 		close(ignoredFilePaths)
 		close(contents)
 	}()
-
 	for ignoredChanHasMore, contentChanHasMore := true, true; ignoredChanHasMore || contentChanHasMore; {
 		select {
 		case ignoredFilePath, hasMore := <-ignoredFilePaths:
+			log.Debugf("Processing results for ignored file %v", ignoredFilePath)
 			if !hasMore {
 				ignoredChanHasMore = false
 				continue
 			}
 			processIgnoredFilepath(ignoredFilePath, result)
 		case c, hasMore := <-contents:
+			log.Debugf("Processing results for file %v", c.path)
 			if !hasMore {
 				contentChanHasMore = false
 				continue
 			}
-			processContent(c, ignoreConfig.Threshold, result)
+			processContent(c, talismanRC.Threshold, result)
 		}
 	}
 }
@@ -161,7 +162,7 @@ func processIgnoredFilepath(path gitrepo.FilePath, result *helpers.DetectionResu
 	result.Ignore(path, "filecontent")
 }
 
-func processContent(c content, threshold severity.SeverityValue, result *helpers.DetectionResults) {
+func processContent(c content, threshold severity.Severity, result *helpers.DetectionResults) {
 	for _, res := range c.results {
 		if res != "" {
 			log.WithFields(log.Fields{

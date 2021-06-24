@@ -1,6 +1,23 @@
-#!/bin/bash
+#!/bin/sh
 VERSION=$(git describe --tags HEAD)
 export GO111MODULE=on
-go get github.com/mitchellh/gox
-gox -os="linux darwin windows" -arch="386 amd64" -ldflags="-s -w -X main.Version=${VERSION}"
-shasum -b -a256 talisman_{l,d,w}* > checksums
+mkdir -p dist/
+
+
+for OS in linux darwin windows
+do
+  arch_list="amd64"
+  if [ "${OS}" != "darwin" ]; then
+    arch_list="386 ${arch_list}"
+  else
+    arch_list="arm64 ${arch_list}"
+  fi
+
+  for ARCH in ${arch_list}
+  do
+    [ "${OS}" == "windows" ] && suffix=".exe" || suffix=""
+    output_filename="dist/talisman_${OS}_${ARCH}${suffix}"
+    echo "OS:${OS} ARCH:${ARCH}"
+    GOOS=${OS} GOARCH=${ARCH} go build -o ${output_filename} -ldflags="-s -w -X main.Version=${VERSION}" talisman/cmd
+  done
+done

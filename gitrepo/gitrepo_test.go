@@ -12,7 +12,7 @@ import (
 
 	"talisman/git_testing"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -69,6 +69,32 @@ func TestGetDiffForStagedFiles(t *testing.T) {
 		assert.Equal(t, expectedCreatedAddition, createdAddition)
 	}
 
+}
+
+func TestGetDiffForStagedFilesWithSpacesInPath(t *testing.T) {
+	cleanTestData()
+	git, repo := setupOriginAndClones(testLocation, cloneLocation)
+	git.AppendFileContent("folder b/c.txt", "New content.\n", "Spanning multiple lines, even.")
+	git.Add("folder b/c.txt")
+	additions := repo.GetDiffForStagedFiles()
+
+	if assert.Len(t, additions, 1) {
+		modifiedAddition := additions[0]
+
+		aTxtFileContents, err := ioutil.ReadFile(path.Join(cloneLocation, "folder b/c.txt"))
+		assert.NoError(t, err)
+
+		expectedModifiedAddition := Addition{
+			Path: FilePath("folder b/c.txt"),
+			Name: FileName("c.txt"),
+			Data: []byte(fmt.Sprintf("%s\n", string(aTxtFileContents))),
+		}
+
+		// For human-readable comparison
+		assert.Equal(t, string(expectedModifiedAddition.Data), string(modifiedAddition.Data))
+
+		assert.Equal(t, expectedModifiedAddition, modifiedAddition)
+	}
 }
 
 func TestAdditionsReturnsEditsAndAdds(t *testing.T) {
@@ -193,6 +219,7 @@ func setupOriginAndClones(originLocation, cloneLocation string) (*git_testing.Gi
 	origin := RepoLocatedAt(originLocation)
 	git := git_testing.Init(origin.root)
 	git.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
+	git.SetupBaselineFiles("c.txt", filepath.Join( "folder b","c.txt"))
 	cwd, _ := os.Getwd()
 	gitClone := git.GitClone(filepath.Join(cwd, cloneLocation))
 	return gitClone, RepoLocatedAt(cloneLocation)

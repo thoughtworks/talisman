@@ -6,7 +6,7 @@ import (
 	"talisman/talismanrc"
 	"talisman/utility"
 
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 type ChecksumCalculator interface {
@@ -38,13 +38,14 @@ func (cc *DefaultChecksumCalculator) SuggestTalismanRC(fileNamePatterns []string
 	}
 	if len(fileIgnoreConfigs) != 0 {
 		result = result + fmt.Sprintf("\n\x1b[33m.talismanrc format for given file names / patterns\x1b[0m\n")
-		talismanRCConfig := talismanrc.TalismanRC{FileIgnoreConfig: fileIgnoreConfigs}
-		m, _ := yaml.Marshal(&talismanRCConfig)
+		talismanRC := talismanrc.MakeWithFileIgnores(fileIgnoreConfigs)
+		m, _ := yaml.Marshal(&talismanRC)
 		result = result + string(m)
 	}
 	return result
 }
 
+//CalculateCollectiveChecksumForPattern calculates and returns the checksum for files matching the input pattern
 func (cc *DefaultChecksumCalculator) CalculateCollectiveChecksumForPattern(fileNamePattern string) string {
 	var patternPaths []string
 	currentCollectiveChecksum := ""

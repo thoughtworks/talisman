@@ -1,8 +1,10 @@
 package pattern
 
 import (
+	"regexp"
 	"strings"
 	"talisman/detector/helpers"
+	"talisman/detector/severity"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
 	"talisman/utility"
@@ -12,6 +14,8 @@ import (
 )
 
 var talismanRC = &talismanrc.TalismanRC{}
+var defaultChecksumCompare = helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanRC)
+var dummyCallback = func() {}
 
 var (
 	customPatterns []talismanrc.PatternString
@@ -25,10 +29,16 @@ func TestShouldDetectPasswordPatterns(t *testing.T) {
 		shouldPassDetectionOfSecretPattern(filename, []byte(values[i]+"=UnsafeString"), t)
 		shouldPassDetectionOfSecretPattern(filename, []byte("."+values[i]+"=randomStringGoesHere}"), t)
 		shouldPassDetectionOfSecretPattern(filename, []byte(":"+values[i]+" randomStringGoesHere"), t)
-		shouldPassDetectionOfSecretPattern(filename, []byte("\"SERVER_"+strings.ToUpper(values[i])+"\" : UnsafeString"), t)
+		shouldPassDetectionOfSecretPattern(filename,
+			[]byte("\"SERVER_"+strings.ToUpper(values[i])+"\" : UnsafeString"),
+			t)
 		shouldPassDetectionOfSecretPattern(filename, []byte(values[i]+"2-string : UnsafeString"), t)
-		shouldPassDetectionOfSecretPattern(filename, []byte("<"+values[i]+" data=123> randomStringGoesHere </"+values[i]+">"), t)
-		shouldPassDetectionOfSecretPattern(filename, []byte("<admin "+values[i]+"> randomStringGoesHere </my"+values[i]+">"), t)
+		shouldPassDetectionOfSecretPattern(filename,
+			[]byte("<"+values[i]+" data=123> randomStringGoesHere </"+values[i]+">"),
+			t)
+		shouldPassDetectionOfSecretPattern(filename,
+			[]byte("<admin "+values[i]+"> randomStringGoesHere </my"+values[i]+">"),
+			t)
 	}
 
 	shouldPassDetectionOfSecretPattern(filename, []byte("\"pw\" : UnsafeString"), t)
@@ -50,44 +60,59 @@ func TestShouldDetectPasswordPatterns(t *testing.T) {
 }
 
 func TestShouldIgnorePasswordPatterns(t *testing.T) {
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	content := []byte("\"password\" : UnsafePassword")
 	filename := "secret.txt"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
-	fileIgnoreConfig := talismanrc.FileIgnoreConfig{filename, "833b6c24c8c2c5c7e1663226dc401b29c005492dc76a1150fc0e0f07f29d4cc3", []string{"filecontent"}, []string{}}
-	ignores := &talismanrc.TalismanRC{FileIgnoreConfig: []talismanrc.FileIgnoreConfig{fileIgnoreConfig}}
+	fileIgnoreConfig := &talismanrc.FileIgnoreConfig{
+		FileName:        filename,
+		Checksum:        "833b6c24c8c2c5c7e1663226dc401b29c005492dc76a1150fc0e0f07f29d4cc3",
+		IgnoreDetectors: []string{"filecontent"},
+		AllowedPatterns: []string{}}
+	ignores := &talismanrc.TalismanRC{IgnoreConfigs: []talismanrc.IgnoreConfig{fileIgnoreConfig}}
 
-	NewPatternDetector(customPatterns).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additions, ignores, results, func() {})
+	NewPatternDetector(customPatterns).Test(defaultChecksumCompare, additions, ignores, results, dummyCallback)
+
 	assert.True(t, results.Successful(), "Expected file %s to be ignored by pattern", filename)
 }
 
 func TestShouldIgnoreAllowedPattern(t *testing.T) {
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	content := []byte("\"key\" : \"This is an allowed keyword\"\npassword=y0uw1lln3v3rgu3ssmyP@55w0rd")
 	filename := "allowed_pattern.txt"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
-	fileIgnoreConfig := talismanrc.FileIgnoreConfig{filename, "", []string{}, []string{"key"}}
-	ignores := &talismanrc.TalismanRC{FileIgnoreConfig: []talismanrc.FileIgnoreConfig{fileIgnoreConfig}, AllowedPatterns: []string{"password"}}
+	fileIgnoreConfig := &talismanrc.FileIgnoreConfig{
+		FileName: filename, Checksum: "",
+		IgnoreDetectors: []string{},
+		AllowedPatterns: []string{"key"}}
+	ignores := &talismanrc.TalismanRC{
+		IgnoreConfigs:   []talismanrc.IgnoreConfig{fileIgnoreConfig},
+		AllowedPatterns: []*regexp.Regexp{regexp.MustCompile("password")}}
 
-	NewPatternDetector(customPatterns).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additions, ignores, results, func() {})
-	assert.True(t, results.Successful(), "Expected keywords %s to be ignored by Talisman", append(fileIgnoreConfig.AllowedPatterns, ignores.AllowedPatterns...))
+	NewPatternDetector(customPatterns).Test(defaultChecksumCompare, additions, ignores, results, dummyCallback)
+
+	assert.True(t,
+		results.Successful(),
+		"Expected keywords %v %v to be ignored by Talisman", fileIgnoreConfig.AllowedPatterns, ignores.AllowedPatterns)
 }
 func TestShouldOnlyWarnSecretPatternIfBelowThreshold(t *testing.T) {
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	content := []byte(`password=UnsafeString`)
 	filename := "secret.txt"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
-	talismanRCContents := "threshold: high"
-	talismanRCWithThreshold := talismanrc.NewTalismanRC([]byte(talismanRCContents))
-	NewPatternDetector(customPatterns).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanRCWithThreshold), additions, talismanRCWithThreshold, results, func() {})
+	talismanRCWithThreshold := &talismanrc.TalismanRC{Threshold: severity.High}
+	checksumCompare := helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanRCWithThreshold)
+
+	NewPatternDetector(customPatterns).Test(checksumCompare, additions, talismanRCWithThreshold, results, dummyCallback)
+
 	assert.False(t, results.HasFailures(), "Expected file %s to not have failures", filename)
 	assert.True(t, results.HasWarnings(), "Expected file %s to have warnings", filename)
 }
 
 func DetectionOfSecretPattern(filename string, content []byte) (*helpers.DetectionResults, []gitrepo.Addition, string) {
-	results := helpers.NewDetectionResults()
+	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
-	NewPatternDetector(customPatterns).Test(helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanrc.NewTalismanRC(nil)), additions, talismanRC, results, func() {})
+	NewPatternDetector(customPatterns).Test(defaultChecksumCompare, additions, talismanRC, results, dummyCallback)
 	expected := "Potential secret pattern : " + string(content)
 	return results, additions, expected
 }
