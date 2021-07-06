@@ -467,7 +467,7 @@ This includes scanning of the files listed in the .talismanrc file as well.
  1. Get into the git directory path to be scanned `cd <directory to scan>`
  2. Run the scan command `talisman --scan`
   * Running this command will create a folder named <i>talisman_reports</i> in the root of the current directory and store the report files there.
-  * You can also specify the location for reports by providing an additional parameter as <i>--reportDirectory</i> or <i>--rd</i>
+  * You can also specify the location for reports by providing an additional parameter as <i>--reportdirectory</i> or <i>--rd</i>
 <br>For example, `talisman --scan --reportdirectory=/Users/username/Desktop`
 
 You can use the other options to scan as given above.
