@@ -87,10 +87,10 @@ function run() {
 		"Darwin")
 			echo "darwin"
 			;;
-		MINGW32_NT-10.0-WOW*)
+		MINGW32_NT-*)
 			echo "windows"
 			;;
-		MINGW64_NT-10.0*)
+		MINGW64_NT-*)
 			echo "windows"
 			;;
 		*)

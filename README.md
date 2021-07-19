@@ -200,6 +200,7 @@ a real git revision!)
     # -   id: talisman-push
 ```
 
+*Disclaimer: Talisman cannot guarantee its functionality in MicroSoft's unsupported versions of Windows. Anyway Taliman is successfully tested on Windows 7 and server 2008 R2, which might not work in future releases.*
 
 # Upgrading
 Since release v0.4.4, Talisman <b>automatically updates</b> the binary to the latest release, when the hook is invoked (at pre-commit/pre-push, as set up). So, just sit back, relax, and keep using the latest Talisman without any extra efforts.
