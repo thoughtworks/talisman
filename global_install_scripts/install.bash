@@ -103,15 +103,18 @@ function run() {
 
 	function set_talisman_binary_name() {
 		# based on OS (linux/darwin) and ARCH(32/64 bit)
-		declare OS
-		OS=$(operating_system)
+		declare SUFFIX
+		SUFFIX=$(operating_system)
 		ARCH=$(uname -m)
 		case $ARCH in
 		"x86_64")
-			OS="${OS}_amd64"
+			SUFFIX="${SUFFIX}_amd64"
 			;;
 		"i686" | "i386")
-			OS="${OS}_386"
+			SUFFIX="${SUFFIX}_386"
+			;;
+		"arm64")
+			SUFFIX="${SUFFIX}_arm64"
 			;;
 		*)
 			echo_error "Talisman currently only supports x86 and x86_64 architectures."
@@ -120,7 +123,7 @@ function run() {
 			;;
 		esac
 
-		TALISMAN_BINARY_NAME="talisman_${OS}"
+		TALISMAN_BINARY_NAME="talisman_${SUFFIX}"
 		if [[ $OS == *"windows"* ]]; then
 			TALISMAN_BINARY_NAME="${TALISMAN_BINARY_NAME}.exe"
 		fi
