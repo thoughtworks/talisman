@@ -52,6 +52,22 @@ type persistedRC struct {
 	Version string `default:"1.0" yaml:"version"`
 }
 
+func SuggestRCFor(configs []IgnoreConfig) string {
+	fileIgnoreConfigs := []FileIgnoreConfig{}
+	for _, config := range configs {
+		fIC, ok := config.(*FileIgnoreConfig)
+		if ok {
+			fileIgnoreConfigs = append(fileIgnoreConfigs, *fIC)
+		} else {
+			logr.Debugf("Ignoring unknown IgnoreConfig : %#v", config)
+		}
+	}
+	pRC := persistedRC{FileIgnoreConfig: fileIgnoreConfigs}
+	result, _ := yaml.Marshal(pRC)
+
+	return string(result)
+}
+
 //AcceptsAll returns true if there are no rules specified
 func (tRC *TalismanRC) AcceptsAll() bool {
 	return len(tRC.effectiveRules("any-detector")) == 0

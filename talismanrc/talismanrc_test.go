@@ -263,3 +263,41 @@ func TestScanFileIgnoreConfig_GetAllowedPatterns(t *testing.T) {
 	assert.Equal(t, 1, len(allowedPatterns))
 	assert.Regexp(t, allowedPatterns[0], "fileName")
 }
+
+func TestSuggestRCFor(t *testing.T) {
+	t.Run("should suggest proper RC when ignore configs are valid", func(t *testing.T) {
+		fileIgnoreConfigs := []IgnoreConfig{
+			&FileIgnoreConfig{
+				FileName: "some_filename",
+				Checksum: "some_checksum",
+			},
+		}
+		expectedRC := `fileignoreconfig:
+- filename: some_filename
+  checksum: some_checksum
+version: ""
+`
+		str := SuggestRCFor(fileIgnoreConfigs)
+		assert.Equal(t, expectedRC, str)
+	})
+
+	t.Run("should ignore invalid configs", func(t *testing.T) {
+		fileIgnoreConfigs := []IgnoreConfig{
+			&FileIgnoreConfig{
+				FileName: "some_filename",
+				Checksum: "some_checksum",
+			},
+			&ScanFileIgnoreConfig{
+				FileName:  "some_other_filename",
+				Checksums: []string{"some_other_checksum"},
+			},
+		}
+		expectedRC := `fileignoreconfig:
+- filename: some_filename
+  checksum: some_checksum
+version: ""
+`
+		str := SuggestRCFor(fileIgnoreConfigs)
+		assert.Equal(t, expectedRC, str)
+	})
+}

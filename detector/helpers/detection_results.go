@@ -337,13 +337,12 @@ func getUserConfirmation(configs []talismanrc.IgnoreConfig, promptContext prompt
 }
 
 func printTalismanIgnoreSuggestion(entriesToAdd []talismanrc.IgnoreConfig) {
-	talismanRC := &talismanrc.TalismanRC{IgnoreConfigs: entriesToAdd}
-	ignoreEntries, _ := yaml.Marshal(talismanRC)
+	ignoreEntries := talismanrc.SuggestRCFor(entriesToAdd)
 	suggestString := fmt.Sprintf("\n\x1b[33mIf you are absolutely sure that you want to ignore the " +
 		"above files from talisman detectors, consider pasting the following format in .talismanrc file" +
 		" in the project root\x1b[0m\n")
 	fmt.Println(suggestString)
-	fmt.Println(string(ignoreEntries))
+	fmt.Println(ignoreEntries)
 }
 
 func confirm(config talismanrc.IgnoreConfig, promptContext prompt.PromptContext) bool {
