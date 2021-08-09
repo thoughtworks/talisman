@@ -6,11 +6,11 @@ echo "...Done"
 cd dist
 
 echo "Compressing binaries"
-upx --lzma talisman*
+upx --lzma talisman_windows* talisman_linux* talisman_darwin_amd64
 echo "...Done"
 
 echo "Verifying compressed binaries"
-upx -t talisman*
+upx -t talisman_windows* talisman_linux* talisman_darwin_amd64
 echo "...Done"
 
 echo "Generating checksums for download verification"

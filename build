@@ -7,10 +7,10 @@ mkdir -p dist/
 for OS in linux darwin windows
 do
   arch_list="amd64"
-  if [ "${OS}" != "darwin" ]; then
-    arch_list="386 ${arch_list}"
-  else
+  if [ "${OS}" == "darwin" ]; then
     arch_list="arm64 ${arch_list}"
+  else
+    arch_list="386 ${arch_list}"
   fi
 
   for ARCH in ${arch_list}
