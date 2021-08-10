@@ -104,6 +104,7 @@ function run() {
 	function set_talisman_binary_name() {
 		# based on OS (linux/darwin) and ARCH(32/64 bit)
 		declare SUFFIX
+		declare OS
 		SUFFIX=$(operating_system)
 		ARCH=$(uname -m)
 		case $ARCH in
