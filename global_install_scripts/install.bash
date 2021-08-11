@@ -104,7 +104,6 @@ function run() {
 	function set_talisman_binary_name() {
 		# based on OS (linux/darwin) and ARCH(32/64 bit)
 		declare SUFFIX
-		declare OS
 		SUFFIX=$(operating_system)
 		ARCH=$(uname -m)
 		case $ARCH in
@@ -125,7 +124,7 @@ function run() {
 		esac
 
 		TALISMAN_BINARY_NAME="talisman_${SUFFIX}"
-		if [[ $OS == *"windows"* ]]; then
+		if [[ $SUFFIX == *"windows"* ]]; then
 			TALISMAN_BINARY_NAME="${TALISMAN_BINARY_NAME}.exe"
 		fi
 	}
