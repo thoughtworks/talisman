@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/sirupsen/logrus"
 	lorem "github.com/drhodes/golorem"
+	"github.com/sirupsen/logrus"
 )
 
 var Logger *logrus.Entry

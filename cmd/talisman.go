@@ -51,18 +51,42 @@ var options struct {
 
 func init() {
 	log.SetOutput(os.Stderr)
-	flag.BoolVarP(&options.debug, "debug", "d", false, "enable debug mode (warning: very verbose)")
-	flag.StringVarP(&options.loglevel, "loglevel", "l", "error", "enable debug mode (warning: very verbose)")
-	flag.BoolVarP(&showVersion, "version", "v", false, "show current version of talisman")
-	flag.StringVarP(&options.pattern, "pattern", "p", "", "pattern (glob-like) of files to scan (ignores githooks)")
-	flag.StringVarP(&options.githook, "githook", "g", PrePush, "either pre-push or pre-commit")
-	flag.BoolVarP(&options.scan, "scan", "s", false, "scanner scans the git commit history for potential secrets")
-	flag.BoolVar(&options.ignoreHistory, "ignoreHistory", false, "scanner scans all files on current head, will not scan through git commit history")
-	flag.StringVarP(&options.checksum, "checksum", "c", "", "checksum calculator calculates checksum and suggests .talismanrc format")
-	flag.StringVarP(&options.reportDirectory, "reportDirectory", "r", "talisman_report", "directory where the scan reports will be stored")
-	flag.BoolVarP(&options.scanWithHtml, "scanWithHtml", "w", false, "generate html report (**Make sure you have installed talisman_html_report to use this, as mentioned in Readme**)")
-	flag.BoolVarP(&interactive, "interactive", "i", false, "interactively update talismanrc (only makes sense with -g/--githook)")
-	flag.BoolVarP(&options.shouldProfile, "profile", "", false, "interactively update talismanrc (only makes sense with -g/--githook)")
+	flag.BoolVarP(&options.debug,
+		"debug", "d", false,
+		"enable debug mode (warning: very verbose)")
+	flag.StringVarP(&options.loglevel,
+		"loglevel", "l", "error",
+		"enable debug mode (warning: very verbose)")
+	flag.BoolVarP(&showVersion,
+		"version", "v", false,
+		"show current version of talisman")
+	flag.StringVarP(&options.pattern,
+		"pattern", "p", "",
+		"pattern (glob-like) of files to scan (ignores githooks)")
+	flag.StringVarP(&options.githook,
+		"githook", "g", PrePush,
+		"either pre-push or pre-commit")
+	flag.BoolVarP(&options.scan,
+		"scan", "s", false,
+		"scanner scans the git commit history for potential secrets")
+	flag.BoolVar(&options.ignoreHistory,
+		"ignoreHistory", false,
+		"scanner scans all files on current head, will not scan through git commit history")
+	flag.StringVarP(&options.checksum,
+		"checksum", "c", "",
+		"checksum calculator calculates checksum and suggests .talismanrc format")
+	flag.StringVarP(&options.reportDirectory,
+		"reportDirectory", "r", "talisman_report",
+		"directory where the scan reports will be stored")
+	flag.BoolVarP(&options.scanWithHtml,
+		"scanWithHtml", "w", false,
+		"generate html report (**Make sure you have installed talisman_html_report to use this, as mentioned in Readme**)")
+	flag.BoolVarP(&interactive,
+		"interactive", "i", false,
+		"interactively update talismanrc (only makes sense with -g/--githook)")
+	flag.BoolVarP(&options.shouldProfile,
+		"profile", "f", false,
+		"profile cpu usage of talisman")
 
 }
 
@@ -151,7 +175,7 @@ func run(promptContext prompt.PromptContext) (returnCode int) {
 	}
 	bytes, _ := json.Marshal(options)
 	fields := make(map[string]interface{})
-	_ = json.Unmarshal(bytes, fields)
+	_ = json.Unmarshal(bytes, &fields)
 	log.WithFields(fields).Debug("Execution environment")
 
 	if options.checksum != "" {

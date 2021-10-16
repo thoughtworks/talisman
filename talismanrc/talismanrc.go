@@ -1,7 +1,6 @@
 package talismanrc
 
 import (
-	"log"
 	"os"
 	"regexp"
 	"sort"
@@ -52,6 +51,7 @@ type persistedRC struct {
 	Version string `default:"1.0" yaml:"version"`
 }
 
+//SuggestRCFor returns the talismanRC file content corresponding to input ignore configs
 func SuggestRCFor(configs []IgnoreConfig) string {
 	fileIgnoreConfigs := []FileIgnoreConfig{}
 	for _, config := range configs {
@@ -126,18 +126,18 @@ func (tRC *persistedRC) AddIgnores(mode Mode, entriesToAdd []IgnoreConfig) {
 		ignoreEntries, _ := yaml.Marshal(&talismanRCConfig)
 		file, err := fs.OpenFile(currentRCFileName, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
-			log.Printf("error opening %s: %s", currentRCFileName, err)
+			logr.Errorf("error opening %s: %s", currentRCFileName, err)
 		}
 		defer func() {
 			err := file.Close()
 			if err != nil {
-				log.Printf("error closing %s: %s", currentRCFileName, err)
+				logr.Errorf("error closing %s: %s", currentRCFileName, err)
 			}
 		}()
 		logr.Debugf("Writing talismanrc: %v", string(ignoreEntries))
 		_, err = file.WriteString(string(ignoreEntries))
 		if err != nil {
-			log.Printf("error writing to %s: %s", currentRCFileName, err)
+			logr.Errorf("error writing to %s: %s", currentRCFileName, err)
 		}
 	}
 }
@@ -247,8 +247,8 @@ func fromPersistedRC(configFromTalismanRCFile *persistedRC, mode Mode) *Talisman
 			tRC.AllowedPatterns[i] = regexp.MustCompile(p)
 		}
 		tRC.IgnoreConfigs = make([]IgnoreConfig, len(configFromTalismanRCFile.FileIgnoreConfig))
-		for i, v := range configFromTalismanRCFile.FileIgnoreConfig {
-			tRC.IgnoreConfigs[i] = IgnoreConfig(&v)
+		for i := range configFromTalismanRCFile.FileIgnoreConfig {
+			tRC.IgnoreConfigs[i] = &configFromTalismanRCFile.FileIgnoreConfig[i]
 		}
 	}
 
@@ -265,8 +265,8 @@ func fromPersistedRC(configFromTalismanRCFile *persistedRC, mode Mode) *Talisman
 			tRC.AllowedPatterns[i] = regexp.MustCompile(p)
 		}
 		tRC.IgnoreConfigs = make([]IgnoreConfig, len(scanconfigFromTalismanRCFile.FileIgnoreConfig))
-		for i, v := range scanconfigFromTalismanRCFile.FileIgnoreConfig {
-			tRC.IgnoreConfigs[i] = IgnoreConfig(&v)
+		for i := range scanconfigFromTalismanRCFile.FileIgnoreConfig {
+			tRC.IgnoreConfigs[i] = &scanconfigFromTalismanRCFile.FileIgnoreConfig[i]
 		}
 	}
 	tRC.base = configFromTalismanRCFile
@@ -275,5 +275,6 @@ func fromPersistedRC(configFromTalismanRCFile *persistedRC, mode Mode) *Talisman
 
 func For(mode Mode) *TalismanRC {
 	configFromTalismanRCFile := ConfigFromFile()
-	return fromPersistedRC(configFromTalismanRCFile, mode)
+	talismanRC := fromPersistedRC(configFromTalismanRCFile, mode)
+	return talismanRC
 }

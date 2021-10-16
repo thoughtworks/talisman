@@ -20,3 +20,5 @@ dist/
 *.mprof
 .envrc
 talisman_html_report
+.vscode
+.idea

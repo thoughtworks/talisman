@@ -301,3 +301,28 @@ version: ""
 		assert.Equal(t, expectedRC, str)
 	})
 }
+
+func TestFor(t *testing.T) {
+	var repoFileReader = func(string) ([]byte, error) {
+		return []byte(`fileignoreconfig:
+- filename: testfile_1.yml
+  checksum: file1_checksum
+- filename: testfile_2.yml
+  checksum: file2_checksum
+- filename: testfile_3.yml
+  checksum: file3_checksum`), nil
+	}
+	t.Run("talismanrc.For(mode) should read multiple entries in rc file correctly", func(t *testing.T) {
+		setRepoFileReader(repoFileReader)
+		rc := For(HookMode)
+		assert.Equal(t, 3, len(rc.IgnoreConfigs))
+
+		assert.Equal(t, rc.IgnoreConfigs[0].GetFileName(), "testfile_1.yml")
+		assert.True(t, rc.IgnoreConfigs[0].ChecksumMatches("file1_checksum"))
+		assert.Equal(t, rc.IgnoreConfigs[1].GetFileName(), "testfile_2.yml")
+		assert.True(t, rc.IgnoreConfigs[1].ChecksumMatches("file2_checksum"))
+		assert.Equal(t, rc.IgnoreConfigs[2].GetFileName(), "testfile_3.yml")
+		assert.True(t, rc.IgnoreConfigs[2].ChecksumMatches("file3_checksum"))
+
+	})
+}
