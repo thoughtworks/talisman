@@ -34,57 +34,57 @@ const (
 )
 
 var options struct {
-	debug           bool
-	loglevel        string
-	githook         string
-	pattern         string
-	scan            bool
-	ignoreHistory   bool
-	checksum        string
-	reportDirectory string
-	scanWithHtml    bool
-	input           io.Reader
-	shouldProfile   bool
+	Debug           bool
+	LogLevel        string
+	GitHook         string
+	Pattern         string
+	Scan            bool
+	IgnoreHistory   bool
+	Checksum        string
+	ReportDirectory string
+	ScanWithHtml    bool
+	Input           io.Reader
+	ShouldProfile   bool
 }
 
 //var options Options
 
 func init() {
 	log.SetOutput(os.Stderr)
-	flag.BoolVarP(&options.debug,
+	flag.BoolVarP(&options.Debug,
 		"debug", "d", false,
 		"enable debug mode (warning: very verbose)")
-	flag.StringVarP(&options.loglevel,
+	flag.StringVarP(&options.LogLevel,
 		"loglevel", "l", "error",
 		"enable debug mode (warning: very verbose)")
 	flag.BoolVarP(&showVersion,
 		"version", "v", false,
 		"show current version of talisman")
-	flag.StringVarP(&options.pattern,
+	flag.StringVarP(&options.Pattern,
 		"pattern", "p", "",
 		"pattern (glob-like) of files to scan (ignores githooks)")
-	flag.StringVarP(&options.githook,
+	flag.StringVarP(&options.GitHook,
 		"githook", "g", PrePush,
 		"either pre-push or pre-commit")
-	flag.BoolVarP(&options.scan,
+	flag.BoolVarP(&options.Scan,
 		"scan", "s", false,
 		"scanner scans the git commit history for potential secrets")
-	flag.BoolVar(&options.ignoreHistory,
+	flag.BoolVar(&options.IgnoreHistory,
 		"ignoreHistory", false,
 		"scanner scans all files on current head, will not scan through git commit history")
-	flag.StringVarP(&options.checksum,
+	flag.StringVarP(&options.Checksum,
 		"checksum", "c", "",
 		"checksum calculator calculates checksum and suggests .talismanrc format")
-	flag.StringVarP(&options.reportDirectory,
+	flag.StringVarP(&options.ReportDirectory,
 		"reportDirectory", "r", "talisman_report",
 		"directory where the scan reports will be stored")
-	flag.BoolVarP(&options.scanWithHtml,
+	flag.BoolVarP(&options.ScanWithHtml,
 		"scanWithHtml", "w", false,
 		"generate html report (**Make sure you have installed talisman_html_report to use this, as mentioned in Readme**)")
 	flag.BoolVarP(&interactive,
 		"interactive", "i", false,
 		"interactively update talismanrc (only makes sense with -g/--githook)")
-	flag.BoolVarP(&options.shouldProfile,
+	flag.BoolVarP(&options.ShouldProfile,
 		"profile", "f", false,
 		"profile cpu usage of talisman")
 
@@ -103,21 +103,21 @@ func main() {
 		os.Exit(0)
 	}
 
-	if options.githook != "" {
-		if !(options.githook == PreCommit || options.githook == PrePush) {
-			fmt.Println(fmt.Errorf("githook should be %s or %s, but got %s", PreCommit, PrePush, options.githook))
+	if options.GitHook != "" {
+		if !(options.GitHook == PreCommit || options.GitHook == PrePush) {
+			fmt.Println(fmt.Errorf("githook should be %s or %s, but got %s", PreCommit, PrePush, options.GitHook))
 			os.Exit(1)
 		}
 	}
 
 	prompter := prompt.NewPrompt()
 	promptContext := prompt.NewPromptContext(interactive, prompter)
-	options.input = os.Stdin
+	options.Input = os.Stdin
 	os.Exit(run(promptContext))
 }
 
 func run(promptContext prompt.PromptContext) (returnCode int) {
-	if options.shouldProfile {
+	if options.ShouldProfile {
 		log.Info("Profiling initiated")
 		defer func() { log.Info("Profiling completed") }()
 		f, err := os.Create("talisman.pprof")
@@ -130,16 +130,13 @@ func run(promptContext prompt.PromptContext) (returnCode int) {
 		defer func() { progEnded = true }()
 		go func() {
 			t := time.NewTimer(500 * time.Millisecond)
-			f1, _ := os.Create("talisman.mprof")
+			f1, _ := os.Create("talisman.prof")
 			for !progEnded {
-				select {
-				case <-t.C:
-					if f1 != nil {
-						_ = pprof.WriteHeapProfile(f1)
-					} else {
-						log.Error("Could not write memory profiling info")
-					}
-
+				<-t.C
+				if f1 != nil {
+					_ = pprof.WriteHeapProfile(f1)
+				} else {
+					log.Error("Could not write memory profiling info")
 				}
 			}
 			if f1 != nil {
@@ -148,13 +145,13 @@ func run(promptContext prompt.PromptContext) (returnCode int) {
 		}()
 	}
 	start := time.Now()
-	defer func() { fmt.Printf("Talisman done in %v", time.Now().Sub(start)) }()
+	defer func() { fmt.Printf("Talisman done in %v\n", time.Since(start)) }()
 	if err := validateGitExecutable(afero.NewOsFs(), runtime.GOOS); err != nil {
 		log.Errorf("error validating git executable:"+" %v", err)
 		return 1
 	}
 
-	switch options.loglevel {
+	switch options.LogLevel {
 	case "info":
 		log.SetLevel(log.InfoLevel)
 	case "debug":
@@ -166,36 +163,36 @@ func run(promptContext prompt.PromptContext) (returnCode int) {
 	default:
 		log.SetLevel(log.ErrorLevel)
 	}
-	if options.debug {
+	if options.Debug {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	if options.githook == "" {
-		options.githook = PrePush
+	if options.GitHook == "" {
+		options.GitHook = PrePush
 	}
 	bytes, _ := json.Marshal(options)
 	fields := make(map[string]interface{})
 	_ = json.Unmarshal(bytes, &fields)
 	log.WithFields(fields).Debug("Execution environment")
 
-	if options.checksum != "" {
-		log.Infof("Running %s patterns against checksum calculator", options.checksum)
-		return NewChecksumCmd(strings.Fields(options.checksum)).Run()
-	} else if options.scan {
+	if options.Checksum != "" {
+		log.Infof("Running %s patterns against checksum calculator", options.Checksum)
+		return NewChecksumCmd(strings.Fields(options.Checksum)).Run()
+	} else if options.Scan {
 		log.Infof("Running scanner")
-		return NewScannerCmd(options.ignoreHistory, options.reportDirectory).Run(talismanrc.For(talismanrc.ScanMode))
-	} else if options.scanWithHtml {
+		return NewScannerCmd(options.IgnoreHistory, options.ReportDirectory).Run(talismanrc.For(talismanrc.ScanMode))
+	} else if options.ScanWithHtml {
 		log.Infof("Running scanner with html report")
-		return NewScannerCmd(options.ignoreHistory, "talisman_html_report").Run(talismanrc.For(talismanrc.ScanMode))
-	} else if options.pattern != "" {
-		log.Infof("Running scan for %s", options.pattern)
-		return NewPatternCmd(options.pattern).Run(talismanrc.For(talismanrc.HookMode), promptContext)
-	} else if options.githook == PreCommit {
-		log.Infof("Running %s hook", options.githook)
+		return NewScannerCmd(options.IgnoreHistory, "talisman_html_report").Run(talismanrc.For(talismanrc.ScanMode))
+	} else if options.Pattern != "" {
+		log.Infof("Running scan for %s", options.Pattern)
+		return NewPatternCmd(options.Pattern).Run(talismanrc.For(talismanrc.HookMode), promptContext)
+	} else if options.GitHook == PreCommit {
+		log.Infof("Running %s hook", options.GitHook)
 		return NewPreCommitHook().Run(talismanrc.For(talismanrc.HookMode), promptContext)
 	} else {
-		log.Infof("Running %s hook", options.githook)
-		return NewPrePushHook(options.input).Run(talismanrc.For(talismanrc.HookMode), promptContext)
+		log.Infof("Running %s hook", options.GitHook)
+		return NewPrePushHook(options.Input).Run(talismanrc.For(talismanrc.HookMode), promptContext)
 	}
 }
 

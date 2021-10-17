@@ -14,6 +14,7 @@ import (
 )
 
 type Mode int
+type CommitID string
 
 const (
 	HookMode = Mode(iota + 1)
@@ -32,23 +33,15 @@ type TalismanRC struct {
 }
 
 type persistedRC struct {
-	FileIgnoreConfig []FileIgnoreConfig     `yaml:"fileignoreconfig,omitempty"`
-	ScopeConfig      []ScopeConfig          `yaml:"scopeconfig,omitempty"`
-	CustomPatterns   []PatternString        `yaml:"custom_patterns,omitempty"`
-	CustomSeverities []CustomSeverityConfig `yaml:"custom_severities,omitempty"`
-	AllowedPatterns  []string               `yaml:"allowed_patterns,omitempty"`
-	Experimental     ExperimentalConfig     `yaml:"experimental,omitempty"`
-	Threshold        severity.Severity      `default:"low" yaml:"threshold,omitempty"`
-	ScanConfig       struct {
-		FileIgnoreConfig []ScanFileIgnoreConfig `yaml:"scanfileignoreconfig,omitempty"`
-		ScopeConfig      []ScopeConfig          `yaml:"scopeconfig,omitempty"`
-		CustomPatterns   []PatternString        `yaml:"custom_patterns,omitempty"`
-		CustomSeverities []CustomSeverityConfig `yaml:"custom_severities,omitempty"`
-		AllowedPatterns  []string               `yaml:"allowed_patterns,omitempty"`
-		Experimental     ExperimentalConfig     `yaml:"experimental,omitempty"`
-		Threshold        severity.Severity      `default:"low" yaml:"threshold,omitempty"`
-	} `yaml:"scanconfig,omitempty"`
-	Version string `default:"1.0" yaml:"version"`
+	FileIgnoreConfig []FileIgnoreConfig              `yaml:"fileignoreconfig,omitempty"`
+	ScopeConfig      []ScopeConfig                   `yaml:"scopeconfig,omitempty"`
+	CustomPatterns   []PatternString                 `yaml:"custom_patterns,omitempty"`
+	CustomSeverities []CustomSeverityConfig          `yaml:"custom_severities,omitempty"`
+	AllowedPatterns  []string                        `yaml:"allowed_patterns,omitempty"`
+	Experimental     ExperimentalConfig              `yaml:"experimental,omitempty"`
+	Threshold        severity.Severity               `default:"low" yaml:"threshold,omitempty"`
+	ScanConfig       map[CommitID][]FileIgnoreConfig `yaml:"scanconfig,omitempty"`
+	Version          string                          `default:"2.0" yaml:"version"`
 }
 
 //SuggestRCFor returns the talismanRC file content corresponding to input ignore configs
@@ -115,13 +108,6 @@ func (tRC *persistedRC) AddIgnores(mode Mode, entriesToAdd []IgnoreConfig) {
 				fileIgnoreEntries[idx] = *newVal
 			}
 			talismanRCConfig.FileIgnoreConfig = combineFileIgnores(talismanRCConfig.FileIgnoreConfig, fileIgnoreEntries)
-		} else {
-			scanFileIgnoreEntries := make([]ScanFileIgnoreConfig, len(entriesToAdd))
-			for idx, entry := range entriesToAdd {
-				newVal, _ := entry.(*ScanFileIgnoreConfig)
-				scanFileIgnoreEntries[idx] = *newVal
-			}
-			talismanRCConfig.ScanConfig.FileIgnoreConfig = combineScanFileIgnores(talismanRCConfig.ScanConfig.FileIgnoreConfig, scanFileIgnoreEntries)
 		}
 		ignoreEntries, _ := yaml.Marshal(&talismanRCConfig)
 		file, err := fs.OpenFile(currentRCFileName, os.O_CREATE|os.O_WRONLY, 0644)
@@ -168,50 +154,6 @@ func combineFileIgnores(exsiting, incoming []FileIgnoreConfig) []FileIgnoreConfi
 	return result
 }
 
-func combineScanFileIgnores(existing, incoming []ScanFileIgnoreConfig) []ScanFileIgnoreConfig {
-	existingMap := make(map[string]ScanFileIgnoreConfig)
-	for _, fIC := range existing {
-		existingMap[fIC.FileName] = fIC
-	}
-	for _, fIC := range incoming {
-		if efIC, ok := existingMap[fIC.FileName]; ok {
-			efIC.AllowedPatterns = combine(efIC.AllowedPatterns, fIC.AllowedPatterns)
-			efIC.Checksums = combine(efIC.Checksums, fIC.Checksums)
-			efIC.IgnoreDetectors = combine(efIC.IgnoreDetectors, fIC.IgnoreDetectors)
-		} else {
-			existingMap[fIC.FileName] = fIC
-		}
-	}
-	result := make([]ScanFileIgnoreConfig, len(existingMap))
-	resultKeys := make([]string, len(existingMap))
-	index := 0
-	//sort keys in alphabetical order
-	for k := range existingMap {
-		resultKeys[index] = k
-		index++
-	}
-	sort.Strings(resultKeys)
-	//add result entries based on sorted keys
-	for idx, k := range resultKeys {
-		result[idx] = existingMap[k]
-	}
-	return result
-}
-
-func combine(existing []string, incoming []string) []string {
-	combinedMap := make(map[string]bool)
-	result := make([]string, 0)
-	for _, src := range [][]string{existing, incoming} {
-		for _, v := range src {
-			if _, ok := combinedMap[v]; !ok {
-				combinedMap[v] = true
-				result = append(result, v)
-			}
-		}
-	}
-	return result
-}
-
 //Deny answers true if the Addition.Path is configured to be ignored and not checked by the detectors
 func (tRC *TalismanRC) Deny(addition gitrepo.Addition, detectorName string) bool {
 	for _, pattern := range tRC.effectiveRules(detectorName) {
@@ -249,24 +191,6 @@ func fromPersistedRC(configFromTalismanRCFile *persistedRC, mode Mode) *Talisman
 		tRC.IgnoreConfigs = make([]IgnoreConfig, len(configFromTalismanRCFile.FileIgnoreConfig))
 		for i := range configFromTalismanRCFile.FileIgnoreConfig {
 			tRC.IgnoreConfigs[i] = &configFromTalismanRCFile.FileIgnoreConfig[i]
-		}
-	}
-
-	if mode == ScanMode {
-		scanconfigFromTalismanRCFile := configFromTalismanRCFile.ScanConfig
-		tRC.Threshold = scanconfigFromTalismanRCFile.Threshold
-		tRC.ScopeConfig = scanconfigFromTalismanRCFile.ScopeConfig
-		tRC.Threshold = scanconfigFromTalismanRCFile.Threshold
-		tRC.Experimental = scanconfigFromTalismanRCFile.Experimental
-		tRC.CustomPatterns = scanconfigFromTalismanRCFile.CustomPatterns
-		tRC.Experimental = scanconfigFromTalismanRCFile.Experimental
-		tRC.AllowedPatterns = make([]*regexp.Regexp, len(scanconfigFromTalismanRCFile.AllowedPatterns))
-		for i, p := range scanconfigFromTalismanRCFile.AllowedPatterns {
-			tRC.AllowedPatterns[i] = regexp.MustCompile(p)
-		}
-		tRC.IgnoreConfigs = make([]IgnoreConfig, len(scanconfigFromTalismanRCFile.FileIgnoreConfig))
-		for i := range scanconfigFromTalismanRCFile.FileIgnoreConfig {
-			tRC.IgnoreConfigs[i] = &scanconfigFromTalismanRCFile.FileIgnoreConfig[i]
 		}
 	}
 	tRC.base = configFromTalismanRCFile

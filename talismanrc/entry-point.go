@@ -78,7 +78,7 @@ func BuildIgnoreConfig(mode Mode, filepath, checksum string, detectors []string)
 	case HookMode:
 		result = &FileIgnoreConfig{FileName: filepath, Checksum: checksum, IgnoreDetectors: detectors}
 	case ScanMode:
-		result = &ScanFileIgnoreConfig{FileName: filepath, Checksums: []string{checksum}, IgnoreDetectors: detectors}
+		result = &FileIgnoreConfig{FileName: filepath, Checksum: checksum, IgnoreDetectors: detectors}
 	}
 	return result
 }

@@ -51,43 +51,6 @@ func (i *FileIgnoreConfig) GetAllowedPatterns() []*regexp.Regexp {
 	return i.compiledPatterns
 }
 
-type ScanFileIgnoreConfig struct {
-	FileName        string   `yaml:"filename"`
-	Checksums       []string `yaml:"checksums,omitempty"`
-	IgnoreDetectors []string `yaml:"ignore_detectors,omitempty"`
-	AllowedPatterns []string `yaml:"allowed_patterns,omitempty"`
-
-	compiledPatterns []*regexp.Regexp
-}
-
-func (i *ScanFileIgnoreConfig) isEffective(detectorName string) bool {
-	return !isEmptyString(i.FileName) &&
-		contains(i.IgnoreDetectors, detectorName)
-}
-
-func (i *ScanFileIgnoreConfig) GetFileName() string {
-	return i.FileName
-}
-
-func (i *ScanFileIgnoreConfig) GetAllowedPatterns() []*regexp.Regexp {
-	if i.compiledPatterns == nil {
-		i.compiledPatterns = make([]*regexp.Regexp, len(i.AllowedPatterns))
-		for idx, p := range i.AllowedPatterns {
-			i.compiledPatterns[idx] = regexp.MustCompile(p)
-		}
-	}
-	return i.compiledPatterns
-}
-
-func (i *ScanFileIgnoreConfig) ChecksumMatches(incomingChecksum string) bool {
-	for _, v := range i.Checksums {
-		if v == incomingChecksum {
-			return true
-		}
-	}
-	return false
-}
-
 type ScopeConfig struct {
 	ScopeName string `yaml:"scope"`
 }

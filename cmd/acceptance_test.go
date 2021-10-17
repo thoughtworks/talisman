@@ -96,7 +96,7 @@ func TestAddingSecretKeyShouldExitZeroIfPEMFileIsIgnored(t *testing.T) {
 
 func TestAddingSecretKeyShouldExitOneIfPEMFileIsPresentInTheGitHistory(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
-		options.scan =     false
+		options.Scan = false
 
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
@@ -108,7 +108,7 @@ func TestAddingSecretKeyShouldExitOneIfPEMFileIsPresentInTheGitHistory(t *testin
 
 func TestScanningSimpleFileShouldExitZero(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
-		options.scan =     false
+		options.Scan = false
 
 		git.SetupBaselineFiles("simple-file")
 		assert.Equal(t, 0, runTalismanInPrePushMode(git), "Expected run() to return 0 and pass as pem file was ignored")
@@ -117,21 +117,21 @@ func TestScanningSimpleFileShouldExitZero(t *testing.T) {
 
 func TestChecksumCalculatorShouldExitOne(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
-		options.checksum =  "*txt1"
+		options.Checksum = "*txt1"
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
 		git.CreateFileWithContents("another/private.pem", "secret")
 		git.CreateFileWithContents("sample.txt", "password")
 		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 0 as given patterns are found and .talsimanrc is suggested")
-		options.checksum = ""
+		options.Checksum = ""
 	})
 }
 
 func TestShouldExitOneWhenSecretIsCommitted(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
-		options.debug =    false
-		options.githook =  PreCommit
-		options.scan =     false
+		options.Debug = false
+		options.GitHook = PreCommit
+		options.Scan = false
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("sample.txt", "password=somepassword \n")
 		git.Add("*")
@@ -141,8 +141,8 @@ func TestShouldExitOneWhenSecretIsCommitted(t *testing.T) {
 
 func TestShouldExitZeroWhenNonSecretIsCommittedButFileContainsSecretPreviously(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
-		options.debug =    false
-		options.githook =  PreCommit
+		options.Debug = false
+		options.GitHook = PreCommit
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("sample.txt", "password=somepassword \n")
 		git.AddAndcommit("*", "Initial Commit With Secret")
@@ -218,8 +218,8 @@ func TestStagingSecretKeyShouldExitOneWhenPreCommitFlagIsSet(t *testing.T) {
 		git.CreateFileWithContents("private.pem", "secret")
 		git.Add("*")
 
-		options.debug =    false
-		options.githook =  PreCommit
+		options.Debug = false
+		options.GitHook = PreCommit
 
 		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 1 and fail as pem file was present in the repo")
 	})
@@ -227,8 +227,8 @@ func TestStagingSecretKeyShouldExitOneWhenPreCommitFlagIsSet(t *testing.T) {
 
 func TestPatternFindsSecretKey(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
-		options.debug =    false
-		options.pattern =  "./*.*"
+		options.Debug = false
+		options.Pattern = "./*.*"
 
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
@@ -239,8 +239,8 @@ func TestPatternFindsSecretKey(t *testing.T) {
 
 func TestPatternFindsNestedSecretKey(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
-			options.debug =    false
-			options.pattern =  "./**/*.*"
+		options.Debug = false
+		options.Pattern = "./**/*.*"
 
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("some-dir/private.pem", "secret")
@@ -251,8 +251,8 @@ func TestPatternFindsNestedSecretKey(t *testing.T) {
 
 func TestPatternFindsSecretInNestedFile(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
-			options.debug =    false
-			options.pattern =  "./**/*.*"
+		options.Debug = false
+		options.Pattern = "./**/*.*"
 
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("some-dir/some-file.txt", awsAccessKeyIDExample)
@@ -263,10 +263,10 @@ func TestPatternFindsSecretInNestedFile(t *testing.T) {
 
 func TestIgnoreHistoryDoesNotDetectRemovedSecrets(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
-		options.debug =    false
-		options.pattern =  "./**/*.*"
-		options.scan =  true
-		options.ignoreHistory =  true
+		options.Debug = false
+		options.Pattern = "./**/*.*"
+		options.Scan = true
+		options.IgnoreHistory = true
 
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("some-dir/should-not-be-included.txt", awsAccessKeyIDExample)
@@ -282,10 +282,10 @@ func TestIgnoreHistoryDoesNotDetectRemovedSecrets(t *testing.T) {
 
 func TestIgnoreHistoryDetectsExistingIssuesOnHead(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
-		options.debug =    false
-		options.pattern =  "./**/*.*"
-		options.scan =  true
-		options.ignoreHistory =  true
+		options.Debug = false
+		options.Pattern = "./**/*.*"
+		options.Scan = true
+		options.IgnoreHistory = true
 
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("some-dir/file-with-issue.txt", awsAccessKeyIDExample)
@@ -298,8 +298,8 @@ func TestIgnoreHistoryDetectsExistingIssuesOnHead(t *testing.T) {
 }
 
 func runTalismanInPrePushMode(git *git_testing.GitTesting) int {
-	options.debug =    false
-	options.githook =  PrePush
+	options.Debug = false
+	options.GitHook = PrePush
 	return runTalisman(git)
 }
 
@@ -309,8 +309,8 @@ func runTalisman(git *git_testing.GitTesting) int {
 	defer func() { os.Chdir(wd) }()
 	prompter := prompt.NewPrompt()
 	promptContext := prompt.NewPromptContext(false, prompter)
-	if options.githook == PrePush {
-		options.input = mockStdIn(git.EarliestCommit(), git.LatestCommit())
+	if options.GitHook == PrePush {
+		options.Input = mockStdIn(git.EarliestCommit(), git.LatestCommit())
 	}
 	return run(promptContext)
 }

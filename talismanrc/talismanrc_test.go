@@ -104,12 +104,8 @@ func TestMakeWithFileIgnores(t *testing.T) {
 }
 
 func TestBuildIgnoreConfig(t *testing.T) {
-	var ignoreConfig IgnoreConfig
-	ignoreConfig = BuildIgnoreConfig(HookMode, "filename", "asdfasdfasdfasdfasdf", nil)
+	ignoreConfig := BuildIgnoreConfig(HookMode, "filename", "asdfasdfasdfasdfasdf", nil)
 	assert.IsType(t, &FileIgnoreConfig{}, ignoreConfig)
-
-	ignoreConfig = BuildIgnoreConfig(ScanMode, "filename", "asdfasdfasdfasdfasdf", nil)
-	assert.IsType(t, &ScanFileIgnoreConfig{}, ignoreConfig)
 }
 
 func TestAddIgnoreFilesInHookMode(t *testing.T) {
@@ -123,21 +119,6 @@ func TestAddIgnoreFilesInHookMode(t *testing.T) {
 	talismanRCConfig.base.AddIgnores(HookMode, []IgnoreConfig{ignoreConfig})
 	talismanRCConfigFromFile := ConfigFromFile()
 	assert.Equal(t, 1, len(talismanRCConfigFromFile.FileIgnoreConfig))
-	os.Remove(DefaultRCFileName)
-}
-
-func TestAddIgnoreFilesInScanMode(t *testing.T) {
-	ignoreConfig := &ScanFileIgnoreConfig{
-		FileName:        "Foo",
-		Checksums:       []string{"SomeCheckSum"},
-		IgnoreDetectors: []string{},
-		AllowedPatterns: []string{}}
-	os.Remove(DefaultRCFileName)
-	talismanRCConfig := createTalismanRCWithScopeIgnores([]string{})
-	talismanRCConfig.base.AddIgnores(ScanMode, []IgnoreConfig{ignoreConfig})
-	talismanRCScanConfigFromFile := ConfigFromFile()
-	assert.Equal(t, 1, len(talismanRCScanConfigFromFile.ScanConfig.FileIgnoreConfig))
-	assert.Equal(t, 0, len(talismanRCScanConfigFromFile.FileIgnoreConfig))
 	os.Remove(DefaultRCFileName)
 }
 
@@ -213,57 +194,6 @@ func TestFileIgnoreConfig_GetAllowedPatterns(t *testing.T) {
 	assert.Regexp(t, allowedPatterns[0], "fileName")
 }
 
-func TestScanFileIgnoreConfig_ChecksumMatches(t *testing.T) {
-	fileIgnoreConfig := &ScanFileIgnoreConfig{
-		FileName:        "some_filename",
-		Checksums:       []string{"some_checksum", "some_other_checksum"},
-		IgnoreDetectors: nil,
-		AllowedPatterns: nil,
-	}
-
-	assert.True(t, fileIgnoreConfig.ChecksumMatches("some_checksum"))
-	assert.True(t, fileIgnoreConfig.ChecksumMatches("some_other_checksum"))
-	assert.False(t, fileIgnoreConfig.ChecksumMatches("some_different_checksum"))
-}
-
-func TestScanFileIgnoreConfig_isEffective(t *testing.T) {
-	fileIgnoreConfig := &ScanFileIgnoreConfig{
-		FileName:        "some_filename",
-		Checksums:       []string{"some_checksum", "some_other_checksum"},
-		IgnoreDetectors: nil,
-		AllowedPatterns: nil,
-	}
-	//Ignore config does not apply when detector not ignored
-	assert.False(t, fileIgnoreConfig.isEffective("filename"))
-
-	//Ignore config applies when detector explicitly ignored
-	fileIgnoreConfig.IgnoreDetectors = []string{"filename"}
-	assert.True(t, fileIgnoreConfig.isEffective("filename"))
-
-	//Ignore config does not apply when filename not set
-	fileIgnoreConfig.FileName = ""
-	assert.False(t, fileIgnoreConfig.isEffective("filename"))
-}
-
-func TestScanFileIgnoreConfig_GetAllowedPatterns(t *testing.T) {
-	fileIgnoreConfig := &ScanFileIgnoreConfig{
-		FileName:        "some_filename",
-		Checksums:       nil,
-		IgnoreDetectors: nil,
-		AllowedPatterns: nil,
-	}
-
-	//No allowed patterns specified
-	allowedPatterns := fileIgnoreConfig.GetAllowedPatterns()
-	assert.Equal(t, 0, len(allowedPatterns))
-
-	fileIgnoreConfig.compiledPatterns = nil
-	fileIgnoreConfig.AllowedPatterns = []string{"[Ff]ile[nN]ame"}
-	allowedPatterns = fileIgnoreConfig.GetAllowedPatterns()
-	assert.Equal(t, 1, len(allowedPatterns))
-	assert.Regexp(t, allowedPatterns[0], "fileName")
-}
-
 func TestSuggestRCFor(t *testing.T) {
 	t.Run("should suggest proper RC when ignore configs are valid", func(t *testing.T) {
 		fileIgnoreConfigs := []IgnoreConfig{
@@ -286,10 +216,6 @@ version: ""
 			&FileIgnoreConfig{
 				FileName: "some_filename",
 				Checksum: "some_checksum",
-			},
-			&ScanFileIgnoreConfig{
-				FileName:  "some_other_filename",
-				Checksums: []string{"some_other_checksum"},
 			},
 		}
 		expectedRC := `fileignoreconfig:

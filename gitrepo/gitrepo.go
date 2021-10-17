@@ -103,8 +103,8 @@ func (repo GitRepo) GetDiffForStagedFiles() []Addition {
 
 func MatchGitDiffLine(gitDiffString string) (bool, string) {
 	if strings.Contains(gitDiffString, "diff --git") {
-		fileNameLength := (len(gitDiffString) - len("diff --git a/ b/"))/2
-		regexPattern := fmt.Sprintf("^diff --git a/(.{%v}) b/(.{%v})$", fileNameLength, fileNameLength);
+		fileNameLength := (len(gitDiffString) - len("diff --git a/ b/")) / 2
+		regexPattern := fmt.Sprintf("^diff --git a/(.{%v}) b/(.{%v})$", fileNameLength, fileNameLength)
 		headerRegex := regexp.MustCompile(regexPattern)
 
 		if headerRegex.MatchString(gitDiffString) {
@@ -271,10 +271,7 @@ func (repo GitRepo) currentBranch() string {
 
 func (repo GitRepo) hasBranch() bool {
 	byteArray := repo.executeRepoCommand("git", "branch")
-	if len(string(byteArray)) != 0 {
-		return true
-	}
-	return false
+	return len(string(byteArray)) != 0
 }
 
 func (repo GitRepo) stagedVersionOfFile(file string) []byte {
