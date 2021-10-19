@@ -140,7 +140,7 @@ func (r *DetectionResults) Fail(filePath gitrepo.FilePath, category string, mess
 		resultDetails.FailureList = append(resultDetails.FailureList, failureDetails)
 		r.Results = append(r.Results, resultDetails)
 	}
-	r.updateResultsSummary(category)
+	r.updateResultsSummary(category, false)
 }
 
 func (r *DetectionResults) Warn(filePath gitrepo.FilePath, category string, message string, commits []string, severity severity.Severity) {
@@ -199,14 +199,18 @@ func (r *DetectionResults) Ignore(filePath gitrepo.FilePath, category string) {
 	r.Summary.Types.Ignores++
 }
 
-func (r *DetectionResults) updateResultsSummary(category string) {
+func (r *DetectionResults) updateResultsSummary(category string, decr bool) {
+	val := 1
+	if decr {
+		val = -1
+	}
 	switch category {
 	case "filecontent":
-		r.Summary.Types.Filecontent++
+		r.Summary.Types.Filecontent += val
 	case "filename":
-		r.Summary.Types.Filename++
+		r.Summary.Types.Filename += val
 	case "filesize":
-		r.Summary.Types.Filesize++
+		r.Summary.Types.Filesize += val
 	}
 }
 
@@ -273,7 +277,7 @@ func (r *DetectionResults) ReportWarnings() string {
 //Report returns a string documenting the various failures and ignored files for the current run
 func (r *DetectionResults) Report(promptContext prompt.PromptContext) string {
 	var result string
-	var filePathsForIgnoresAndFailures []string
+	var filePathsForFailures []string
 	var data [][]string
 
 	table := tablewriter.NewWriter(os.Stdout)
@@ -281,21 +285,21 @@ func (r *DetectionResults) Report(promptContext prompt.PromptContext) string {
 	table.SetRowLine(true)
 
 	for _, resultDetails := range r.Results {
-		if len(resultDetails.FailureList) > 0 || len(resultDetails.IgnoreList) > 0 {
-			filePathsForIgnoresAndFailures = append(filePathsForIgnoresAndFailures, string(resultDetails.Filename))
+		if len(resultDetails.FailureList) > 0 {
+			filePathsForFailures = append(filePathsForFailures, string(resultDetails.Filename))
 			failureData := r.ReportFileFailures(resultDetails.Filename)
 			data = append(data, failureData...)
 		}
 	}
 
-	filePathsForIgnoresAndFailures = utility.UniqueItems(filePathsForIgnoresAndFailures)
+	filePathsForFailures = utility.UniqueItems(filePathsForFailures)
 
 	if r.HasFailures() {
 		fmt.Printf("\n\x1b[1m\x1b[31mTalisman Report:\x1b[0m\x1b[0m\n")
 		table.AppendBulk(data)
 		table.Render()
 		fmt.Println()
-		r.suggestTalismanRC(filePathsForIgnoresAndFailures, promptContext)
+		r.suggestTalismanRC(filePathsForFailures, promptContext)
 	}
 	return result
 }
@@ -312,6 +316,14 @@ func (r *DetectionResults) suggestTalismanRC(filePaths []string, promptContext p
 	if promptContext.Interactive && runtime.GOOS != "windows" {
 		confirmedEntries := getUserConfirmation(entriesToAdd, promptContext)
 		talismanrc.ConfigFromFile().AddIgnores(r.mode, confirmedEntries)
+
+		for _, confirmedEntry := range confirmedEntries {
+			resultsDetails := r.getResultDetailsForFilePath(gitrepo.FilePath(confirmedEntry.GetFileName()))
+			for _, failure := range resultsDetails.FailureList {
+				r.updateResultsSummary(failure.Category, true)
+			}
+		}
+
 		output, err := exec.Command("git", "add", ".talismanrc").CombinedOutput()
 		if err != nil {
 			logrus.Errorf("Error appending to talismanrc %v", output)
