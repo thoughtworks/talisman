@@ -68,16 +68,18 @@ func TestIgnoreAdditionsByScope(t *testing.T) {
 	file6 := testAddition("imgJpeg.jpeg")
 	file7 := testAddition("imgJpg.jpg")
 	file8 := testAddition("imgPng.png")
-	additions := []gitrepo.Addition{file1, file2, file3, file4, file5, file6, file7, file8}
+	file9 := testAddition("build.bzl")
+	additions := []gitrepo.Addition{file1, file2, file3, file4, file5, file6, file7, file8, file9}
 
-	scopesToIgnore := []string{"node", "go", "images"}
+	scopesToIgnore := []string{"node", "go", "images", "bazel"}
 	talismanRCConfig := createTalismanRCWithScopeIgnores(scopesToIgnore)
 
 	nodeIgnores := []string{"node.lock", "*yarn.lock"}
 	javaIgnores := []string{"java.lock"}
 	goIgnores := []string{"go.lock", "Gopkg.lock", "vendors/"}
 	imageIgnores := []string{"*.jpeg", "*.jpg", "*.png"}
-	scopesMap := map[string][]string{"node": nodeIgnores, "java": javaIgnores, "go": goIgnores, "images": imageIgnores}
+	bazelIgnores := []string{"*.bzl"}
+	scopesMap := map[string][]string{"node": nodeIgnores, "java": javaIgnores, "go": goIgnores, "images": imageIgnores, "bazel": bazelIgnores}
 	knownScopes = scopesMap
 	filteredAdditions := talismanRCConfig.FilterAdditions(additions)
 
@@ -89,6 +91,7 @@ func TestIgnoreAdditionsByScope(t *testing.T) {
 	assert.NotContains(t, filteredAdditions, file6)
 	assert.NotContains(t, filteredAdditions, file7)
 	assert.NotContains(t, filteredAdditions, file8)
+	assert.NotContains(t, filteredAdditions, file9)
 }
 
 func TestIgnoringDetectors(t *testing.T) {
