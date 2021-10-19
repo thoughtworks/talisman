@@ -58,6 +58,25 @@ func TestResultsReportsFailures(t *testing.T) {
 	assert.Regexp(t, "Complete & utter failure", finalStringMessage, "Error report does not contain expected output")
 }
 
+func TestUpdateResultsSummary(t *testing.T) {
+	results := NewDetectionResults(talismanrc.HookMode)
+	categories := []string{"filecontent", "filename", "filesize"}
+
+	for _, category := range categories {
+		results.updateResultsSummary(category, false)
+	}
+	assert.Equal(t, 1, results.Summary.Types.Filename)
+	assert.Equal(t, 1, results.Summary.Types.Filecontent)
+	assert.Equal(t, 1, results.Summary.Types.Filesize)
+
+	for _, category := range categories {
+		results.updateResultsSummary(category, true)
+	}
+	assert.Equal(t, 0, results.Summary.Types.Filename)
+	assert.Equal(t, 0, results.Summary.Types.Filecontent)
+	assert.Equal(t, 0, results.Summary.Types.Filesize)
+}
+
 func TestErrorExitCodeInInteractive(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -70,7 +89,7 @@ func TestErrorExitCodeInInteractive(t *testing.T) {
 	results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 	results.Fail("another.pem", "filecontent", "password", []string{}, severity.Low)
 	results.Report(promptContext)
-	assert.Equal(t, true, results.HasFailures())
+	assert.True(t, results.HasFailures())
 }
 
 func TestSuccessExitCodeInInteractive(t *testing.T) {
@@ -85,7 +104,7 @@ func TestSuccessExitCodeInInteractive(t *testing.T) {
 	results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 	results.Fail("another.pem", "filecontent", "password", []string{}, severity.Low)
 	results.Report(promptContext)
-	assert.Equal(t, false, results.HasFailures())
+	assert.False(t, results.HasFailures())
 }
 
 // Presently not showing the ignored files in the log
