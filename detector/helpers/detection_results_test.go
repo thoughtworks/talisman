@@ -58,6 +58,36 @@ func TestResultsReportsFailures(t *testing.T) {
 	assert.Regexp(t, "Complete & utter failure", finalStringMessage, "Error report does not contain expected output")
 }
 
+func TestErrorExitCodeInInteractive(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	results := NewDetectionResults(talismanrc.HookMode)
+
+	promptContext := prompt.NewPromptContext(true, prompter)
+	prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(2)
+	results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
+	results.Fail("another.pem", "filecontent", "password", []string{}, severity.Low)
+	results.Report(promptContext)
+	assert.Equal(t, true, results.HasFailures())
+}
+
+func TestSuccessExitCodeInInteractive(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	prompter := mock.NewMockPrompt(ctrl)
+	results := NewDetectionResults(talismanrc.HookMode)
+
+	promptContext := prompt.NewPromptContext(true, prompter)
+	prompter.EXPECT().Confirm(gomock.Any()).Return(true).Times(2)
+	results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
+	results.Fail("another.pem", "filecontent", "password", []string{}, severity.Low)
+	results.Report(promptContext)
+	assert.Equal(t, false, results.HasFailures())
+}
+
 // Presently not showing the ignored files in the log
 // func TestLoggingIgnoredFilesDoesNotCauseFailure(t *testing.T) {
 // 	results := NewDetectionResults(talismanrc.HookMode)
