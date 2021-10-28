@@ -202,33 +202,34 @@ func setLogLevel() {
 
 func setupProfiling() func() {
 	log.Info("Profiling initiated")
+
 	cpuProfFile, err := os.Create("talisman.cpuprof")
 	if err != nil {
 		log.Fatalf("Unable to create cpu profiling output file talisman.cpuprof: %v", err)
+	}
+
+	memProfFile, err := os.Create("talisman.memprof")
+	if err != nil {
+		log.Fatalf("Unable to create memory profiling output file talisman.memprof: %v", err)
 	}
 
 	_ = pprof.StartCPUProfile(cpuProfFile)
 	progEnded := false
 
 	go func() {
-		memProfFile, err := os.Create("talisman.memprof")
-		if err != nil {
-			log.Fatalf("Unable to create memory profiling output file talisman.memprof: %v", err)
-		}
 		memProfTimer := time.NewTimer(500 * time.Millisecond)
 
 		for !progEnded {
 			<-memProfTimer.C
 			_ = pprof.WriteHeapProfile(memProfFile)
 		}
-
-		_ = memProfFile.Close()
 	}()
 
 	return func() {
 		progEnded = true
 		pprof.StopCPUProfile()
 		log.Info("Profiling completed")
-		cpuProfFile.Close()
+		_ = cpuProfFile.Close()
+		_ = memProfFile.Close()
 	}
 }
