@@ -22,8 +22,9 @@ import (
 var (
 	showVersion bool
 	//Version : Version of talisman
-	Version     = "Development Build"
-	interactive bool
+	Version       = "Development Build"
+	interactive   bool
+	talismanInput io.Reader
 )
 
 const (
@@ -31,6 +32,10 @@ const (
 	PrePush = "pre-push"
 	//PreCommit : Const for name of of pre-commit hook
 	PreCommit = "pre-commit"
+	//EXIT_SUCCESS : Const to indicate successful talisman invocation
+	EXIT_SUCCESS = 0
+	//EXIT_FAILURE : Const to indicate failed successful invocation
+	EXIT_FAILURE = 1
 )
 
 var options struct {
@@ -43,7 +48,6 @@ var options struct {
 	Checksum        string
 	ReportDirectory string
 	ScanWithHtml    bool
-	Input           io.Reader
 	ShouldProfile   bool
 }
 
@@ -51,12 +55,13 @@ var options struct {
 
 func init() {
 	log.SetOutput(os.Stderr)
+	talismanInput = os.Stdin
 	flag.BoolVarP(&options.Debug,
 		"debug", "d", false,
 		"enable debug mode (warning: very verbose)")
 	flag.StringVarP(&options.LogLevel,
 		"loglevel", "l", "error",
-		"enable debug mode (warning: very verbose)")
+		"set log level for talisman (allowed values: error|info|warn|debug, default: error)")
 	flag.BoolVarP(&showVersion,
 		"version", "v", false,
 		"show current version of talisman")
@@ -69,25 +74,24 @@ func init() {
 	flag.BoolVarP(&options.Scan,
 		"scan", "s", false,
 		"scanner scans the git commit history for potential secrets")
-	flag.BoolVar(&options.IgnoreHistory,
-		"ignoreHistory", false,
+	flag.BoolVarP(&options.IgnoreHistory,
+		"ignoreHistory", "^", false,
 		"scanner scans all files on current head, will not scan through git commit history")
 	flag.StringVarP(&options.Checksum,
 		"checksum", "c", "",
-		"checksum calculator calculates checksum and suggests .talismanrc format")
+		"checksum calculator calculates checksum and suggests .talismanrc entry")
 	flag.StringVarP(&options.ReportDirectory,
 		"reportDirectory", "r", "talisman_report",
-		"directory where the scan reports will be stored")
+		"directory where the scan report will be stored")
 	flag.BoolVarP(&options.ScanWithHtml,
 		"scanWithHtml", "w", false,
-		"generate html report (**Make sure you have installed talisman_html_report to use this, as mentioned in Readme**)")
+		"generate html report (**Make sure you have installed talisman_html_report to use this, as mentioned in talisman Readme**)")
 	flag.BoolVarP(&interactive,
 		"interactive", "i", false,
 		"interactively update talismanrc (only makes sense with -g/--githook)")
 	flag.BoolVarP(&options.ShouldProfile,
 		"profile", "f", false,
-		"profile cpu usage of talisman")
-
+		"profile cpu and memory usage of talisman")
 }
 
 func main() {
@@ -95,85 +99,49 @@ func main() {
 
 	if flag.NFlag() == 0 {
 		flag.PrintDefaults()
-		os.Exit(0)
+		os.Exit(EXIT_SUCCESS)
 	}
 
 	if showVersion {
 		fmt.Printf("talisman %s\n", Version)
-		os.Exit(0)
+		os.Exit(EXIT_SUCCESS)
 	}
 
 	if options.GitHook != "" {
 		if !(options.GitHook == PreCommit || options.GitHook == PrePush) {
 			fmt.Println(fmt.Errorf("githook should be %s or %s, but got %s", PreCommit, PrePush, options.GitHook))
-			os.Exit(1)
+			os.Exit(EXIT_FAILURE)
 		}
 	}
 
-	prompter := prompt.NewPrompt()
-	promptContext := prompt.NewPromptContext(interactive, prompter)
-	options.Input = os.Stdin
+	if options.ShouldProfile {
+		stopProfFunc := setupProfiling()
+		defer stopProfFunc()
+	}
+
+	promptContext := prompt.NewPromptContext(interactive, prompt.NewPrompt())
 	os.Exit(run(promptContext))
 }
 
 func run(promptContext prompt.PromptContext) (returnCode int) {
-	if options.ShouldProfile {
-		log.Info("Profiling initiated")
-		defer func() { log.Info("Profiling completed") }()
-		f, err := os.Create("talisman.pprof")
-		if err != nil {
-			log.Fatal(err)
-		}
-		_ = pprof.StartCPUProfile(f)
-		defer pprof.StopCPUProfile()
-		progEnded := false
-		defer func() { progEnded = true }()
-		go func() {
-			t := time.NewTimer(500 * time.Millisecond)
-			f1, _ := os.Create("talisman.prof")
-			for !progEnded {
-				<-t.C
-				if f1 != nil {
-					_ = pprof.WriteHeapProfile(f1)
-				} else {
-					log.Error("Could not write memory profiling info")
-				}
-			}
-			if f1 != nil {
-				_ = f1.Close()
-			}
-		}()
-	}
 	start := time.Now()
 	defer func() { fmt.Printf("Talisman done in %v\n", time.Since(start)) }()
+
 	if err := validateGitExecutable(afero.NewOsFs(), runtime.GOOS); err != nil {
-		log.Errorf("error validating git executable:"+" %v", err)
+		log.Errorf("error validating git executable: %v", err)
 		return 1
 	}
 
-	switch options.LogLevel {
-	case "info":
-		log.SetLevel(log.InfoLevel)
-	case "debug":
-		log.SetLevel(log.DebugLevel)
-	case "error":
-		log.SetLevel(log.ErrorLevel)
-	case "warn":
-		log.SetLevel(log.WarnLevel)
-	default:
-		log.SetLevel(log.ErrorLevel)
-	}
-	if options.Debug {
-		log.SetLevel(log.DebugLevel)
-	}
+	setLogLevel()
 
 	if options.GitHook == "" {
 		options.GitHook = PrePush
 	}
-	bytes, _ := json.Marshal(options)
+
+	optionsBytes, _ := json.Marshal(options)
 	fields := make(map[string]interface{})
-	_ = json.Unmarshal(bytes, &fields)
-	log.WithFields(fields).Debug("Execution environment")
+	_ = json.Unmarshal(optionsBytes, &fields)
+	log.WithFields(fields).Debug("Talisman execution environment")
 
 	if options.Checksum != "" {
 		log.Infof("Running %s patterns against checksum calculator", options.Checksum)
@@ -192,7 +160,7 @@ func run(promptContext prompt.PromptContext) (returnCode int) {
 		return NewPreCommitHook().Run(talismanrc.For(talismanrc.HookMode), promptContext)
 	} else {
 		log.Infof("Running %s hook", options.GitHook)
-		return NewPrePushHook(options.Input).Run(talismanrc.For(talismanrc.HookMode), promptContext)
+		return NewPrePushHook(talismanInput).Run(talismanrc.For(talismanrc.HookMode), promptContext)
 	}
 }
 
@@ -212,4 +180,55 @@ func validateGitExecutable(fs afero.Fs, operatingSystem string) error {
 		}
 	}
 	return nil
+}
+
+func setLogLevel() {
+	switch options.LogLevel {
+	case "info":
+		log.SetLevel(log.InfoLevel)
+	case "debug":
+		log.SetLevel(log.DebugLevel)
+	case "error":
+		log.SetLevel(log.ErrorLevel)
+	case "warn":
+		log.SetLevel(log.WarnLevel)
+	default:
+		log.SetLevel(log.ErrorLevel)
+	}
+	if options.Debug {
+		log.SetLevel(log.DebugLevel)
+	}
+}
+
+func setupProfiling() func() {
+	log.Info("Profiling initiated")
+	cpuProfFile, err := os.Create("talisman.cpuprof")
+	if err != nil {
+		log.Fatalf("Unable to create cpu profiling output file talisman.cpuprof: %v", err)
+	}
+
+	_ = pprof.StartCPUProfile(cpuProfFile)
+	progEnded := false
+
+	go func() {
+		memProfFile, err := os.Create("talisman.memprof")
+		if err != nil {
+			log.Fatalf("Unable to create memory profiling output file talisman.memprof: %v", err)
+		}
+		memProfTimer := time.NewTimer(500 * time.Millisecond)
+
+		for !progEnded {
+			<-memProfTimer.C
+			_ = pprof.WriteHeapProfile(memProfFile)
+		}
+
+		_ = memProfFile.Close()
+	}()
+
+	return func() {
+		progEnded = true
+		pprof.StopCPUProfile()
+		log.Info("Profiling completed")
+		cpuProfFile.Close()
+	}
 }

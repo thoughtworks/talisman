@@ -310,7 +310,7 @@ func runTalisman(git *git_testing.GitTesting) int {
 	prompter := prompt.NewPrompt()
 	promptContext := prompt.NewPromptContext(false, prompter)
 	if options.GitHook == PrePush {
-		options.Input = mockStdIn(git.EarliestCommit(), git.LatestCommit())
+		talismanInput = mockStdIn(git.EarliestCommit(), git.LatestCommit())
 	}
 	return run(promptContext)
 }
