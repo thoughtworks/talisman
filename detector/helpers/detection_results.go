@@ -55,44 +55,6 @@ type DetectionResults struct {
 	Results []ResultsDetails `json:"results"`
 }
 
-func (r *ResultsDetails) getWarningDataByCategoryAndMessage(failureMessage string, category string) *Details {
-	detail := getDetailsByCategoryAndMessage(r.WarningList, category, failureMessage)
-	r.WarningList = append(r.WarningList, *detail)
-	return detail
-}
-
-func (r *ResultsDetails) getFailureDataByCategoryAndMessage(failureMessage string, category string) *Details {
-	detail := getDetailsByCategoryAndMessage(r.FailureList, category, failureMessage)
-	if detail == nil {
-		detail = &Details{category, failureMessage, make([]string, 0), severity.Low}
-		r.FailureList = append(r.FailureList, *detail)
-	}
-	return detail
-}
-
-func (r *ResultsDetails) addIgnoreDataByCategory(category string) {
-	isCategoryAlreadyPresent := false
-	for _, detail := range r.IgnoreList {
-		if strings.Compare(detail.Category, category) == 0 {
-			isCategoryAlreadyPresent = true
-		}
-	}
-	if !isCategoryAlreadyPresent {
-		detail := Details{category, "", make([]string, 0), severity.Low}
-		r.IgnoreList = append(r.IgnoreList, detail)
-	}
-}
-
-func getDetailsByCategoryAndMessage(detailsList []Details, category string, failureMessage string) *Details {
-	for _, detail := range detailsList {
-		if strings.Compare(detail.Category, category) == 0 && strings.Compare(detail.Message, failureMessage) == 0 {
-			return &detail
-		}
-	}
-
-	return nil
-}
-
 func (r *DetectionResults) getResultDetailsForFilePath(fileName gitrepo.FilePath) *ResultsDetails {
 	for _, resultDetail := range r.Results {
 		if resultDetail.Filename == fileName {
