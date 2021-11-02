@@ -247,8 +247,6 @@ func (r *DetectionResults) GetFailures(fileName gitrepo.FilePath) []Details {
 }
 
 func (r *DetectionResults) ReportWarnings() string {
-	var result string
-	var filePathsForWarnings []string
 	var data [][]string
 
 	table := tablewriter.NewWriter(os.Stdout)
@@ -257,21 +255,19 @@ func (r *DetectionResults) ReportWarnings() string {
 
 	for _, resultDetails := range r.Results {
 		if len(resultDetails.WarningList) > 0 {
-			filePathsForWarnings = append(filePathsForWarnings, string(resultDetails.Filename))
 			warningData := r.ReportFileWarnings(resultDetails.Filename)
 			data = append(data, warningData...)
 		}
 	}
 
-	filePathsForWarnings = utility.UniqueItems(filePathsForWarnings)
+	results := strings.Builder{}
 	if r.Summary.Types.Warnings > 0 {
 		fmt.Printf("\n\x1b[1m\x1b[31mTalisman Warnings:\x1b[0m\x1b[0m\n")
 		table.AppendBulk(data)
 		table.Render()
-		result = result + fmt.Sprintf("\n\x1b[33mPlease review the above file(s) to make sure that no sensitive content is being pushed\x1b[0m\n")
-		result = result + fmt.Sprintf("\n")
+		results.WriteString("\n\x1b[33mPlease review the above file(s) to make sure that no sensitive content is being pushed\x1b[0m\n\n")
 	}
-	return result
+	return results.String()
 }
 
 //Report returns a string documenting the various failures and ignored files for the current run
@@ -306,9 +302,9 @@ func (r *DetectionResults) Report(promptContext prompt.PromptContext) string {
 
 func (r *DetectionResults) suggestTalismanRC(filePaths []string, promptContext prompt.PromptContext) {
 	var entriesToAdd []talismanrc.IgnoreConfig
-
+	hasher := utility.DefaultSHA256Hasher{}
 	for _, filePath := range filePaths {
-		currentChecksum := utility.DefaultSHA256Hasher{}.CollectiveSHA256Hash([]string{filePath})
+		currentChecksum := hasher.CollectiveSHA256Hash([]string{filePath})
 		fileIgnoreConfig := talismanrc.BuildIgnoreConfig(r.mode, filePath, currentChecksum, []string{})
 		entriesToAdd = append(entriesToAdd, fileIgnoreConfig)
 	}

@@ -1,8 +1,6 @@
 package detector
 
 import (
-	log "github.com/sirupsen/logrus"
-	"github.com/cheggaaa/pb/v3"
 	"os"
 	"talisman/checksumcalculator"
 	"talisman/detector/detector"
@@ -13,6 +11,9 @@ import (
 	"talisman/gitrepo"
 	"talisman/talismanrc"
 	"talisman/utility"
+
+	"github.com/cheggaaa/pb/v3"
+	log "github.com/sirupsen/logrus"
 )
 
 //Chain represents a chain of Detectors.
@@ -49,7 +50,7 @@ func (dc *Chain) Test(currentAdditions []gitrepo.Addition, talismanRC *talismanr
 	wd, _ := os.Getwd()
 	repo := gitrepo.RepoLocatedAt(wd)
 	allAdditions := repo.TrackedFilesAsAdditions()
-	hasher := utility.DefaultSHA256Hasher{}
+	hasher := utility.NewGitHeadSHA256Hasher(wd)
 	calculator := checksumcalculator.NewChecksumCalculator(hasher, append(allAdditions, currentAdditions...))
 	cc := helpers.NewChecksumCompare(calculator, hasher, talismanRC)
 	log.Printf("Number of files to scan: %d\n", len(currentAdditions))

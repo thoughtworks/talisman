@@ -223,6 +223,7 @@ func setupProfiling() func() {
 			<-memProfTimer.C
 			_ = pprof.WriteHeapProfile(memProfFile)
 		}
+		_ = memProfFile.Close()
 	}()
 
 	return func() {
@@ -230,6 +231,5 @@ func setupProfiling() func() {
 		pprof.StopCPUProfile()
 		log.Info("Profiling completed")
 		_ = cpuProfFile.Close()
-		_ = memProfFile.Close()
 	}
 }
