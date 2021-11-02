@@ -3,29 +3,30 @@ package utility
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"talisman/gitrepo"
 )
 
 type SHA256Hasher interface {
 	CollectiveSHA256Hash(paths []string) string
 }
 
-type DefaultSHA256Hasher struct {}
+type DefaultSHA256Hasher struct{}
 
 //CollectiveSHA256Hash return collective sha256 hash of the passed paths
 func (DefaultSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
-	var finHash = ""
-	for _, path := range paths {
-		sbyte := []byte(finHash)
-		concatBytes := hashByte(&sbyte)
-		nameByte := []byte(path)
-		nameHash := hashByte(&nameByte)
-		fileBytes, _ := SafeReadFile(path)
-		fileHash := hashByte(&fileBytes)
-		finHash = concatBytes + fileHash + nameHash
-	}
-	c := []byte(finHash)
-	m := hashByte(&c)
-	return m
+	return collectiveSHA256Hash(paths, SafeReadFile)
+}
+
+type GitHeadSHA256Hasher struct {
+	root string
+}
+
+func NewGitHeadSHA256Hasher(root string) GitHeadSHA256Hasher {
+	return GitHeadSHA256Hasher{root}
+}
+
+func (g GitHeadSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
+	return collectiveSHA256Hash(paths, gitrepo.NewRepoFileReader(g.root))
 }
 
 func hashByte(contentPtr *[]byte) string {
@@ -33,4 +34,20 @@ func hashByte(contentPtr *[]byte) string {
 	hasher := sha256.New()
 	hasher.Write(contents)
 	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+func collectiveSHA256Hash(paths []string, FileReader func(string) ([]byte, error)) string {
+	var finHash = ""
+	for _, path := range paths {
+		sbyte := []byte(finHash)
+		concatBytes := hashByte(&sbyte)
+		nameByte := []byte(path)
+		nameHash := hashByte(&nameByte)
+		fileBytes, _ := FileReader(path)
+		fileHash := hashByte(&fileBytes)
+		finHash = concatBytes + fileHash + nameHash
+	}
+	c := []byte(finHash)
+	m := hashByte(&c)
+	return m
 }

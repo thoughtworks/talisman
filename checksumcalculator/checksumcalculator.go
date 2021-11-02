@@ -1,7 +1,7 @@
 package checksumcalculator
 
 import (
-	"fmt"
+	"strings"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
 	"talisman/utility"
@@ -14,21 +14,21 @@ type ChecksumCalculator interface {
 	CalculateCollectiveChecksumForPattern(fileNamePattern string) string
 }
 
-type DefaultChecksumCalculator struct {
+type checksumCalculator struct {
 	gitAdditions []gitrepo.Addition
 	hasher       utility.SHA256Hasher
 }
 
 //NewChecksumCalculator returns new instance of the CheckSumDetector
 func NewChecksumCalculator(hasher utility.SHA256Hasher, gitAdditions []gitrepo.Addition) ChecksumCalculator {
-	cc := DefaultChecksumCalculator{hasher: hasher, gitAdditions: gitAdditions}
+	cc := checksumCalculator{hasher: hasher, gitAdditions: gitAdditions}
 	return &cc
 }
 
 //SuggestTalismanRC returns the suggestion for .talismanrc format
-func (cc *DefaultChecksumCalculator) SuggestTalismanRC(fileNamePatterns []string) string {
+func (cc *checksumCalculator) SuggestTalismanRC(fileNamePatterns []string) string {
 	var fileIgnoreConfigs []talismanrc.FileIgnoreConfig
-	result := ""
+	result := strings.Builder{}
 	for _, pattern := range fileNamePatterns {
 		collectiveChecksum := cc.CalculateCollectiveChecksumForPattern(pattern)
 		if collectiveChecksum != "" {
@@ -37,16 +37,16 @@ func (cc *DefaultChecksumCalculator) SuggestTalismanRC(fileNamePatterns []string
 		}
 	}
 	if len(fileIgnoreConfigs) != 0 {
-		result = result + fmt.Sprintf("\n\x1b[33m.talismanrc format for given file names / patterns\x1b[0m\n")
+		result.WriteString("\n\x1b[33m.talismanrc format for given file names / patterns\x1b[0m\n")
 		talismanRC := talismanrc.MakeWithFileIgnores(fileIgnoreConfigs)
 		m, _ := yaml.Marshal(&talismanRC)
-		result = result + string(m)
+		result.Write(m)
 	}
-	return result
+	return result.String()
 }
 
 //CalculateCollectiveChecksumForPattern calculates and returns the checksum for files matching the input pattern
-func (cc *DefaultChecksumCalculator) CalculateCollectiveChecksumForPattern(fileNamePattern string) string {
+func (cc *checksumCalculator) CalculateCollectiveChecksumForPattern(fileNamePattern string) string {
 	var patternPaths []string
 	currentCollectiveChecksum := ""
 	for _, addition := range cc.gitAdditions {

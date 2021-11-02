@@ -1,9 +1,8 @@
 package talismanrc
 
 import (
-	"os"
 	"regexp"
-	"talisman/gitrepo"
+	"talisman/utility"
 
 	logr "github.com/sirupsen/logrus"
 
@@ -55,9 +54,14 @@ func SetRcFilename__(rcFileName string) {
 type RepoFileReader func(string) ([]byte, error)
 
 var repoFileReader = func() RepoFileReader {
-	wd, _ := os.Getwd()
-	repo := gitrepo.RepoLocatedAt(wd)
-	return repo.ReadRepoFileOrNothing
+
+	return func(path string) ([]byte, error) {
+		data, err := utility.SafeReadFile(path)
+		if err != nil {
+			return []byte{}, nil
+		}
+		return data, nil
+	}
 }
 
 func setRepoFileReader(rfr RepoFileReader) {

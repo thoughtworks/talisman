@@ -2,14 +2,14 @@ package gitrepo
 
 import (
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
-	"talisman/utility"
+
+	log "github.com/sirupsen/logrus"
 )
 
 //FilePath represents the absolute path of an added file
@@ -180,7 +180,11 @@ func NewScannerAddition(filePath string, commits []string, content []byte) Addit
 func (repo GitRepo) ReadRepoFile(fileName string) ([]byte, error) {
 	path := filepath.Join(repo.root, fileName)
 	log.Debugf("reading file %s", path)
-	return utility.SafeReadFile(path)
+	return repo.rawExecuteRepoCommand("git", "cat-file", "-p", fmt.Sprintf(":%s", fileName))
+}
+
+func NewRepoFileReader(wd string) func(string) ([]byte, error) {
+	return GitRepo{wd}.ReadRepoFile
 }
 
 //ReadRepoFileOrNothing returns the contents of the supplied relative filename by locating it in the git repo.
@@ -318,9 +322,7 @@ func (repo GitRepo) executeRepoCommand(commandName string, args ...string) []byt
 		"command": commandName,
 		"args":    args,
 	}).Debug("Building repo command")
-	result := exec.Command(commandName, args...)
-	result.Dir = repo.root
-	co, err := result.CombinedOutput()
+	co, err := repo.rawExecuteRepoCommand(commandName, args...)
 	logEntry := log.WithFields(log.Fields{
 		"dir":     repo.root,
 		"command": fmt.Sprintf("%s %s", commandName, strings.Join(args, " ")),
@@ -333,4 +335,10 @@ func (repo GitRepo) executeRepoCommand(commandName string, args ...string) []byt
 		logEntry.Fatal("Git command execution failed")
 	}
 	return co
+}
+
+func (repo GitRepo) rawExecuteRepoCommand(commandName string, args ...string) ([]byte, error) {
+	result := exec.Command(commandName, args...)
+	result.Dir = repo.root
+	return result.CombinedOutput()
 }

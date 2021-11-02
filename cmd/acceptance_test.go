@@ -155,16 +155,16 @@ func TestShouldExitZeroWhenNonSecretIsCommittedButFileContainsSecretPreviously(t
 }
 
 // Need to work on this test case as talismanrc does  not yet support comments
-// func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnoredAndCommented(t *testing.T) {
-// 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
-// 		git.SetupBaselineFiles("simple-file")
-// 		git.CreateFileWithContents("private.pem", "secret")
-// 		git.CreateFileWithContents(".talismanrc", talismanRCDataWithIgnoreDetector)
-// 		git.AddAndcommit("*", "add private key")
+func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnoredAndCommented(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents("private.pem", "secret")
+		git.CreateFileWithContents(".talismanrc", talismanRCDataWithIgnoreDetectorWithFilename)
+		git.AddAndcommit("*", "add private key")
 
-// 		assert.Equal(t, 0, runTalismanInPrePushMode(git), "Expected run() to return 0 and pass as pem file was ignored")
-// 	})
-// }
+		assert.Equal(t, 0, runTalismanInPrePushMode(git), "Expected run() to return 0 and pass as pem file was ignored")
+	})
+}
 
 func TestAddingSecretKeyShouldExitOneIfTheyContainBadContentButOnlyFilenameDetectorWasIgnored(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
