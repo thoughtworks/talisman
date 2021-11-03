@@ -29,7 +29,7 @@ func NewPrePushHook(stdin io.Reader) *PrePushHook {
 		localCommit,
 		remoteRef,
 		remoteCommit,
-		NewRunner(nil)}
+		NewRunner(nil, PrePush)}
 	prePushHook.additions = prePushHook.getRepoAdditions()
 	return prePushHook
 }

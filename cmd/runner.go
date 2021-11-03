@@ -22,13 +22,15 @@ const (
 type runner struct {
 	additions []gitrepo.Addition
 	results   *helpers.DetectionResults
+	hooktype  string
 }
 
 //NewRunner returns a new runner.
-func NewRunner(additions []gitrepo.Addition) *runner {
+func NewRunner(additions []gitrepo.Addition, hooktype string) *runner {
 	return &runner{
 		additions: additions,
 		results:   helpers.NewDetectionResults(talismanrc.HookMode),
+		hooktype:  hooktype,
 	}
 }
 
@@ -36,7 +38,7 @@ func NewRunner(additions []gitrepo.Addition) *runner {
 func (r *runner) Run(tRC *talismanrc.TalismanRC, promptContext prompt.PromptContext) int {
 	setCustomSeverities(tRC)
 	additionsToScan := tRC.FilterAdditions(r.additions)
-	detector.DefaultChain(tRC).Test(additionsToScan, tRC, r.results)
+	detector.DefaultChain(tRC, r.hooktype).Test(additionsToScan, tRC, r.results)
 	r.printReport(promptContext)
 	exitStatus := r.exitStatus()
 	return exitStatus

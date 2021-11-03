@@ -9,7 +9,7 @@ import (
 	"github.com/bmatcuk/doublestar"
 )
 
-type PatternCmd struct{
+type PatternCmd struct {
 	*runner
 }
 
@@ -29,7 +29,7 @@ func NewPatternCmd(pattern string) *PatternCmd {
 		additions = append(additions, newAddition)
 	}
 
-	return &PatternCmd{NewRunner(additions)}
+	return &PatternCmd{NewRunner(additions, PrePush)}
 }
 
 func ReadFile(filepath string) ([]byte, error) {
