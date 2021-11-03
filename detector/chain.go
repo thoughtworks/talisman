@@ -20,18 +20,19 @@ import (
 //It is itself a detector.
 type Chain struct {
 	detectors []detector.Detector
+	hooktype  string
 }
 
 //NewChain returns an empty DetectorChain
 //It is itself a detector, but it tests nothing.
-func NewChain() *Chain {
-	result := Chain{make([]detector.Detector, 0)}
+func NewChain(hooktype string) *Chain {
+	result := Chain{make([]detector.Detector, 0), hooktype}
 	return &result
 }
 
 //DefaultChain returns a DetectorChain with pre-configured detectors
-func DefaultChain(tRC *talismanrc.TalismanRC) *Chain {
-	result := NewChain()
+func DefaultChain(tRC *talismanrc.TalismanRC, hooktype string) *Chain {
+	result := NewChain(hooktype)
 	result.AddDetector(filename.DefaultFileNameDetector(tRC.Threshold))
 	result.AddDetector(filecontent.NewFileContentDetector(tRC))
 	result.AddDetector(pattern.NewPatternDetector(tRC.CustomPatterns))
@@ -50,7 +51,12 @@ func (dc *Chain) Test(currentAdditions []gitrepo.Addition, talismanRC *talismanr
 	wd, _ := os.Getwd()
 	repo := gitrepo.RepoLocatedAt(wd)
 	allAdditions := repo.TrackedFilesAsAdditions()
-	hasher := utility.NewGitHeadSHA256Hasher(wd)
+	var hasher utility.SHA256Hasher
+	if dc.hooktype == "pre-push" {
+		hasher = utility.NewGitHeadFileSHA256Hasher(wd)
+	} else {
+		hasher = utility.NewGitFileSHA256Hasher(wd)
+	}
 	calculator := checksumcalculator.NewChecksumCalculator(hasher, append(allAdditions, currentAdditions...))
 	cc := helpers.NewChecksumCompare(calculator, hasher, talismanRC)
 	log.Printf("Number of files to scan: %d\n", len(currentAdditions))

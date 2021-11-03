@@ -17,15 +17,27 @@ func (DefaultSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
 	return collectiveSHA256Hash(paths, SafeReadFile)
 }
 
-type GitHeadSHA256Hasher struct {
+type GitHeadFileSHA256Hasher struct {
 	root string
 }
 
-func NewGitHeadSHA256Hasher(root string) GitHeadSHA256Hasher {
-	return GitHeadSHA256Hasher{root}
+type GitFileSHA256Hasher struct {
+	root string
 }
 
-func (g GitHeadSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
+func NewGitHeadFileSHA256Hasher(root string) GitHeadFileSHA256Hasher {
+	return GitHeadFileSHA256Hasher{root}
+}
+
+func NewGitFileSHA256Hasher(root string) GitFileSHA256Hasher {
+	return GitFileSHA256Hasher{root}
+}
+
+func (g GitHeadFileSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
+	return collectiveSHA256Hash(paths, gitrepo.NewCommittedRepoFileReader(g.root))
+}
+
+func (g GitFileSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
 	return collectiveSHA256Hash(paths, gitrepo.NewRepoFileReader(g.root))
 }
 

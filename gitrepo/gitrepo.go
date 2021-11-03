@@ -183,8 +183,19 @@ func (repo GitRepo) ReadRepoFile(fileName string) ([]byte, error) {
 	return repo.rawExecuteRepoCommand("git", "cat-file", "-p", fmt.Sprintf(":%s", fileName))
 }
 
+//ReadCommitedRepoFile returns the contents of the supplied relative filename by locating it in the git repo
+func (repo GitRepo) ReadCommittedRepoFile(fileName string) ([]byte, error) {
+	path := filepath.Join(repo.root, fileName)
+	log.Debugf("reading file %s", path)
+	return repo.rawExecuteRepoCommand("git", "cat-file", "-p", fmt.Sprintf("HEAD:%s", fileName))
+}
+
 func NewRepoFileReader(wd string) func(string) ([]byte, error) {
 	return GitRepo{wd}.ReadRepoFile
+}
+
+func NewCommittedRepoFileReader(wd string) func(string) ([]byte, error) {
+	return GitRepo{wd}.ReadCommittedRepoFile
 }
 
 //ReadRepoFileOrNothing returns the contents of the supplied relative filename by locating it in the git repo.
@@ -194,7 +205,7 @@ func (repo GitRepo) ReadRepoFileOrNothing(fileName string) ([]byte, error) {
 	if _, err := os.Stat(filepath); err == nil {
 		return repo.ReadRepoFile(fileName)
 	}
-	return make([]byte, 0), nil
+	return []byte{}, nil
 }
 
 //CheckIfFileExists checks if the file exists on the file system. Does not look into the file contents

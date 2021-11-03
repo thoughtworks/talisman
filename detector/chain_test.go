@@ -28,14 +28,14 @@ func (p PassingDetection) Test(comparator helpers.ChecksumCompare, currentAdditi
 }
 
 func TestEmptyValidationChainPassesAllValidations(t *testing.T) {
-	v := NewChain()
+	v := NewChain("pre-push")
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	v.Test(nil, &talismanrc.TalismanRC{}, results)
 	assert.False(t, results.HasFailures(), "Empty validation chain is expected to always pass")
 }
 
 func TestValidationChainWithFailingValidationAlwaysFails(t *testing.T) {
-	v := NewChain()
+	v := NewChain("pre-push")
 	v.AddDetector(PassingDetection{})
 	v.AddDetector(FailingDetection{})
 	results := helpers.NewDetectionResults(talismanrc.HookMode)

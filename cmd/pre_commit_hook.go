@@ -6,7 +6,7 @@ import (
 	"talisman/gitrepo"
 )
 
-type PreCommitHook struct{
+type PreCommitHook struct {
 	runner
 }
 
@@ -14,5 +14,5 @@ func NewPreCommitHook() *PreCommitHook {
 	wd, _ := os.Getwd()
 	repo := gitrepo.RepoLocatedAt(wd)
 
-	return &PreCommitHook{*NewRunner(repo.GetDiffForStagedFiles())}
+	return &PreCommitHook{*NewRunner(repo.GetDiffForStagedFiles(), PreCommit)}
 }
