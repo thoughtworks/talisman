@@ -5,6 +5,8 @@ import (
 	"os/exec"
 	"strings"
 	"talisman/gitrepo"
+
+	"github.com/sirupsen/logrus"
 )
 
 type blobDetails struct {
@@ -17,13 +19,26 @@ type BlobsInCommits struct {
 }
 
 // GetAdditions will get all the additions for entire git history
-func GetAdditions(ignoreHistory bool) []gitrepo.Addition {
+func GetAdditions(ignoreHistory bool, br gitrepo.BatchReader) []gitrepo.Addition {
 	blobsInCommits := getBlobsInCommit(ignoreHistory)
 	var additions []gitrepo.Addition
+	err := br.Start()
+	if err != nil {
+		logrus.Errorf("error creating file reader %v", err)
+	}
+	defer func() {
+		err = br.Shutdown()
+		if err != nil {
+			logrus.Errorf("error creating file reader %v", err)
+		}
+	}()
+
 	for blob := range blobsInCommits.commits {
-		newAddition := gitrepo.NewScannerAddition(blob.filePath, blobsInCommits.commits[blob], getData(blob.hash))
+		contents, _ := br.Read(blob.hash)
+		newAddition := gitrepo.NewScannerAddition(blob.filePath, blobsInCommits.commits[blob], contents)
 		additions = append(additions, newAddition)
 	}
+
 	return additions
 }
 
@@ -71,11 +86,6 @@ func getAllCommits(ignoreHistory bool) []string {
 		log.Fatal(err)
 	}
 	return strings.Split(string(out), "\n")
-}
-
-func getData(objectHash string) []byte {
-	out, _ := exec.Command("git", "cat-file", "-p", objectHash).CombinedOutput()
-	return out
 }
 
 func newBlobsInCommit() BlobsInCommits {

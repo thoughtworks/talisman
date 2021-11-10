@@ -8,6 +8,8 @@ import (
 
 type SHA256Hasher interface {
 	CollectiveSHA256Hash(paths []string) string
+	Start() error
+	Shutdown() error
 }
 
 type DefaultSHA256Hasher struct{}
@@ -17,19 +19,23 @@ func (*DefaultSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
 	return collectiveSHA256Hash(paths, SafeReadFile)
 }
 
-type gitFileSHA256Hasher struct {
-	reader gitrepo.Reader
-}
-type gitBatchSHA256Hasher struct {
-	reader gitrepo.Reader
-}
+func (*DefaultSHA256Hasher) Start() error    { return nil }
+func (*DefaultSHA256Hasher) Shutdown() error { return nil }
 
-func (g *gitFileSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
-	return collectiveSHA256Hash(paths, g.reader)
+type gitBatchSHA256Hasher struct {
+	br gitrepo.BatchReader
 }
 
 func (g *gitBatchSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
-	return collectiveSHA256Hash(paths, g.reader)
+	return collectiveSHA256Hash(paths, g.br.Read)
+}
+
+func (g *gitBatchSHA256Hasher) Start() error {
+	return g.br.Start()
+}
+
+func (g *gitBatchSHA256Hasher) Shutdown() error {
+	return g.br.Shutdown()
 }
 
 func hashByte(contentPtr *[]byte) string {
@@ -60,15 +66,15 @@ func MakeHasher(mode string, root string) SHA256Hasher {
 	var hasher SHA256Hasher
 	switch mode {
 	case "pre-push":
-		hasher = &gitFileSHA256Hasher{gitrepo.NewCommittedRepoFileReader(root)}
+		hasher = &gitBatchSHA256Hasher{gitrepo.NewBatchGitHeadPathReader(root)}
 	case "pre-commit":
-		hasher = &gitFileSHA256Hasher{gitrepo.NewRepoFileReader(root)}
+		hasher = &gitBatchSHA256Hasher{gitrepo.NewBatchGitStagedPathReader(root)}
 	case "scan":
-		hasher = &gitBatchSHA256Hasher{gitrepo.NewBatchGitObjectReader(root)}
+		hasher = &gitBatchSHA256Hasher{gitrepo.NewBatchGitObjectHashReader(root)}
 	case "pattern":
 		hasher = &DefaultSHA256Hasher{}
 	case "checksum":
-		hasher = &gitFileSHA256Hasher{gitrepo.NewRepoFileReader(root)}
+		hasher = &gitBatchSHA256Hasher{gitrepo.NewBatchGitHeadPathReader(root)}
 	case "default":
 		hasher = &DefaultSHA256Hasher{}
 	}

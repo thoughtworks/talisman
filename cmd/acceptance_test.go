@@ -298,7 +298,7 @@ func TestIgnoreHistoryDetectsExistingIssuesOnHead(t *testing.T) {
 }
 
 func runTalismanInPrePushMode(git *git_testing.GitTesting) int {
-	options.Debug = false
+	options.Debug = true
 	options.GitHook = PrePush
 	return runTalisman(git)
 }

@@ -10,13 +10,34 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Reader func(string) ([]byte, error)
-
-func NewCommittedRepoFileReader(wd string) Reader {
-	return makeReader(wd, GIT_HEAD_PREFIX)
+type ReadFunc func(string) ([]byte, error)
+type BatchReader interface {
+	Start() error
+	Read(string) ([]byte, error)
+	Shutdown() error
 }
 
-func NewBatchGitObjectReader(root string) Reader {
+type BatchGitObjectReader struct {
+	repo         *GitRepo
+	cmd          *exec.Cmd
+	inputWriter  *bufio.Writer
+	outputReader *bufio.Reader
+	read         ReadFunc
+}
+
+func (bgor *BatchGitObjectReader) Start() error {
+	return bgor.cmd.Start()
+}
+
+func (bgor *BatchGitObjectReader) Shutdown() error {
+	return bgor.cmd.Process.Kill()
+}
+
+func (bgor *BatchGitObjectReader) Read(expr string) ([]byte, error) {
+	return bgor.read(expr)
+}
+
+func newBatchGitObjectReader(root string) *BatchGitObjectReader {
 	repo := &GitRepo{root}
 	cmd := repo.makeRepoCommand("git", "cat-file", "--batch=%(objectsize)")
 	inputPipe, err := cmd.StdinPipe()
@@ -33,32 +54,33 @@ func NewBatchGitObjectReader(root string) Reader {
 		inputWriter:  bufio.NewWriter(inputPipe),
 		outputReader: bufio.NewReader(outputPipe),
 	}
-	err = batchReader.start()
-	if err != nil {
-		logrus.Fatalf("error starting batch command: %v", err)
-	}
-	return batchReader.makeReader()
+	return &batchReader
 }
 
-func NewRepoFileReader(wd string) Reader {
-	return makeReader(wd, GIT_STAGED_PREFIX)
+func NewBatchGitHeadPathReader(root string) BatchReader {
+	bgor := newBatchGitObjectReader(root)
+	bgor.read = bgor.makePathReader(GIT_HEAD_PREFIX)
+	return bgor
 }
 
-func makeReader(repoRoot, prefix string) Reader {
-	return func(path string) ([]byte, error) {
-		return GitRepo{repoRoot}.readRepoFile(path, prefix)
-	}
+type batchGitHeadPathReader struct {
+	bgor *BatchGitObjectReader
 }
 
-type BatchGitObjectReader struct {
-	repo         *GitRepo
-	cmd          *exec.Cmd
-	inputWriter  *bufio.Writer
-	outputReader *bufio.Reader
+func NewBatchGitStagedPathReader(root string) BatchReader {
+	bgor := newBatchGitObjectReader(root)
+	bgor.read = bgor.makePathReader(GIT_STAGED_PREFIX)
+	return bgor
 }
 
-func (bgor *BatchGitObjectReader) start() error {
-	return bgor.cmd.Start()
+type batchGitStagedPathReader struct {
+	bgor *BatchGitObjectReader
+}
+
+func NewBatchGitObjectHashReader(root string) BatchReader {
+	bgor := newBatchGitObjectReader(root)
+	bgor.read = bgor.makeObjectHashReader()
+	return bgor
 }
 
 type gitCatFileReadResult struct {
@@ -66,22 +88,34 @@ type gitCatFileReadResult struct {
 	err      error
 }
 
-func (bgor *BatchGitObjectReader) makeReader() Reader {
-	pathChan := make(chan (string))
+func (bgor *BatchGitObjectReader) makePathReader(prefix string) ReadFunc {
+	pathChan := make(chan ([]byte))
 	resultsChan := make(chan (gitCatFileReadResult))
 	go bgor.doCatFile(pathChan, resultsChan)
 	return func(path string) ([]byte, error) {
-		pathChan <- path
+		pathChan <- []byte(prefix + ":" + path)
 		result := <-resultsChan
 		return result.contents, result.err
 	}
 }
 
-func (bgor *BatchGitObjectReader) doCatFile(pathChan chan (string), resultsChan chan (gitCatFileReadResult)) {
+func (bgor *BatchGitObjectReader) makeObjectHashReader() ReadFunc {
+	objectHashChan := make(chan ([]byte))
+	resultsChan := make(chan (gitCatFileReadResult))
+	go bgor.doCatFile(objectHashChan, resultsChan)
+	return func(objectHash string) ([]byte, error) {
+		objectHashChan <- []byte(objectHash)
+		result := <-resultsChan
+		return result.contents, result.err
+	}
+}
+
+func (bgor *BatchGitObjectReader) doCatFile(gitExpressionChan chan ([]byte), resultsChan chan (gitCatFileReadResult)) {
 	for {
-		path := <-pathChan
+		gitExpression := <-gitExpressionChan
+		gitExpression = append(gitExpression, '\n')
 		//Write file-path expression to process input
-		bgor.inputWriter.Write([]byte(":" + path + "\n"))
+		bgor.inputWriter.Write(gitExpression)
 		bgor.inputWriter.Flush()
 
 		//Read line containing filesize from process output
@@ -97,13 +131,13 @@ func (bgor *BatchGitObjectReader) doCatFile(pathChan chan (string), resultsChan 
 			resultsChan <- gitCatFileReadResult{[]byte{}, err}
 			continue
 		}
-		logrus.Debugf("Git Batch Reader: FilePath: %v, Size:%v", path, filesize)
+		logrus.Debugf("Git Batch Reader: FilePath: %v, Size:%v", gitExpression, filesize)
 
 		//Read file contents upto filesize bytes from process output
 		fileBytes := make([]byte, filesize)
 		n, err := io.ReadFull(bgor.outputReader, fileBytes)
 		if n != filesize || err != nil {
-			logrus.Errorf("error reading exactly %v bytes of %v: %v (read %v bytes)", filesize, path, err, n)
+			logrus.Errorf("error reading exactly %v bytes of %v: %v (read %v bytes)", filesize, gitExpression, err, n)
 			resultsChan <- gitCatFileReadResult{[]byte{}, err}
 			continue
 		}

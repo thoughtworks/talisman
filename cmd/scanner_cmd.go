@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"talisman/detector"
 	"talisman/detector/helpers"
 	"talisman/gitrepo"
@@ -27,7 +28,7 @@ type ScannerCmd struct {
 func (s *ScannerCmd) Run(tRC *talismanrc.TalismanRC) int {
 	fmt.Printf("\n\n")
 	utility.CreateArt("Running ScanMode..")
-	detector.DefaultChain(tRC, SCAN_MODE).Test(s.additions, tRC, s.results)
+	detector.DefaultChain(tRC, "default").Test(s.additions, tRC, s.results)
 	reportsPath, err := report.GenerateReport(s.results, s.reportDirectory)
 	if err != nil {
 		logr.Errorf("error while generating report: %v", err)
@@ -47,7 +48,9 @@ func (s *ScannerCmd) exitStatus() int {
 
 //NewScannerCmd Returns a new scanner command
 func NewScannerCmd(ignoreHistory bool, reportDirectory string) *ScannerCmd {
-	additions := scanner.GetAdditions(ignoreHistory)
+	repoRoot, _ := os.Getwd()
+	reader := gitrepo.NewBatchGitObjectHashReader(repoRoot)
+	additions := scanner.GetAdditions(ignoreHistory, reader)
 	return &ScannerCmd{
 		additions:       additions,
 		results:         helpers.NewDetectionResults(talismanrc.ScanMode),

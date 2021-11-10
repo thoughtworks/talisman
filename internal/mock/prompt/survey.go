@@ -5,34 +5,35 @@
 package mock
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
-// MockPrompt is a mock of Prompt interface
+// MockPrompt is a mock of Prompt interface.
 type MockPrompt struct {
 	ctrl     *gomock.Controller
 	recorder *MockPromptMockRecorder
 }
 
-// MockPromptMockRecorder is the mock recorder for MockPrompt
+// MockPromptMockRecorder is the mock recorder for MockPrompt.
 type MockPromptMockRecorder struct {
 	mock *MockPrompt
 }
 
-// NewMockPrompt creates a new mock instance
+// NewMockPrompt creates a new mock instance.
 func NewMockPrompt(ctrl *gomock.Controller) *MockPrompt {
 	mock := &MockPrompt{ctrl: ctrl}
 	mock.recorder = &MockPromptMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockPrompt) EXPECT() *MockPromptMockRecorder {
 	return m.recorder
 }
 
-// Confirm mocks base method
+// Confirm mocks base method.
 func (m *MockPrompt) Confirm(arg0 string) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Confirm", arg0)
@@ -40,7 +41,7 @@ func (m *MockPrompt) Confirm(arg0 string) bool {
 	return ret0
 }
 
-// Confirm indicates an expected call of Confirm
+// Confirm indicates an expected call of Confirm.
 func (mr *MockPromptMockRecorder) Confirm(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Confirm", reflect.TypeOf((*MockPrompt)(nil).Confirm), arg0)
