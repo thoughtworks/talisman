@@ -6,16 +6,16 @@ import (
 	"github.com/cheggaaa/pb/v3"
 )
 
-func GetProgressBar() progressBar {
-	if isTerminal() {
+func GetProgressBar(out *os.File) progressBar {
+	if isTerminal(out) {
 		return &defaultProgressBar{}
 	} else {
 		return &noOpProgressBar{}
 	}
 }
 
-func isTerminal() bool {
-	fileInfo, _ := os.Stdout.Stat()
+func isTerminal(out *os.File) bool {
+	fileInfo, _ := out.Stat()
 	return (fileInfo.Mode() & os.ModeCharDevice) != 0
 }
 

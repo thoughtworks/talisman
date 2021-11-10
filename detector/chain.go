@@ -57,7 +57,7 @@ func (dc *Chain) Test(currentAdditions []gitrepo.Addition, talismanRC *talismanr
 	log.Printf("Number of files to scan: %d\n", len(currentAdditions))
 	log.Printf("Number of detectors: %d\n", len(dc.detectors))
 	total := len(currentAdditions) * len(dc.detectors)
-	progressBar := utility.GetProgressBar()
+	progressBar := utility.GetProgressBar(os.Stdout)
 	progressBar.Start(total)
 	for _, v := range dc.detectors {
 		v.Test(cc, currentAdditions, talismanRC, result, func() {
