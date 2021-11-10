@@ -5,34 +5,35 @@
 package mock
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
 )
 
-// MockSHA256Hasher is a mock of SHA256Hasher interface
+// MockSHA256Hasher is a mock of SHA256Hasher interface.
 type MockSHA256Hasher struct {
 	ctrl     *gomock.Controller
 	recorder *MockSHA256HasherMockRecorder
 }
 
-// MockSHA256HasherMockRecorder is the mock recorder for MockSHA256Hasher
+// MockSHA256HasherMockRecorder is the mock recorder for MockSHA256Hasher.
 type MockSHA256HasherMockRecorder struct {
 	mock *MockSHA256Hasher
 }
 
-// NewMockSHA256Hasher creates a new mock instance
+// NewMockSHA256Hasher creates a new mock instance.
 func NewMockSHA256Hasher(ctrl *gomock.Controller) *MockSHA256Hasher {
 	mock := &MockSHA256Hasher{ctrl: ctrl}
 	mock.recorder = &MockSHA256HasherMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockSHA256Hasher) EXPECT() *MockSHA256HasherMockRecorder {
 	return m.recorder
 }
 
-// CollectiveSHA256Hash mocks base method
+// CollectiveSHA256Hash mocks base method.
 func (m *MockSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CollectiveSHA256Hash", paths)
@@ -40,8 +41,36 @@ func (m *MockSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
 	return ret0
 }
 
-// CollectiveSHA256Hash indicates an expected call of CollectiveSHA256Hash
+// CollectiveSHA256Hash indicates an expected call of CollectiveSHA256Hash.
 func (mr *MockSHA256HasherMockRecorder) CollectiveSHA256Hash(paths interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CollectiveSHA256Hash", reflect.TypeOf((*MockSHA256Hasher)(nil).CollectiveSHA256Hash), paths)
+}
+
+// Shutdown mocks base method.
+func (m *MockSHA256Hasher) Shutdown() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Shutdown")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Shutdown indicates an expected call of Shutdown.
+func (mr *MockSHA256HasherMockRecorder) Shutdown() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Shutdown", reflect.TypeOf((*MockSHA256Hasher)(nil).Shutdown))
+}
+
+// Start mocks base method.
+func (m *MockSHA256Hasher) Start() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Start")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Start indicates an expected call of Start.
+func (mr *MockSHA256HasherMockRecorder) Start() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockSHA256Hasher)(nil).Start))
 }

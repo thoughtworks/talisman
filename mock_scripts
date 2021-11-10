@@ -1,8 +1,23 @@
 #! /usr/bin/env bash
 
-set -ex
+install_mockgen() {
+    pushd ..
+    go install github.com/golang/mock/mockgen@latest
+    popd
+}
 
+generate_mock() {
+    FILE=$1
+    mockgen -destination internal/mock/$FILE -package mock -source $FILE
+}
+
+set -ex
+#Ensure mockgen exists
+which mockgen || install_mockgen
 mkdir -p internal/mock
 
 # Mock for survey package
-mockgen -destination internal/mock/prompt/survey.go -package mock -source prompt/survey.go
+
+generate_mock prompt/survey.go
+generate_mock checksumcalculator/checksumcalculator.go
+generate_mock utility/sha_256_hasher.go

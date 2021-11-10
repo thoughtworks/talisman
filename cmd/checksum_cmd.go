@@ -6,6 +6,8 @@ import (
 	"talisman/checksumcalculator"
 	"talisman/gitrepo"
 	"talisman/utility"
+
+	"github.com/sirupsen/logrus"
 )
 
 type ChecksumCmd struct {
@@ -21,8 +23,19 @@ func (s *ChecksumCmd) Run() int {
 	repo := gitrepo.RepoLocatedAt(wd)
 	gitTrackedFilesAsAdditions := repo.TrackedFilesAsAdditions()
 	gitTrackedFilesAsAdditions = append(gitTrackedFilesAsAdditions, repo.StagedAdditions()...)
-	cc := checksumcalculator.NewChecksumCalculator(utility.MakeHasher("checksum", wd), gitTrackedFilesAsAdditions)
+	hasher := utility.MakeHasher("checksum", wd)
+
+	err := hasher.Start()
+	if err != nil {
+		logrus.Errorf("unable to start hasher: %v", err)
+		return EXIT_FAILURE
+	}
+
+	cc := checksumcalculator.NewChecksumCalculator(hasher, gitTrackedFilesAsAdditions)
+	hasher.Shutdown()
+
 	rcSuggestion := cc.SuggestTalismanRC(s.fileNamePatterns)
+
 	if rcSuggestion != "" {
 		fmt.Print(rcSuggestion)
 		return EXIT_SUCCESS
