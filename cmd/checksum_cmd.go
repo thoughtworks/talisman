@@ -21,11 +21,11 @@ func (s *ChecksumCmd) Run() int {
 	repo := gitrepo.RepoLocatedAt(wd)
 	gitTrackedFilesAsAdditions := repo.TrackedFilesAsAdditions()
 	gitTrackedFilesAsAdditions = append(gitTrackedFilesAsAdditions, repo.StagedAdditions()...)
-	cc := checksumcalculator.NewChecksumCalculator(utility.DefaultSHA256Hasher{}, gitTrackedFilesAsAdditions)
+	cc := checksumcalculator.NewChecksumCalculator(utility.MakeHasher("checksum", wd), gitTrackedFilesAsAdditions)
 	rcSuggestion := cc.SuggestTalismanRC(s.fileNamePatterns)
 	if rcSuggestion != "" {
 		fmt.Print(rcSuggestion)
-		return 0
+		return EXIT_SUCCESS
 	}
-	return 1
+	return EXIT_FAILURE
 }

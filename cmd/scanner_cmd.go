@@ -13,6 +13,10 @@ import (
 	logr "github.com/sirupsen/logrus"
 )
 
+const (
+	SCAN_MODE = "scan"
+)
+
 type ScannerCmd struct {
 	additions       []gitrepo.Addition
 	results         *helpers.DetectionResults
@@ -23,11 +27,11 @@ type ScannerCmd struct {
 func (s *ScannerCmd) Run(tRC *talismanrc.TalismanRC) int {
 	fmt.Printf("\n\n")
 	utility.CreateArt("Running ScanMode..")
-	detector.DefaultChain(tRC, PrePush).Test(s.additions, tRC, s.results)
+	detector.DefaultChain(tRC, SCAN_MODE).Test(s.additions, tRC, s.results)
 	reportsPath, err := report.GenerateReport(s.results, s.reportDirectory)
 	if err != nil {
 		logr.Errorf("error while generating report: %v", err)
-		return CompletedWithErrors
+		return EXIT_FAILURE
 	}
 
 	fmt.Printf("\nPlease check '%s' folder for the talisman scan report\n\n", reportsPath)
@@ -36,9 +40,9 @@ func (s *ScannerCmd) Run(tRC *talismanrc.TalismanRC) int {
 
 func (s *ScannerCmd) exitStatus() int {
 	if s.results.HasFailures() {
-		return CompletedWithErrors
+		return EXIT_FAILURE
 	}
-	return CompletedSuccessfully
+	return EXIT_SUCCESS
 }
 
 //NewScannerCmd Returns a new scanner command
