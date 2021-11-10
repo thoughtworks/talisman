@@ -34,5 +34,4 @@ func TestDefaultProgressBar(t *testing.T) {
 
 		assert.False(t, progressBar.bar.IsStarted())
 	})
-
 }
