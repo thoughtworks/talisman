@@ -12,29 +12,30 @@ import (
 
 type ChecksumCmd struct {
 	fileNamePatterns []string
+	hasher           utility.SHA256Hasher
+	repoRoot         string
 }
 
 func NewChecksumCmd(fileNamePatterns []string) *ChecksumCmd {
-	return &ChecksumCmd{fileNamePatterns: fileNamePatterns}
+	wd, _ := os.Getwd()
+	hasher := utility.MakeHasher("checksum", wd)
+	return &ChecksumCmd{fileNamePatterns: fileNamePatterns, hasher: hasher, repoRoot: wd}
 }
 
 func (s *ChecksumCmd) Run() int {
-	wd, _ := os.Getwd()
-	repo := gitrepo.RepoLocatedAt(wd)
-	gitTrackedFilesAsAdditions := repo.TrackedFilesAsAdditions()
-	gitTrackedFilesAsAdditions = append(gitTrackedFilesAsAdditions, repo.StagedAdditions()...)
-	hasher := utility.MakeHasher("checksum", wd)
-
-	err := hasher.Start()
+	repo := gitrepo.RepoLocatedAt(s.repoRoot)
+	err := s.hasher.Start()
 	if err != nil {
 		logrus.Errorf("unable to start hasher: %v", err)
 		return EXIT_FAILURE
 	}
 
-	cc := checksumcalculator.NewChecksumCalculator(hasher, gitTrackedFilesAsAdditions)
-	hasher.Shutdown()
+	gitTrackedFilesAsAdditions := repo.TrackedFilesAsAdditions()
+	gitTrackedFilesAsAdditions = append(gitTrackedFilesAsAdditions, repo.StagedAdditions()...)
 
+	cc := checksumcalculator.NewChecksumCalculator(s.hasher, gitTrackedFilesAsAdditions)
 	rcSuggestion := cc.SuggestTalismanRC(s.fileNamePatterns)
+	s.hasher.Shutdown()
 
 	if rcSuggestion != "" {
 		fmt.Print(rcSuggestion)
