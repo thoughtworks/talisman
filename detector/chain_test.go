@@ -2,7 +2,10 @@ package detector
 
 import (
 	"io/ioutil"
+	"talisman/detector/filecontent"
+	"talisman/detector/filename"
 	"talisman/detector/helpers"
+	"talisman/detector/pattern"
 	"talisman/detector/severity"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
@@ -42,4 +45,23 @@ func TestValidationChainWithFailingValidationAlwaysFails(t *testing.T) {
 	v.Test(nil, &talismanrc.TalismanRC{}, results)
 
 	assert.False(t, results.Successful(), "Expected validation chain with a failure to fail.")
+}
+
+func TestDefaultChainShouldCreateChainSpecifiedModeAndPresetDetectors(t *testing.T) {
+	talismanRC := &talismanrc.TalismanRC{
+		Threshold:      severity.Medium,
+		CustomPatterns: []talismanrc.PatternString{"AKIA*"},
+	}
+	v := DefaultChain(talismanRC, "pre-push")
+	assert.Equal(t, "pre-push", v.mode)
+	assert.Equal(t, 3, len(v.detectors))
+
+	defaultFileNameDetector := filename.DefaultFileNameDetector(talismanRC.Threshold)
+	assert.Equal(t, defaultFileNameDetector, v.detectors[0])
+
+	expectedFileContentDetector := filecontent.NewFileContentDetector(talismanRC)
+	assert.Equal(t, expectedFileContentDetector, v.detectors[1])
+
+	expectedPatternDetector := pattern.NewPatternDetector(talismanRC.CustomPatterns)
+	assert.Equal(t, expectedPatternDetector, v.detectors[2])
 }
