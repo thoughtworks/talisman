@@ -122,7 +122,7 @@ func (repo GitRepo) StagedAdditions() []Addition {
 	files := repo.stagedFiles()
 	result := make([]Addition, len(files))
 	for i, file := range files {
-		data := repo.stagedVersionOfFile(file)
+		data, _ := repo.readRepoFile(file, GIT_STAGED_PREFIX)
 		result[i] = NewAddition(file, data)
 	}
 
@@ -146,7 +146,7 @@ func (repo GitRepo) AdditionsWithinRange(oldCommit string, newCommit string) []A
 	files := repo.outgoingNonDeletedFiles(oldCommit, newCommit)
 	result := make([]Addition, len(files))
 	for i, file := range files {
-		data, _ := repo.ReadRepoFile(file)
+		data, _ := repo.readRepoFile(file, GIT_HEAD_PREFIX)
 		result[i] = NewAddition(file, data)
 	}
 	log.WithFields(log.Fields{
@@ -174,38 +174,6 @@ func NewScannerAddition(filePath string, commits []string, content []byte) Addit
 		Commits: commits,
 		Data:    content,
 	}
-}
-
-//ReadRepoFile returns the contents of the supplied relative filename by locating it in the git repo
-func (repo GitRepo) ReadRepoFile(fileName string) ([]byte, error) {
-	path := filepath.Join(repo.root, fileName)
-	log.Debugf("reading file %s", path)
-	return repo.rawExecuteRepoCommand("git", "cat-file", "-p", fmt.Sprintf(":%s", fileName))
-}
-
-//ReadCommitedRepoFile returns the contents of the supplied relative filename by locating it in the git repo
-func (repo GitRepo) ReadCommittedRepoFile(fileName string) ([]byte, error) {
-	path := filepath.Join(repo.root, fileName)
-	log.Debugf("reading file %s", path)
-	return repo.rawExecuteRepoCommand("git", "cat-file", "-p", fmt.Sprintf("HEAD:%s", fileName))
-}
-
-func NewRepoFileReader(wd string) func(string) ([]byte, error) {
-	return GitRepo{wd}.ReadRepoFile
-}
-
-func NewCommittedRepoFileReader(wd string) func(string) ([]byte, error) {
-	return GitRepo{wd}.ReadCommittedRepoFile
-}
-
-//ReadRepoFileOrNothing returns the contents of the supplied relative filename by locating it in the git repo.
-//If the given file cannot be located in the repo, then an empty array of bytes is returned for the content.
-func (repo GitRepo) ReadRepoFileOrNothing(fileName string) ([]byte, error) {
-	filepath := path.Join(repo.root, fileName)
-	if _, err := os.Stat(filepath); err == nil {
-		return repo.ReadRepoFile(fileName)
-	}
-	return []byte{}, nil
 }
 
 //CheckIfFileExists checks if the file exists on the file system. Does not look into the file contents
@@ -289,10 +257,6 @@ func (repo GitRepo) hasBranch() bool {
 	return len(string(byteArray)) != 0
 }
 
-func (repo GitRepo) stagedVersionOfFile(file string) []byte {
-	return repo.executeRepoCommand("git", "show", ":"+file)
-}
-
 func (repo GitRepo) outgoingNonDeletedFiles(oldCommit, newCommit string) []string {
 	allChanges := strings.Split(repo.fetchRawOutgoingDiff(oldCommit, newCommit), "\n")
 	var result []string
@@ -349,7 +313,18 @@ func (repo GitRepo) executeRepoCommand(commandName string, args ...string) []byt
 }
 
 func (repo GitRepo) rawExecuteRepoCommand(commandName string, args ...string) ([]byte, error) {
-	result := exec.Command(commandName, args...)
-	result.Dir = repo.root
-	return result.CombinedOutput()
+	return repo.makeRepoCommand(commandName, args...).CombinedOutput()
+}
+
+func (repo GitRepo) makeRepoCommand(commandName string, args ...string) *exec.Cmd {
+	command := exec.Command(commandName, args...)
+	command.Dir = repo.root
+	return command
+}
+
+func (repo GitRepo) readRepoFile(fileName, prefix string) ([]byte, error) {
+	path := filepath.Join(repo.root, fileName)
+	log.Debugf("reading file %s", path)
+	fileExpression := fmt.Sprintf("%s:%s", prefix, fileName)
+	return repo.rawExecuteRepoCommand("git", "cat-file", "-p", fileExpression)
 }

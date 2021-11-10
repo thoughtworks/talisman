@@ -17,7 +17,7 @@ import (
 )
 
 var talismanRC = &talismanrc.TalismanRC{}
-var defaultChecksumCompareUtility = helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanRC)
+var defaultChecksumCompareUtility = helpers.NewChecksumCompare(nil, utility.MakeHasher("default", "."), talismanRC)
 
 func TestShouldFlagPotentialSSHPrivateKeys(t *testing.T) {
 	shouldFail("id_rsa", "^.+_rsa$", severity.Low, t)

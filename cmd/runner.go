@@ -10,27 +10,19 @@ import (
 	"talisman/talismanrc"
 )
 
-const (
-	//CompletedSuccessfully is an exit status that says that the current runners run completed without errors
-	CompletedSuccessfully = 0
-
-	//CompletedWithErrors is an exit status that says that the current runners run completed with failures
-	CompletedWithErrors = 1
-)
-
 //runner represents a single run of the validations for a given commit range
 type runner struct {
 	additions []gitrepo.Addition
 	results   *helpers.DetectionResults
-	hooktype  string
+	mode      string
 }
 
 //NewRunner returns a new runner.
-func NewRunner(additions []gitrepo.Addition, hooktype string) *runner {
+func NewRunner(additions []gitrepo.Addition, mode string) *runner {
 	return &runner{
 		additions: additions,
 		results:   helpers.NewDetectionResults(talismanrc.HookMode),
-		hooktype:  hooktype,
+		mode:      mode,
 	}
 }
 
@@ -38,7 +30,7 @@ func NewRunner(additions []gitrepo.Addition, hooktype string) *runner {
 func (r *runner) Run(tRC *talismanrc.TalismanRC, promptContext prompt.PromptContext) int {
 	setCustomSeverities(tRC)
 	additionsToScan := tRC.FilterAdditions(r.additions)
-	detector.DefaultChain(tRC, r.hooktype).Test(additionsToScan, tRC, r.results)
+	detector.DefaultChain(tRC, r.mode).Test(additionsToScan, tRC, r.results)
 	r.printReport(promptContext)
 	exitStatus := r.exitStatus()
 	return exitStatus
@@ -61,7 +53,7 @@ func (r *runner) printReport(promptContext prompt.PromptContext) {
 
 func (r *runner) exitStatus() int {
 	if r.results.HasFailures() {
-		return CompletedWithErrors
+		return EXIT_FAILURE
 	}
-	return CompletedSuccessfully
+	return EXIT_SUCCESS
 }

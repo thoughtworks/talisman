@@ -23,7 +23,7 @@ func TestShouldFlagPotentialAWSAccessKeysInAggressiveMode(t *testing.T) {
 
 	aggressiveModeFileContentDetector.
 		Test(
-			helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, _blankTalismanRC),
+			helpers.NewChecksumCompare(nil, utility.MakeHasher("default", "."), _blankTalismanRC),
 			additions,
 			_blankTalismanRC,
 			results,
@@ -40,7 +40,7 @@ func TestShouldFlagPotentialAWSAccessKeysAtPropertyDefinitionInAggressiveMode(t 
 
 	aggressiveModeFileContentDetector.
 		Test(
-			helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, _blankTalismanRC),
+			helpers.NewChecksumCompare(nil, utility.MakeHasher("default", "."), _blankTalismanRC),
 			additions,
 			_blankTalismanRC,
 			results,
@@ -62,7 +62,7 @@ func TestShouldNotFlagPotentialSecretsWithinSafeJavaCodeEvenInAggressiveMode(t *
 
 	aggressiveModeFileContentDetector.
 		Test(
-			helpers.NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, _blankTalismanRC),
+			helpers.NewChecksumCompare(nil, utility.MakeHasher("default", "."), _blankTalismanRC),
 			additions,
 			_blankTalismanRC,
 			results,

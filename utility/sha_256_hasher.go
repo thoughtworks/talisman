@@ -13,32 +13,23 @@ type SHA256Hasher interface {
 type DefaultSHA256Hasher struct{}
 
 //CollectiveSHA256Hash return collective sha256 hash of the passed paths
-func (DefaultSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
+func (*DefaultSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
 	return collectiveSHA256Hash(paths, SafeReadFile)
 }
 
-type GitHeadFileSHA256Hasher struct {
-	root string
+type gitFileSHA256Hasher struct {
+	reader gitrepo.Reader
+}
+type gitBatchSHA256Hasher struct {
+	reader gitrepo.Reader
 }
 
-type GitFileSHA256Hasher struct {
-	root string
+func (g *gitFileSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
+	return collectiveSHA256Hash(paths, g.reader)
 }
 
-func NewGitHeadFileSHA256Hasher(root string) GitHeadFileSHA256Hasher {
-	return GitHeadFileSHA256Hasher{root}
-}
-
-func NewGitFileSHA256Hasher(root string) GitFileSHA256Hasher {
-	return GitFileSHA256Hasher{root}
-}
-
-func (g GitHeadFileSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
-	return collectiveSHA256Hash(paths, gitrepo.NewCommittedRepoFileReader(g.root))
-}
-
-func (g GitFileSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
-	return collectiveSHA256Hash(paths, gitrepo.NewRepoFileReader(g.root))
+func (g *gitBatchSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
+	return collectiveSHA256Hash(paths, g.reader)
 }
 
 func hashByte(contentPtr *[]byte) string {
@@ -62,4 +53,24 @@ func collectiveSHA256Hash(paths []string, FileReader func(string) ([]byte, error
 	c := []byte(finHash)
 	m := hashByte(&c)
 	return m
+}
+
+//MakeHasher returns a SHA256 file/object hasher based on mode and a repo root
+func MakeHasher(mode string, root string) SHA256Hasher {
+	var hasher SHA256Hasher
+	switch mode {
+	case "pre-push":
+		hasher = &gitFileSHA256Hasher{gitrepo.NewCommittedRepoFileReader(root)}
+	case "pre-commit":
+		hasher = &gitFileSHA256Hasher{gitrepo.NewRepoFileReader(root)}
+	case "scan":
+		hasher = &gitBatchSHA256Hasher{gitrepo.NewBatchGitObjectReader(root)}
+	case "pattern":
+		hasher = &DefaultSHA256Hasher{}
+	case "checksum":
+		hasher = &gitFileSHA256Hasher{gitrepo.NewRepoFileReader(root)}
+	case "default":
+		hasher = &DefaultSHA256Hasher{}
+	}
+	return hasher
 }

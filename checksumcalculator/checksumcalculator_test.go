@@ -1,15 +1,21 @@
 package checksumcalculator
 
 import (
-	"github.com/stretchr/testify/assert"
 	"talisman/gitrepo"
 	"talisman/utility"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
+
+var defaultSHA256Hasher utility.SHA256Hasher
+
+func init() {
+	defaultSHA256Hasher = utility.MakeHasher("default", ".")
+}
 
 func TestNewChecksumCalculator(t *testing.T) {
 	t.Run("should return empty CollectiveChecksum when non existing file name pattern is sent", func(t *testing.T) {
-		defaultSHA256Hasher := utility.DefaultSHA256Hasher{}
 		gitAdditions := []gitrepo.Addition{
 			{
 				Path: "GitRepoPath1",
@@ -26,7 +32,6 @@ func TestNewChecksumCalculator(t *testing.T) {
 	})
 
 	t.Run("should return  CollectiveChecksum when existing file name pattern is sent", func(t *testing.T) {
-		defaultSHA256Hasher := utility.DefaultSHA256Hasher{}
 		gitAdditions := []gitrepo.Addition{
 			{
 				Path: "GitRepoPath1",
@@ -45,7 +50,6 @@ func TestNewChecksumCalculator(t *testing.T) {
 
 func TestDefaultChecksumCalculator_SuggestTalismanRC(t *testing.T) {
 	t.Run("should return no suggestion for .talismanrc format when no matching file name patterns is sent", func(t *testing.T) {
-		defaultSHA256Hasher := utility.DefaultSHA256Hasher{}
 		gitAdditions := []gitrepo.Addition{
 			{
 				Path: "GitRepoPath1",
@@ -65,7 +69,6 @@ func TestDefaultChecksumCalculator_SuggestTalismanRC(t *testing.T) {
 	})
 
 	t.Run("should return suggestion for .talismanrc format when matching file name patterns is sent", func(t *testing.T) {
-		defaultSHA256Hasher := utility.DefaultSHA256Hasher{}
 		gitAdditions := []gitrepo.Addition{
 			{
 				Path: "GitRepoPath1",

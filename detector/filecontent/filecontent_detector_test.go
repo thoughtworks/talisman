@@ -2,7 +2,6 @@ package filecontent
 
 import (
 	"fmt"
-	"github.com/golang/mock/gomock"
 	"strings"
 	"talisman/detector/helpers"
 	"talisman/detector/severity"
@@ -12,12 +11,14 @@ import (
 	"talisman/utility"
 	"testing"
 
+	"github.com/golang/mock/gomock"
+
 	"github.com/stretchr/testify/assert"
 )
 
 var emptyTalismanRC = &talismanrc.TalismanRC{IgnoreConfigs: []talismanrc.IgnoreConfig{}}
 var defaultChecksumCompareUtility = helpers.
-	NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, emptyTalismanRC)
+	NewChecksumCompare(nil, utility.MakeHasher("default", "."), emptyTalismanRC)
 var dummyCallback = func() {}
 
 func TestShouldNotFlagSafeText(t *testing.T) {
@@ -44,7 +45,7 @@ func TestShouldIgnoreFileIfNeeded(t *testing.T) {
 		CalculateCollectiveChecksumForPattern("filename").
 		Return("mock-checksum-for-filename")
 	checksumCompare := helpers.
-		NewChecksumCompare(mockChecksumCalculator, utility.DefaultSHA256Hasher{}, talismanRCIWithFilenameIgnore)
+		NewChecksumCompare(mockChecksumCalculator, utility.MakeHasher("default", "."), talismanRCIWithFilenameIgnore)
 
 	NewFileContentDetector(talismanRCIWithFilenameIgnore).
 		Test(checksumCompare, additions, talismanRCIWithFilenameIgnore, results, dummyCallback)
@@ -201,7 +202,7 @@ func TestShouldNotFlagPotentialCreditCardNumberIfAboveThreshold(t *testing.T) {
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(creditCardNumber))}
 	talismanRCWithThreshold := &talismanrc.TalismanRC{Threshold: severity.High}
 	checksumCompareWithThreshold := helpers.
-		NewChecksumCompare(nil, utility.DefaultSHA256Hasher{}, talismanRCWithThreshold)
+		NewChecksumCompare(nil, utility.MakeHasher("default", "."), talismanRCWithThreshold)
 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(checksumCompareWithThreshold, additions, talismanRCWithThreshold, results, dummyCallback)

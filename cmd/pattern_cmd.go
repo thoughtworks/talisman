@@ -18,7 +18,8 @@ func NewPatternCmd(pattern string) *PatternCmd {
 
 	files, _ := doublestar.Glob(pattern)
 	for _, file := range files {
-		data, err := ReadFile(file)
+		log.Debugf("reading file %s", file)
+		data, err := utility.SafeReadFile(file)
 
 		if err != nil {
 			log.Warnf("Error reading file: %s. Skipping", file)
@@ -29,10 +30,5 @@ func NewPatternCmd(pattern string) *PatternCmd {
 		additions = append(additions, newAddition)
 	}
 
-	return &PatternCmd{NewRunner(additions, PrePush)}
-}
-
-func ReadFile(filepath string) ([]byte, error) {
-	log.Debugf("reading file %s", filepath)
-	return utility.SafeReadFile(filepath)
+	return &PatternCmd{NewRunner(additions, "pattern")}
 }
