@@ -188,10 +188,10 @@ func fromPersistedRC(configFromTalismanRCFile *persistedRC, mode Mode) *Talisman
 		for i, p := range configFromTalismanRCFile.AllowedPatterns {
 			tRC.AllowedPatterns[i] = regexp.MustCompile(p)
 		}
-		tRC.IgnoreConfigs = make([]IgnoreConfig, len(configFromTalismanRCFile.FileIgnoreConfig))
-		for i := range configFromTalismanRCFile.FileIgnoreConfig {
-			tRC.IgnoreConfigs[i] = &configFromTalismanRCFile.FileIgnoreConfig[i]
-		}
+	}
+	tRC.IgnoreConfigs = make([]IgnoreConfig, len(configFromTalismanRCFile.FileIgnoreConfig))
+	for i := range configFromTalismanRCFile.FileIgnoreConfig {
+		tRC.IgnoreConfigs[i] = &configFromTalismanRCFile.FileIgnoreConfig[i]
 	}
 	tRC.base = configFromTalismanRCFile
 	return &tRC
