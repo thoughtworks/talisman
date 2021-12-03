@@ -5,6 +5,8 @@ import (
 	"os/exec"
 	"strings"
 	"talisman/gitrepo"
+	"talisman/utility"
+	"os"
 
 	"github.com/sirupsen/logrus"
 )
@@ -43,15 +45,19 @@ func GetAdditions(ignoreHistory bool, br gitrepo.BatchReader) []gitrepo.Addition
 }
 
 func getBlobsInCommit(ignoreHistory bool) BlobsInCommits {
+	progressBar := utility.GetProgressBar(os.Stdout, "Talisman Fetch Blobs")
 	commits := getAllCommits(ignoreHistory)
+	progressBar.Start(len(commits) - 1)
 	blobsInCommits := newBlobsInCommit()
 	result := make(chan []string, len(commits))
 	for _, commit := range commits {
 		go putBlobsInChannel(commit, result)
 	}
 	for i := 1; i < len(commits); i++ {
+		progressBar.Increment()
 		getBlobsFromChannel(blobsInCommits, result)
 	}
+	progressBar.Finish()
 	return blobsInCommits
 }
 

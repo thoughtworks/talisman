@@ -1,14 +1,15 @@
 package utility
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/cheggaaa/pb/v3"
 )
 
-func GetProgressBar(out *os.File) progressBar {
+func GetProgressBar(out *os.File, title string) progressBar {
 	if isTerminal(out) {
-		return &defaultProgressBar{}
+		return &defaultProgressBar{title: title}
 	} else {
 		return &noOpProgressBar{}
 	}
@@ -36,10 +37,12 @@ func (d *noOpProgressBar) Finish() {}
 
 type defaultProgressBar struct {
 	bar *pb.ProgressBar
+	title string
 }
 
 func (d *defaultProgressBar) Start(total int) {
-	bar := pb.ProgressBarTemplate(`{{ red "Talisman Scan:" }} {{counters .}} {{ bar . "<" "-" (cycle . "↖" "↗" "↘" "↙" ) "." ">"}} {{percent . | rndcolor }} {{green}} {{blue}}`).New(total)
+	template := fmt.Sprintf(`{{ red "%s:" }} {{counters .}} {{ bar . "<" "-" (cycle . "↖" "↗" "↘" "↙" ) "." ">"}} {{percent . | rndcolor }} {{green}} {{blue}}`, d.title)
+	bar := pb.ProgressBarTemplate(template).New(total)
 	bar.Set(pb.Terminal, true)
 	d.bar = bar.Start()
 }
