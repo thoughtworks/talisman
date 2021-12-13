@@ -233,7 +233,7 @@ func (r *DetectionResults) ReportWarnings() string {
 }
 
 //Report returns a string documenting the various failures and ignored files for the current run
-func (r *DetectionResults) Report(promptContext prompt.PromptContext) string {
+func (r *DetectionResults) Report(promptContext prompt.PromptContext, mode string) string {
 	var result string
 	var filePathsForFailures []string
 	var data [][]string
@@ -257,14 +257,14 @@ func (r *DetectionResults) Report(promptContext prompt.PromptContext) string {
 		table.AppendBulk(data)
 		table.Render()
 		fmt.Println()
-		r.suggestTalismanRC(filePathsForFailures, promptContext)
+		r.suggestTalismanRC(filePathsForFailures, promptContext, mode)
 	}
 	return result
 }
 
-func (r *DetectionResults) suggestTalismanRC(filePaths []string, promptContext prompt.PromptContext) {
+func (r *DetectionResults) suggestTalismanRC(filePaths []string, promptContext prompt.PromptContext, mode string) {
 	var entriesToAdd []talismanrc.IgnoreConfig
-	hasher := utility.DefaultSHA256Hasher{}
+	hasher := utility.MakeHasher(mode, ".")
 	for _, filePath := range filePaths {
 		currentChecksum := hasher.CollectiveSHA256Hash([]string{filePath})
 		fileIgnoreConfig := talismanrc.BuildIgnoreConfig(r.mode, filePath, currentChecksum, []string{})

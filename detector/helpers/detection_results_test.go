@@ -88,7 +88,7 @@ func TestErrorExitCodeInInteractive(t *testing.T) {
 	prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(2)
 	results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 	results.Fail("another.pem", "filecontent", "password", []string{}, severity.Low)
-	results.Report(promptContext)
+	results.Report(promptContext, "default")
 	assert.True(t, results.HasFailures())
 }
 
@@ -103,7 +103,7 @@ func TestSuccessExitCodeInInteractive(t *testing.T) {
 	prompter.EXPECT().Confirm(gomock.Any()).Return(true).Times(2)
 	results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 	results.Fail("another.pem", "filecontent", "password", []string{}, severity.Low)
-	results.Report(promptContext)
+	results.Report(promptContext, "default")
 	assert.False(t, results.HasFailures())
 }
 
@@ -152,7 +152,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
 
-		results.Report(promptContext)
+		results.Report(promptContext, "default")
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
@@ -165,7 +165,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 		prompter.EXPECT().Confirm("Do you want to add some_file.pem with above checksum in talismanrc ?").Return(false)
 		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 
-		results.Report(promptContext)
+		results.Report(promptContext, "default")
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
@@ -178,7 +178,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 		prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
 		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 
-		results.Report(promptContext)
+		results.Report(promptContext, "default")
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
@@ -197,7 +197,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
   checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
 version: "1.0"
 `
-		results.Report(promptContext)
+		results.Report(promptContext, "default")
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
@@ -216,7 +216,7 @@ version: "1.0"
   checksum: 5bc0b0692a316bb2919263addaef0ffba3a21b9e1cca62a1028390e97e861e4e
 version: "1.0"
 `
-		results.Report(promptContext)
+		results.Report(promptContext, "default")
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
@@ -239,7 +239,7 @@ version: "1.0"
   checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
 version: "1.0"
 `
-		results.Report(promptContext)
+		results.Report(promptContext, "default")
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
