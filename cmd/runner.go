@@ -47,7 +47,7 @@ func (r *runner) printReport(promptContext prompt.PromptContext) {
 		fmt.Println(r.results.ReportWarnings())
 	}
 	if r.results.HasIgnores() || r.results.HasFailures() {
-		r.results.Report(promptContext)
+		r.results.Report(promptContext, r.mode)
 	}
 }
 

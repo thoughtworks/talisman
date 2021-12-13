@@ -24,9 +24,8 @@ func NewChecksumCmd(fileNamePatterns []string) *ChecksumCmd {
 
 func (s *ChecksumCmd) Run() int {
 	repo := gitrepo.RepoLocatedAt(s.repoRoot)
-	err := s.hasher.Start()
-	if err != nil {
-		logrus.Errorf("unable to start hasher: %v", err)
+	if s.hasher == nil {
+		logrus.Errorf("unable to start hasher")
 		return EXIT_FAILURE
 	}
 
@@ -35,7 +34,6 @@ func (s *ChecksumCmd) Run() int {
 
 	cc := checksumcalculator.NewChecksumCalculator(s.hasher, gitTrackedFilesAsAdditions)
 	rcSuggestion := cc.SuggestTalismanRC(s.fileNamePatterns)
-	s.hasher.Shutdown()
 
 	if rcSuggestion != "" {
 		fmt.Print(rcSuggestion)

@@ -51,7 +51,6 @@ func (dc *Chain) Test(currentAdditions []gitrepo.Addition, talismanRC *talismanr
 	repo := gitrepo.RepoLocatedAt(wd)
 	allAdditions := repo.TrackedFilesAsAdditions()
 	hasher := utility.MakeHasher(dc.mode, wd)
-	hasher.Start()
 	calculator := checksumcalculator.NewChecksumCalculator(hasher, append(allAdditions, currentAdditions...))
 	cc := helpers.NewChecksumCompare(calculator, hasher, talismanRC)
 	log.Printf("Number of files to scan: %d\n", len(currentAdditions))
@@ -65,5 +64,4 @@ func (dc *Chain) Test(currentAdditions []gitrepo.Addition, talismanRC *talismanr
 		})
 	}
 	progressBar.Finish()
-	hasher.Shutdown()
 }

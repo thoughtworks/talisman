@@ -1,14 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"github.com/stretchr/testify/assert"
 	"os"
 	"talisman/git_testing"
-	mock "talisman/internal/mock/utility"
 	"testing"
-
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestChecksumCalculatorShouldExitSuccess(t *testing.T) {
@@ -39,12 +35,9 @@ func TestChecksumCalculatorShouldExitFailure(t *testing.T) {
 	})
 }
 
-func TestChecksumCalculatorShouldExitFailureWhenHasherStarFails(t *testing.T) {
+func TestChecksumCalculatorShouldExitFailureWhenHasherIsEmpty(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
-		ctrl := gomock.NewController(t)
-		hasher := mock.NewMockSHA256Hasher(ctrl)
-		checksumCmd := ChecksumCmd{[]string{"*.java"}, hasher, git.GetRoot()}
-		hasher.EXPECT().Start().Return(fmt.Errorf("fail this test because hasher failed to start"))
+		checksumCmd := ChecksumCmd{[]string{"*.java"}, nil, git.GetRoot()}
 		assert.Equal(t, 1, checksumCmd.Run(), "Expected run() to return 1 because hasher failed to start")
 	})
 }

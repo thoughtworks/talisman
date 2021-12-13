@@ -7,6 +7,7 @@ import (
 	"os"
 	"runtime/pprof"
 	"strings"
+	"talisman/utility"
 	"time"
 
 	"talisman/prompt"
@@ -142,7 +143,7 @@ func run(promptContext prompt.PromptContext) (returnCode int) {
 	fields := make(map[string]interface{})
 	_ = json.Unmarshal(optionsBytes, &fields)
 	log.WithFields(fields).Debug("Talisman execution environment")
-
+	defer  utility.DestroyHasher()
 	if options.Checksum != "" {
 		log.Infof("Running %s patterns against checksum calculator", options.Checksum)
 		return NewChecksumCmd(strings.Fields(options.Checksum)).Run()

@@ -3,6 +3,7 @@ package utility
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"github.com/sirupsen/logrus"
 	"talisman/gitrepo"
 )
 
@@ -60,10 +61,13 @@ func collectiveSHA256Hash(paths []string, FileReader func(string) ([]byte, error
 	m := hashByte(&c)
 	return m
 }
+var hasher SHA256Hasher = nil
 
 //MakeHasher returns a SHA256 file/object hasher based on mode and a repo root
 func MakeHasher(mode string, root string) SHA256Hasher {
-	var hasher SHA256Hasher
+	if hasher != nil {
+		return hasher
+	}
 	switch mode {
 	case "pre-push":
 		hasher = &gitBatchSHA256Hasher{gitrepo.NewBatchGitHeadPathReader(root)}
@@ -78,5 +82,17 @@ func MakeHasher(mode string, root string) SHA256Hasher {
 	case "default":
 		hasher = &DefaultSHA256Hasher{}
 	}
+	err := hasher.Start()
+	if err != nil {
+		logrus.Errorf("unable to start hasher: %v", err)
+		return nil
+	}
 	return hasher
+}
+
+func DestroyHasher() {
+	if hasher != nil {
+		hasher.Shutdown()
+	}
+	hasher = nil
 }
