@@ -4,6 +4,7 @@ shopt -s extglob
 
 DEBUG=${DEBUG:-''}
 FORCE_DOWNLOAD=${FORCE_DOWNLOAD:-''}
+SEARCH_ROOT=${SEARCH_ROOT:-''}
 
 # default is a pre-commit hook; if "pre-push" is the first arg to the script, then it sets up as pre-push
 declare HOOK_SCRIPT='pre-commit'
