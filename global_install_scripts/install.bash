@@ -4,6 +4,7 @@ shopt -s extglob
 
 DEBUG=${DEBUG:-''}
 FORCE_DOWNLOAD=${FORCE_DOWNLOAD:-''}
+SEARCH_ROOT=${SEARCH_ROOT:-''}
 
 # default is a pre-commit hook; if "pre-push" is the first arg to the script, then it sets up as pre-push
 declare HOOK_SCRIPT='pre-commit'
@@ -408,7 +409,10 @@ END_OF_SCRIPT
 	setup_git_template_talisman_hook
 	echo
 	echo "Setting up talisman hook recursively in git repos"
-	read -p "Please enter root directory to search for git repos (Default: ${HOME}): " SEARCH_ROOT
+	
+	if [[ "$SEARCH_ROOT" == "" ]]; then
+		read -p "Please enter root directory to search for git repos (Default: ${HOME}): " SEARCH_ROOT
+	fi
 	SEARCH_ROOT=${SEARCH_ROOT:-$HOME}
 	setup_git_talisman_hooks_at $SEARCH_ROOT
 }
