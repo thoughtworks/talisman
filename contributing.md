@@ -42,6 +42,13 @@ To send in a pull request
 4. Ensure that all the tests pass.
 5. Submit the pull request.
 
+## Updating Talisman Gihub Pages 
+
+1. Checkout a new branch from gh-pages
+2. Navigate to the docs/ folder and update the files
+3. See instructions for checking locally [here](https://github.com/thoughtworks/talisman/blob/gh-pages/README.md). 
+4. Raise a pull reqeuest against branch gh-pages
+
 ## Releasing
 
 * Follow the instructions at the end of 'Developing locally' to build the binaries
