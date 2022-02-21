@@ -1,6 +1,7 @@
 package talismanrc
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -60,38 +61,43 @@ func TestDirectoryPatterns(t *testing.T) {
 }
 
 func TestIgnoreAdditionsByScope(t *testing.T) {
-	file1 := testAddition("yarn.lock")
-	file2 := testAddition("similaryarn.lock")
-	file3 := testAddition("java.lock")
-	file4 := testAddition("Gopkg.lock")
-	file5 := testAddition("vendors/abc")
-	file6 := testAddition("imgJpeg.jpeg")
-	file7 := testAddition("imgJpg.jpg")
-	file8 := testAddition("imgPng.png")
-	file9 := testAddition("build.bzl")
-	additions := []gitrepo.Addition{file1, file2, file3, file4, file5, file6, file7, file8, file9}
+	testTable := map[string][]gitrepo.Addition{
+		"node": {
+			testAddition("yarn.lock"),
+			testAddition("package-lock.json"),
+			testAddition("node_modules/module1/foo.js")},
+		"go": {
+			testAddition("Gopkg.lock"),
+			testAddition("makefile"),
+			testAddition("go.mod"), testAddition("go.sum"),
+			testAddition("Gopkg.toml"), testAddition("Gopkg.lock"),
+			testAddition("glide.yaml"), testAddition("glide.lock"),
+			testAddition("vendor/abc"), testAddition("vendor/foo/def"),
+		},
+		"images": {
+			testAddition("img.jpeg"),
+			testAddition("img.jpg"),
+			testAddition("img.png"),
+			testAddition("img.tiff"),
+			testAddition("img.bmp"),
+		},
+		"bazel": {testAddition("bazelfile.bzl")},
+		"terraform": {
+			testAddition(".terraform.lock.hcl"),
+			testAddition("foo/.terraform.lock.hcl"),
+			testAddition("foo/bar/.terraform.lock.hcl"),
+		},
+	}
 
-	scopesToIgnore := []string{"node", "go", "images", "bazel"}
-	talismanRCConfig := createTalismanRCWithScopeIgnores(scopesToIgnore)
-
-	nodeIgnores := []string{"node.lock", "*yarn.lock"}
-	javaIgnores := []string{"java.lock"}
-	goIgnores := []string{"go.lock", "Gopkg.lock", "vendors/"}
-	imageIgnores := []string{"*.jpeg", "*.jpg", "*.png"}
-	bazelIgnores := []string{"*.bzl"}
-	scopesMap := map[string][]string{"node": nodeIgnores, "java": javaIgnores, "go": goIgnores, "images": imageIgnores, "bazel": bazelIgnores}
-	knownScopes = scopesMap
-	filteredAdditions := talismanRCConfig.FilterAdditions(additions)
-
-	assert.NotContains(t, filteredAdditions, file1)
-	assert.NotContains(t, filteredAdditions, file2)
-	assert.Contains(t, filteredAdditions, file3)
-	assert.NotContains(t, filteredAdditions, file4)
-	assert.NotContains(t, filteredAdditions, file5)
-	assert.NotContains(t, filteredAdditions, file6)
-	assert.NotContains(t, filteredAdditions, file7)
-	assert.NotContains(t, filteredAdditions, file8)
-	assert.NotContains(t, filteredAdditions, file9)
+	for scopeName, additions := range testTable {
+		t.Run(fmt.Sprintf("should ignore files for %s scope", scopeName), func(t *testing.T) {
+			talismanRCConfig := createTalismanRCWithScopeIgnores([]string{scopeName})
+			filteredAdditions := talismanRCConfig.FilterAdditions(additions)
+			for _, addition := range additions {
+				assert.NotContains(t, filteredAdditions, addition, "Expected %s to be ignored", addition.Name)
+			}
+		})
+	}
 }
 
 func TestIgnoringDetectors(t *testing.T) {
