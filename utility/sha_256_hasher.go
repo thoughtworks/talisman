@@ -3,8 +3,9 @@ package utility
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"github.com/sirupsen/logrus"
 	"talisman/gitrepo"
+
+	"github.com/sirupsen/logrus"
 )
 
 type SHA256Hasher interface {
@@ -61,6 +62,7 @@ func collectiveSHA256Hash(paths []string, FileReader func(string) ([]byte, error
 	m := hashByte(&c)
 	return m
 }
+
 var hashers = make(map[string]SHA256Hasher)
 
 //MakeHasher returns a SHA256 file/object hasher based on mode and a repo root
@@ -78,7 +80,7 @@ func MakeHasher(mode string, root string) SHA256Hasher {
 	case "pattern":
 		hashers[mode] = &DefaultSHA256Hasher{}
 	case "checksum":
-		hashers[mode] = &gitBatchSHA256Hasher{gitrepo.NewBatchGitHeadPathReader(root)}
+		hashers[mode] = &gitBatchSHA256Hasher{gitrepo.NewBatchGitStagedPathReader(root)}
 	case "default":
 		hashers[mode] = &DefaultSHA256Hasher{}
 	}
