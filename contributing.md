@@ -47,7 +47,7 @@ To send in a pull request
 1. Checkout a new branch from gh-pages
 2. Navigate to the docs/ folder and update the files
 3. See instructions for checking locally [here](https://github.com/thoughtworks/talisman/blob/gh-pages/README.md). 
-4. Raise a pull reqeuest against branch gh-pages
+4. Raise a pull request against the branch gh-pages
 
 ## Releasing
 
