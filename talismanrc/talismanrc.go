@@ -177,23 +177,29 @@ func (tRC *TalismanRC) effectiveRules(detectorName string) []string {
 
 func fromPersistedRC(configFromTalismanRCFile *persistedRC, mode Mode) *TalismanRC {
 	tRC := TalismanRC{}
+
+	tRC.Threshold = configFromTalismanRCFile.Threshold
+	tRC.ScopeConfig = configFromTalismanRCFile.ScopeConfig
+	tRC.Experimental = configFromTalismanRCFile.Experimental
+	tRC.CustomPatterns = configFromTalismanRCFile.CustomPatterns
+	tRC.Experimental = configFromTalismanRCFile.Experimental
+	tRC.AllowedPatterns = make([]*regexp.Regexp, len(configFromTalismanRCFile.AllowedPatterns))
+	for i, p := range configFromTalismanRCFile.AllowedPatterns {
+		tRC.AllowedPatterns[i] = regexp.MustCompile(p)
+	}
+
 	if mode == HookMode {
-		tRC.Threshold = configFromTalismanRCFile.Threshold
-		tRC.ScopeConfig = configFromTalismanRCFile.ScopeConfig
-		tRC.Threshold = configFromTalismanRCFile.Threshold
-		tRC.Experimental = configFromTalismanRCFile.Experimental
-		tRC.CustomPatterns = configFromTalismanRCFile.CustomPatterns
-		tRC.Experimental = configFromTalismanRCFile.Experimental
-		tRC.AllowedPatterns = make([]*regexp.Regexp, len(configFromTalismanRCFile.AllowedPatterns))
-		for i, p := range configFromTalismanRCFile.AllowedPatterns {
-			tRC.AllowedPatterns[i] = regexp.MustCompile(p)
-		}
-		tRC.IgnoreConfigs = make([]IgnoreConfig, len(configFromTalismanRCFile.FileIgnoreConfig))
+		tRC.IgnoreConfigs = make(
+			[]IgnoreConfig,
+			len(configFromTalismanRCFile.FileIgnoreConfig),
+		)
+
 		for i := range configFromTalismanRCFile.FileIgnoreConfig {
 			tRC.IgnoreConfigs[i] = &configFromTalismanRCFile.FileIgnoreConfig[i]
 		}
 	}
 	tRC.base = configFromTalismanRCFile
+
 	return &tRC
 }
 
