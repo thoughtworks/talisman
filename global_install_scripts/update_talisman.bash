@@ -91,6 +91,9 @@ function run() {
 		"i686" | "i386")
 			OS="${OS}_386"
 			;;
+		"arm64")
+			OS="${OS}_arm64"
+			;;
 		*)
 			echo_error "Talisman currently only supports x86 and x86_64 architectures."
 			echo_error "If this is a problem for you, please open an issue: https://github.com/${INSTALL_ORG_REPO}/issues/new"
