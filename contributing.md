@@ -51,8 +51,7 @@ To send in a pull request
 
 ## Releasing
 
-* Follow the instructions at the end of 'Developing locally' to build the binaries
-* Bump the [version in install.sh](https://github.com/thoughtworks/talisman/blob/d4b1b1d11137dbb173bf681a03f16183a9d82255/install.sh#L10) according to [semver](https://semver.org/) conventions
+* Follow the instructions at the end of 'Developing locally' to build the binaries* Bump the [version in install.sh](https://github.com/thoughtworks/talisman/blob/d4b1b1d11137dbb173bf681a03f16183a9d82255/install.sh#L10) according to [semver](https://semver.org/) conventions
 * Update the [expected hashes in install.sh](https://github.com/thoughtworks/talisman/blob/d4b1b1d11137dbb173bf681a03f16183a9d82255/install.sh#L16-L18) to match the new binaries you just created (`shasum -b -a256 ...`)
 * Make release commit and tag with the new version prefixed by `v` (like `git tag v0.3.0`)
 * Push your release commit and tag: `git push && git push --tags`
