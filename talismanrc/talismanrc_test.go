@@ -87,6 +87,10 @@ func TestIgnoreAdditionsByScope(t *testing.T) {
 			testAddition("foo/.terraform.lock.hcl"),
 			testAddition("foo/bar/.terraform.lock.hcl"),
 		},
+		"python": {
+			testAddition("poetry.lock"),
+			testAddition("Pipfile.lock"),
+		},
 	}
 
 	for scopeName, additions := range testTable {
