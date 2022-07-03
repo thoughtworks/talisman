@@ -90,6 +90,10 @@ func TestIgnoreAdditionsByScope(t *testing.T) {
 		"php": {
 			testAddition("composer.lock"),
 			testAddition("vendor/foo/bar/App.php")},
+		"python": {
+			testAddition("poetry.lock"),
+			testAddition("Pipfile.lock"),
+		},
 	}
 
 	for scopeName, additions := range testTable {

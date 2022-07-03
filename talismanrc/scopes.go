@@ -7,4 +7,5 @@ var knownScopes = map[string][]string{
 	"bazel":     {"*.bzl"},
 	"terraform": {".terraform.lock.hcl"},
 	"php":       {"composer.lock", "vendor/"},
+	"python":    {"poetry.lock", "Pipfile.lock"},
 }

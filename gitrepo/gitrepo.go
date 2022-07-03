@@ -305,7 +305,7 @@ func (repo GitRepo) executeRepoCommand(commandName string, args ...string) []byt
 		"error":   err,
 	})
 	if err == nil {
-		logEntry.Debug("Git command excuted successfully")
+		logEntry.Debug("Git command executed successfully")
 	} else {
 		logEntry.Fatal("Git command execution failed")
 	}
