@@ -72,7 +72,6 @@ func TestIgnoreAdditionsByScope(t *testing.T) {
 			testAddition("go.mod"), testAddition("go.sum"),
 			testAddition("Gopkg.toml"), testAddition("Gopkg.lock"),
 			testAddition("glide.yaml"), testAddition("glide.lock"),
-			testAddition("vendor/abc"), testAddition("vendor/foo/def"),
 		},
 		"images": {
 			testAddition("img.jpeg"),
