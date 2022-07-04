@@ -371,13 +371,14 @@ scopeconfig:
   - scope: go
   - scope: node
   - scope: images
+  - scope: php
 ```
 
 Talisman is configured to ignore certain files based on the specified scope. For example, mentioning the node scope in the scopeconfig will prevent talisman from scanning files such as the yarn.lock or package-lock.json.
 
 You can specify multiple scopes.
 
-Currently .talismanrc only supports scopeconfig support for go, node and images. Other scopes will be added shortly.
+Currently .talismanrc only supports scopeconfig support for go, node, php and images. Other scopes will be added shortly.
 
 ### Custom search patterns
 
