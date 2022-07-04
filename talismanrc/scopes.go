@@ -6,6 +6,6 @@ var knownScopes = map[string][]string{
 	"images":    {"*.jpeg", "*.jpg", "*.png", "*.tiff", "*.bmp"},
 	"bazel":     {"*.bzl"},
 	"terraform": {".terraform.lock.hcl"},
-	"php":       {"composer.lock", "vendor/"},
+	"php":       {"composer.lock"},
 	"python":    {"poetry.lock", "Pipfile.lock"},
 }
