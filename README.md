@@ -372,6 +372,7 @@ scopeconfig:
   - scope: node
   - scope: images
   - scope: php
+  - scope: python
 ```
 
 Talisman is configured to ignore certain files based on the specified scope. For example, mentioning the node scope in the scopeconfig will prevent talisman from scanning files such as the yarn.lock or package-lock.json.
