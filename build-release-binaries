@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/usr/bin/env bash
+
 set -e
 echo "Building binaries"
 ./build
@@ -14,7 +15,7 @@ upx -t talisman_windows* talisman_linux* talisman_darwin_amd64
 echo "...Done"
 
 echo "Generating checksums for download verification"
-shasum -b -a256 talisman* > checksums
+shasum -b -a256 talisman* >checksums
 echo "...Done"
 
 echo "Verifying checksums"
