@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 VERSION=$(git describe --tags HEAD)
-export GO111MODULE=on
 mkdir -p dist/
 
 for OS in linux darwin windows; do
