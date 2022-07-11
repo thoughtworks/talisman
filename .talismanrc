@@ -2,6 +2,8 @@ fileignoreconfig:
 - filename: README.md
   ignore_detectors:
   - filecontent
+- filename: build_binaries.bash
+  checksum: fdc955c83e408178fcccd834c6db0b5622edb876ea9e72d25da8ef8ab1e87192
 - filename: checksumcalculator/checksumcalculator_test.go
   checksum: d74273fe8cb37c2c4a7469785eb21b4f1d23a3437927612f8a5964f5011f0998
 - filename: detector/detection_results_test.go
@@ -27,8 +29,9 @@ fileignoreconfig:
 - filename: detector/severity/severity_config.go
   checksum: a9b041a6f5a5c93146a79dfc7b3d2d26c4a6cf621aa0aa92db7e8c343c6926a5
 - filename: global_install_scripts/install.bash
-  checksum: 5d659125ecbe619ea99f5bc71c2d761b586ce3ec9ccab7683ee54f4ebde9f748
+  checksum: bf0da9b8b6f779f502564166323a903a49b56b9d8df2597729a5b96c8f066074
 - filename: install.sh
   checksum: c909f6a1caefba3f196d489f9262608044be596a44793c2173ec55b98ecec649
 scopeconfig:
 - scope: go
+version: "1.0"
