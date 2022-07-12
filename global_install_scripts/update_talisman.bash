@@ -70,6 +70,9 @@ function run() {
     MINGW64_NT-10.0*)
       echo "windows"
       ;;
+    MSYS_NT-*)
+      echo "windows"
+      ;;
     *)
       echo_error "Talisman currently only supports Windows, Linux and MacOS(darwin) systems."
       echo_error "If this is a problem for you, please open an issue: https://github.com/${INSTALL_ORG_REPO}/issues/new"

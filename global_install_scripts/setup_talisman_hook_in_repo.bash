@@ -1,6 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
+IFS=$'\n'
 function run() {
 
   TALISMAN_HOOK_SCRIPT_PATH=$1
