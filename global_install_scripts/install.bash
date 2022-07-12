@@ -187,7 +187,7 @@ function run() {
       echo "No git template directory is configured. Let's add one."
       echo "(this will override any system git templates and modify your git config file)"
       echo
-      read -u1 -p "Git template directory: ($DEFAULT_GLOBAL_TEMPLATE_DIR) " TEMPLATE_DIR
+      read -e -u1 -p "Git template directory: ($DEFAULT_GLOBAL_TEMPLATE_DIR) " TEMPLATE_DIR
       echo
       TEMPLATE_DIR=${TEMPLATE_DIR:-$DEFAULT_GLOBAL_TEMPLATE_DIR}
       git config --global init.templatedir ${TEMPLATE_DIR}
@@ -409,7 +409,7 @@ END_OF_SCRIPT
   echo "Setting up talisman hook recursively in git repos"
 
   if [[ "$SEARCH_ROOT" == "" ]]; then
-    read -p "Please enter root directory to search for git repos (Default: ${HOME}): " SEARCH_ROOT
+    read -e -p "Please enter root directory to search for git repos (Default: ${HOME}): " SEARCH_ROOT
   fi
   SEARCH_ROOT=${SEARCH_ROOT:-$HOME}
   setup_git_talisman_hooks_at $SEARCH_ROOT
