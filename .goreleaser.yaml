@@ -1,0 +1,47 @@
+project_name: talisman
+
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+    # you may remove this if you don't need go generate
+#    - go generate ./...
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+
+    # Custom ldflags templates.
+    # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser`.
+    ldflags:
+      - -s -w -X main.Version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
+    main: ./cmd
+
+
+
+archives:
+
+  - meta: false
+    format: binary
+    wrap_in_directory: true
+
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: 'checksums'
+  algorithm: sha256
+
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'

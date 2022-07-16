@@ -3,7 +3,6 @@
 _workspace
 *.swp
 talisman
-.idea/**
 checksums
 vendor/
 gitrepo/data/*
@@ -22,3 +21,5 @@ dist/
 talisman_html_report
 .vscode
 .idea
+
+dist/
