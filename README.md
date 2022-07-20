@@ -123,7 +123,7 @@ In the suggestion, it will prompt the following code to be included in .pre-comm
 ```
 
 #### 2. Husky (Linux/Unix/Windows)
-[husky](https://github.com/typicode/husky/blob/master/DOCS.md) is an npm module for managing git hooks.
+[husky](https://typicode.github.io/husky) is an npm module for managing git hooks.
 In order to use husky, make sure you have already set TALISMAN_HOME to `$PATH`.
 
 + **Existing Users**
