@@ -85,6 +85,10 @@
       "type": "string",
       "description": "Default minimal threshold",
       "enum": ["low", "medium", "high"]
+    },
+    "version": {
+      "type": "string",
+      "description": ".talismanrc version",
     }
   },
   "required": []
