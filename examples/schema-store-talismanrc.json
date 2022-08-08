@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/thoughtworks/talisman/talismanrc",
+  "title": "schema for .talismanrc",
+  "type": "object",
+  "additionalProperties": false,
+  "fileMatch": [
+    ".talismanrc"
+  ],
+  "properties": {
+    "fileignoreconfig": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "description": "Fully qualified filename"
+          },
+          "checksum": {
+            "type": "string",
+            "description": "This field should always have the value specified by Talisman message"
+          },
+          "ignore_detectors": {
+            "type": "array",
+            "description": "Disable specific detectors for a particular file",
+            "items": {
+              "type": "string",
+              "enum": ["filecontent", "filename", "filesize"]
+            }
+          },
+          "allowed_patterns": {
+            "type": "array",
+            "description": "Keywords to ignore to reduce the number of false positives",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["filename"]
+      }
+    },
+    "scopeconfig": {
+      "type": "array",
+      "description": "Talisman is configured to ignore certain files based on the specified scopes",
+      "items": {
+        "type": "object",
+        "properties": {
+          "scope": {
+            "type": "string"
+          }
+        },
+        "required": ["scope"]
+      }
+    },
+    "allowed_patterns": {
+      "type": "array",
+      "description": "Keywords to ignore to reduce the number of false positives",
+      "items": {
+        "type": "string"
+      }
+    },
+    "custom_patterns": {
+      "type": "array",
+      "description": "You can specify custom regex patterns to look for in the current repository",
+      "items": {
+        "type": "string"
+      }
+    },
+    "custom_severities": {
+      "type": "array",
+      "description": "Custom detectors severities",
+      "items": {
+        "type": "object",
+        "properties": {
+          "detector": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["low", "medium", "high"]
+          }
+        },
+        "required": ["detector", "severity"]
+      }
+    },
+    "threshold": {
+      "type": "string",
+      "description": "Default minimal threshold",
+      "enum": ["low", "medium", "high"]
+    },
+    "version": {
+      "type": "string",
+      "description": ".talismanrc version"
+    }
+  },
+  "required": []
+}
