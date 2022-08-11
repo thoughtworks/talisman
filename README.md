@@ -195,11 +195,13 @@ a real git revision!)
 
 ```yaml
 -   repo: https://github.com/thoughtworks/talisman
-    rev: ''  # Update me!
+    rev: 'v1.28.0'  # Update me!
     hooks:
     # either `commit` or `push` support
-    -   id: talisman-commit
     # -   id: talisman-push
+    - id: talisman-commit
+      entry: cmd --githook pre-commit
+
 ```
 
 *Disclaimer: Talisman cannot guarantee its functionality in MicroSoft's unsupported versions of Windows. Anyway Taliman is successfully tested on Windows 7 and server 2008 R2, which might not work in future releases.*
