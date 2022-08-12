@@ -8,7 +8,6 @@ require (
 	github.com/drhodes/golorem v0.0.0-20160418191928-ecccc744c2d9
 	github.com/fatih/color v1.12.0
 	github.com/golang/mock v1.5.0
-	github.com/mitchellh/gox v1.0.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/afero v1.6.0
