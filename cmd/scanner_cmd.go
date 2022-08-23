@@ -28,7 +28,8 @@ type ScannerCmd struct {
 func (s *ScannerCmd) Run(tRC *talismanrc.TalismanRC) int {
 	fmt.Printf("\n\n")
 	utility.CreateArt("Running Scan..")
-	detector.DefaultChain(tRC, "default").Test(s.additions, tRC, s.results)
+	additionsToScan := tRC.FilterAdditions(s.additions)
+	detector.DefaultChain(tRC, "default").Test(additionsToScan, tRC, s.results)
 	reportsPath, err := report.GenerateReport(s.results, s.reportDirectory)
 	if err != nil {
 		logr.Errorf("error while generating report: %v", err)
