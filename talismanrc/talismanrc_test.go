@@ -266,4 +266,33 @@ func TestFor(t *testing.T) {
 		assert.True(t, rc.IgnoreConfigs[2].ChecksumMatches("file3_checksum"))
 
 	})
+
+
+}
+
+func TestForScan(t *testing.T) {
+	var repoFileReader = func(string) ([]byte, error) {
+		return []byte(`fileignoreconfig:
+- filename: testfile_1.yml
+  checksum: file1_checksum
+- filename: testfile_2.yml
+  checksum: file2_checksum
+- filename: testfile_3.yml
+  checksum: file3_checksum`), nil
+	}
+	t.Run("talismanrc.ForScan(ignoreHistory) should populate talismanrc for scan mode with ignore history", func(t *testing.T) {
+		setRepoFileReader(repoFileReader)
+		rc := ForScan(true)
+
+		assert.Equal(t, 3, len(rc.IgnoreConfigs))
+
+	})
+
+	t.Run("talismanrc.ForScan(ignoreHistory) should populate talismanrc for scan mode without ignore history", func(t *testing.T) {
+		setRepoFileReader(repoFileReader)
+		rc := ForScan(false)
+
+		assert.Equal(t, 0, len(rc.IgnoreConfigs))
+
+	})
 }
