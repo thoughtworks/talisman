@@ -208,3 +208,10 @@ func For(mode Mode) *TalismanRC {
 	talismanRC := fromPersistedRC(configFromTalismanRCFile, mode)
 	return talismanRC
 }
+
+func ForScan(ignoreHistory bool) *TalismanRC {
+	if ignoreHistory {
+		return For(HookMode)
+	}
+	return For(ScanMode)
+}
