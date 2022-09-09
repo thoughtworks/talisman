@@ -149,10 +149,10 @@ func run(promptContext prompt.PromptContext) (returnCode int) {
 		return NewChecksumCmd(strings.Fields(options.Checksum)).Run()
 	} else if options.Scan {
 		log.Infof("Running scanner")
-		return NewScannerCmd(options.IgnoreHistory, options.ReportDirectory).Run(talismanrc.For(talismanrc.ScanMode))
+		return NewScannerCmd(options.IgnoreHistory, options.ReportDirectory).Run(talismanrc.ForScan(options.IgnoreHistory))
 	} else if options.ScanWithHtml {
 		log.Infof("Running scanner with html report")
-		return NewScannerCmd(options.IgnoreHistory, "talisman_html_report").Run(talismanrc.For(talismanrc.ScanMode))
+		return NewScannerCmd(options.IgnoreHistory, "talisman_html_report").Run(talismanrc.ForScan(options.IgnoreHistory))
 	} else if options.Pattern != "" {
 		log.Infof("Running scan for %s", options.Pattern)
 		return NewPatternCmd(options.Pattern).Run(talismanrc.For(talismanrc.HookMode), promptContext)
