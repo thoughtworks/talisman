@@ -23,6 +23,11 @@ builds:
 
 
 
+release:
+  draft: true
+  replace_existing_draft: true
+
+
 archives:
 
   - meta: false
