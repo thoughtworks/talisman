@@ -69,7 +69,7 @@ function run() {
     fi
 
     echo "Removing talisman hooks recursively in git repos"
-    read -p "Please enter root directory to search for git repos (Default: ${HOME}): " SEARCH_ROOT
+    read -e -p "Please enter root directory to search for git repos (Default: ${HOME}): " SEARCH_ROOT
     SEARCH_ROOT=${SEARCH_ROOT:-$HOME}
     SEARCH_CMD="find"
     EXTRA_SEARCH_OPTS=""

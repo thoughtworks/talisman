@@ -243,7 +243,7 @@ END_OF_SCRIPT
   setup_git_template_talisman_hook
   echo
   echo "Setting up talisman hook recursively in git repos"
-  read -p "Please enter root directory to search for git repos (Default: ${HOME}): " SEARCH_ROOT
+  read -e -p "Please enter root directory to search for git repos (Default: ${HOME}): " SEARCH_ROOT
   SEARCH_ROOT=${SEARCH_ROOT:-$HOME}
   setup_git_talisman_hooks_at $SEARCH_ROOT
 }

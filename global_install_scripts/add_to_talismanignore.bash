@@ -34,7 +34,7 @@ function run() {
   read -p "Please enter pattern to add to .talismanignore (enter to abort): " IGNORE_PATTERN
   [[ -n $IGNORE_PATTERN ]] || exit 1
 
-  read -p "Please enter root directory to search for git repos (Default: ${HOME}): " SEARCH_ROOT
+  read -e -p "Please enter root directory to search for git repos (Default: ${HOME}): " SEARCH_ROOT
   SEARCH_ROOT=${SEARCH_ROOT:-$HOME}
   SEARCH_CMD="find"
   EXTRA_SEARCH_OPTS=""
