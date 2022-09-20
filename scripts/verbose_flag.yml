@@ -1,0 +1,6 @@
+short: -v
+long: --verbose
+required: false
+
+help: |-
+  Enable verbose output.

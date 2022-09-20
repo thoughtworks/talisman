@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+pushd scripts || exit
+
+bashly generate --upgrade
+
+popd || exit

@@ -70,6 +70,7 @@ function run() {
     echo "Downloading dependent scripts"
     curl --silent "${SCRIPT_BASE}/talisman_hook_script.bash" >${TEMP_DIR}/talisman_hook_script.bash
     curl --silent "${SCRIPT_BASE}/setup_talisman_hook_in_repo.bash" >${REPO_HOOK_SETUP_SCRIPT_PATH}
+    curl --silent "https://raw.githubusercontent.com/${SCRIPT_ORG_REPO}/main/cli" >${REPO_HOOK_SETUP_SCRIPT_PATH}
     chmod +x ${REPO_HOOK_SETUP_SCRIPT_PATH}
     echo "Contents of temp_dir: $(ls ${TEMP_DIR})"
   }

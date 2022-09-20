@@ -127,52 +127,19 @@ function run() {
     fi
   }
 
-  function download() {
-    OBJECT=$1
-    DOWNLOAD_URL=$(curl -Ls https://api.github.com/repos/"$INSTALL_ORG_REPO"/releases/latest |
-       grep download_url | awk '{print $2}' | tr -d '"' | grep "$OBJECT")
-
-    echo_debug "Downloading ${OBJECT} from ${DOWNLOAD_URL}"
-    curl --location --silent ${DOWNLOAD_URL} >${TEMP_DIR}/${OBJECT}
-  }
-
-  function verify_checksum() {
-    FILE_NAME=$1
-    CHECKSUM_FILE_NAME='checksums'
-    echo_debug "Verifying checksum for ${FILE_NAME}"
-    download ${CHECKSUM_FILE_NAME}
-
-    pushd ${TEMP_DIR} >/dev/null 2>&1
-    grep ${TALISMAN_BINARY_NAME} ${CHECKSUM_FILE_NAME} >${CHECKSUM_FILE_NAME}.single
-
-    if ! command -v shasum &> /dev/null; then
-      sha256sum -c ${CHECKSUM_FILE_NAME}.single
-    else
-      shasum -a 256 -c ${CHECKSUM_FILE_NAME}.single
-    fi
-    popd >/dev/null 2>&1
-    echo_debug "Checksum verification successfull!"
-    echo
-  }
-
-  function download_talisman_binary() {
-    download ${TALISMAN_BINARY_NAME}
-    verify_checksum ${TALISMAN_BINARY_NAME}
-  }
-
   function get_dependent_scripts() {
     echo_debug "Downloading dependent scripts"
     curl --silent "${SCRIPT_BASE}/talisman_hook_script.bash" >${TEMP_DIR}/talisman_hook_script.bash
+    curl --silent "https://raw.githubusercontent.com/${SCRIPT_ORG_REPO}/javier-installation-refactor/cli" >${TEMP_DIR}/cli
     curl --silent "${SCRIPT_BASE}/setup_talisman_hook_in_repo.bash" >${REPO_HOOK_SETUP_SCRIPT_PATH}
     chmod +x ${REPO_HOOK_SETUP_SCRIPT_PATH}
+    chmod +x ${TEMP_DIR}/cli
     echo_debug "Contents of temp_dir: $(ls ${TEMP_DIR})"
   }
 
   function setup_talisman() {
     # setup talisman & hook script in a central location for ease of download ($TALISMAN_SETUP_DIR)
     mkdir -p ${TALISMAN_SETUP_DIR}
-    cp ${TEMP_DIR}/${TALISMAN_BINARY_NAME} ${TALISMAN_SETUP_DIR}
-    chmod +x ${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME}
 
     sed -e "s@\${TALISMAN_BINARY}@"${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME}"@" ${TEMP_DIR}/talisman_hook_script.bash >${TALISMAN_HOOK_SCRIPT_PATH}
     chmod +x ${TALISMAN_HOOK_SCRIPT_PATH}
@@ -399,8 +366,7 @@ END_OF_SCRIPT
   # currently doesn't check if the talisman binary and the talisman hook script are upto date
   # would be good to create a separate script which does the upgrade and the initial install
   if [[ ! -x ${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME} || ! -x ${TALISMAN_HOOK_SCRIPT_PATH} || -n ${FORCE_DOWNLOAD} ]]; then
-    echo "Downloading talisman binary"
-    download_talisman_binary
+    ${TEMP_DIR}/cli configure download
     echo
     echo "Setting up talisman binary and helper script in $HOME/.talisman"
     setup_talisman
