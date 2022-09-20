@@ -48,12 +48,6 @@ function run() {
   }
   export -f echo_success
 
-  function collect_version_artifact_download_urls() {
-    curl -Ls -w %{url_effective} "https://github.com/${INSTALL_ORG_REPO}/releases/latest" | grep -Eo '/'${INSTALL_ORG_REPO}'/releases/download/.+/[^/"]+' | sed 's/^/https:\/\/github.com/' >${TEMP_DIR}/download_urls
-    echo_debug "All release artifact download urls can be found at ${TEMP_DIR}/download_urls:"
-    [[ -z "${DEBUG}" ]] && return
-    cat ${TEMP_DIR}/download_urls
-  }
 
   function operating_system() {
     OS=$(uname -s)
@@ -113,7 +107,9 @@ function run() {
   function download() {
     echo_debug "Running download()"
     OBJECT=$1
-    DOWNLOAD_URL=$(grep 'http.*'${OBJECT}'$' ${TEMP_DIR}/download_urls)
+    DOWNLOAD_URL=$(curl -Ls https://api.github.com/repos/"$INSTALL_ORG_REPO"/releases/latest |
+       grep download_url | awk '{print $2}' | tr -d '"' | grep "$OBJECT")
+
     echo_debug "Downloading ${OBJECT} from ${DOWNLOAD_URL}"
     curl --location --silent ${DOWNLOAD_URL} >${TEMP_DIR}/${OBJECT}
   }
@@ -177,7 +173,6 @@ function run() {
 
   set_talisman_binary_name
   echo "Downloading latest talisman binary..."
-  collect_version_artifact_download_urls
   download_talisman_binary
   setup_talisman
   if [ -z "$UPDATE_TYPE" ]; then
