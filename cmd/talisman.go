@@ -52,53 +52,55 @@ var options struct {
 	ShouldProfile   bool
 }
 
+var legacy *flag.FlagSet
 //var options Options
 
 func init() {
+	legacy = flag.NewFlagSet("", flag.ExitOnError)
 	log.SetOutput(os.Stderr)
 	talismanInput = os.Stdin
-	flag.BoolVarP(&options.Debug,
+	legacy.BoolVarP(&options.Debug,
 		"debug", "d", false,
 		"enable debug mode (warning: very verbose)")
-	flag.StringVarP(&options.LogLevel,
+	legacy.StringVarP(&options.LogLevel,
 		"loglevel", "l", "error",
 		"set log level for talisman (allowed values: error|info|warn|debug, default: error)")
-	flag.BoolVarP(&showVersion,
+	legacy.BoolVarP(&showVersion,
 		"version", "v", false,
 		"show current version of talisman")
-	flag.StringVarP(&options.Pattern,
+	legacy.StringVarP(&options.Pattern,
 		"pattern", "p", "",
 		"pattern (glob-like) of files to scan (ignores githooks)")
-	flag.StringVarP(&options.GitHook,
+	legacy.StringVarP(&options.GitHook,
 		"githook", "g", PrePush,
 		"either pre-push or pre-commit")
-	flag.BoolVarP(&options.Scan,
+	legacy.BoolVarP(&options.Scan,
 		"scan", "s", false,
 		"scanner scans the git commit history for potential secrets")
-	flag.BoolVarP(&options.IgnoreHistory,
+	legacy.BoolVarP(&options.IgnoreHistory,
 		"ignoreHistory", "^", false,
 		"scanner scans all files on current head, will not scan through git commit history")
-	flag.StringVarP(&options.Checksum,
+	legacy.StringVarP(&options.Checksum,
 		"checksum", "c", "",
 		"checksum calculator calculates checksum and suggests .talismanrc entry")
-	flag.StringVarP(&options.ReportDirectory,
+	legacy.StringVarP(&options.ReportDirectory,
 		"reportDirectory", "r", "talisman_report",
 		"directory where the scan report will be stored")
-	flag.BoolVarP(&options.ScanWithHtml,
+	legacy.BoolVarP(&options.ScanWithHtml,
 		"scanWithHtml", "w", false,
 		"generate html report (**Make sure you have installed talisman_html_report to use this, as mentioned in talisman Readme**)")
-	flag.BoolVarP(&interactive,
+	legacy.BoolVarP(&interactive,
 		"interactive", "i", false,
 		"interactively update talismanrc (only makes sense with -g/--githook)")
-	flag.BoolVarP(&options.ShouldProfile,
+	legacy.BoolVarP(&options.ShouldProfile,
 		"profile", "f", false,
 		"profile cpu and memory usage of talisman")
 }
 
 func main() {
-	flag.Parse()
+	legacy.Parse(os.Args)
 
-	if flag.NFlag() == 0 {
+	if legacy.NFlag() == 0 {
 		flag.PrintDefaults()
 		os.Exit(EXIT_SUCCESS)
 	}
