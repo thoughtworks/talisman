@@ -40,7 +40,7 @@ func RepoLocatedAt(path string) GitRepo {
 
 // GetDiffForStagedFiles gets all the staged files and collects the diff section in each file
 func (repo GitRepo) GetDiffForStagedFiles() []Addition {
-	stagedContent := repo.executeRepoCommand("git", "diff", "--staged")
+	stagedContent := repo.executeRepoCommand("git", "diff", "--staged", "--src-prefix=a/", "--dst-prefix=b/")
 	content := strings.TrimSpace(string(stagedContent))
 	lines := strings.Split(content, "\n")
 	result := make([]Addition, 0)

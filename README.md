@@ -518,7 +518,7 @@ Talisman CLI tool `talisman` also comes with the capability to provide detailed 
 
 * `talisman --scanWithHtml`
 
-This will scan the repository and create a folder `talisman_html_report` under the the scanned repository. We need to start an HTTP server inside this repository to access the report.Below is a recommended approach to start a HTTP server:
+This will scan the repository and create a folder `talisman_html_report` under the scanned repository. We need to start an HTTP server inside this repository to access the report.Below is a recommended approach to start a HTTP server:
 
 * `python -m SimpleHTTPServer <port> (eg: 8000)`
 

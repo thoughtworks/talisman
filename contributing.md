@@ -38,7 +38,7 @@ To send in a pull request
 
 1. Fork the repo.
 2. Create a new feature branch based off the master branch.
-3. Provide the commit message with the the issue number and a proper description.
+3. Provide the commit message with the issue number and a proper description.
 4. Ensure that all the tests pass.
 5. Submit the pull request.
 
