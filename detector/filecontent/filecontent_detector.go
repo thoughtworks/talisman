@@ -119,6 +119,7 @@ func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentA
 				data := []byte(content)
 				addition.Data = data
 			}
+			addition.Data = []byte(talismanRC.FilterAllowedPatternsFromAddition(addition))
 			for _, ct := range contentTypes {
 				contents <- content{
 					name:        addition.Name,

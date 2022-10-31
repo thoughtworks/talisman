@@ -11,7 +11,7 @@ fileignoreconfig:
   ignore_detectors:
   - filecontent
 - filename: detector/filecontent/filecontent_detector_test.go
-  checksum: affb25839a87476dcef4f4169ccb9b54b2d2f2437cef3aca24f4d3b69d5886c5
+  checksum: 05d00bb99452d37ab45de28c9e074357e5be22a80d95dad1b2cdd01074b25b2a
 - filename: detector/filename/filename_detector.go
   checksum: 5404565683a7e812fa98ff2d14237c4d1ba7dc5b4aca2dd3ba663b33dc8ddae7
 - filename: detector/filename/filename_detector_test.go
@@ -32,6 +32,8 @@ fileignoreconfig:
   checksum: bf0da9b8b6f779f502564166323a903a49b56b9d8df2597729a5b96c8f066074
 - filename: install.sh
   checksum: c909f6a1caefba3f196d489f9262608044be596a44793c2173ec55b98ecec649
+- filename: talismanrc/talismanrc_test.go
+  checksum: eab40d0745dc215267da86ef7f926be77c4d46e9a248dadbc7e52aa186e82853
 scopeconfig:
 - scope: go
 version: "1.0"

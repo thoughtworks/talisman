@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"testing"
 
 	"talisman/detector/severity"
@@ -45,6 +46,31 @@ func TestShouldIgnoreUnformattedFiles(t *testing.T) {
 		assert.True(t, talismanRC.AcceptsAll(), "Expected commented line '%s' to result in no ignore patterns", s)
 	}
 	setRepoFileReader(defaultRepoFileReader)
+}
+
+func TestShouldFilterAllowedPatternsFromAddition(t *testing.T) {
+	const hex string = "68656C6C6F20776F726C6421"
+	const fileContent string = "Prefix content" + hex
+	gitRepoAddition1 := testAdditionWithData("file1", []byte(fileContent))
+	talismanrc := &TalismanRC{AllowedPatterns: []*regexp.Regexp{regexp.MustCompile(hex)}}
+
+	fileContentFiltered := talismanrc.FilterAllowedPatternsFromAddition(gitRepoAddition1)
+
+	assert.Equal(t, fileContentFiltered, "Prefix content")
+}
+
+func TestShouldFilterAllowedPatternsFromAdditionBasedOnFileConfig(t *testing.T) {
+	const hexContent string = "68656C6C6F20776F726C6421"
+	const fileContent string = "Prefix content" + hexContent
+	gitRepoAddition1 := testAdditionWithData("file1", []byte(fileContent))
+	gitRepoAddition2 := testAdditionWithData("file2", []byte(fileContent))
+	talismanrc := createTalismanRCWithFileIgnores("file1", "somedetector", []string{hexContent})
+
+	fileContentFiltered1 := talismanrc.FilterAllowedPatternsFromAddition(gitRepoAddition1)
+	fileContentFiltered2 := talismanrc.FilterAllowedPatternsFromAddition(gitRepoAddition2)
+
+	assert.Equal(t, fileContentFiltered1, "Prefix content")
+	assert.Equal(t, fileContentFiltered2, fileContent)
 }
 
 func TestShouldConvertThresholdToValue(t *testing.T) {
@@ -142,7 +168,7 @@ func assertDenies(line, ignoreDetector string, path string, t *testing.T) {
 }
 
 func assertDeniesDetector(line, ignoreDetector string, path string, detectorName string, t *testing.T) {
-	assert.True(t, createTalismanRCWithFileIgnores(line, ignoreDetector).Deny(testAddition(path), detectorName), "%s is expected to deny a file named %s.", line, path)
+	assert.True(t, createTalismanRCWithFileIgnores(line, ignoreDetector, []string{}).Deny(testAddition(path), detectorName), "%s is expected to deny a file named %s.", line, path)
 }
 
 func assertAccepts(line, ignoreDetector string, path string, t *testing.T, detectorNames ...string) {
@@ -150,18 +176,25 @@ func assertAccepts(line, ignoreDetector string, path string, t *testing.T, detec
 }
 
 func assertAcceptsDetector(line, ignoreDetector string, path string, detectorName string, t *testing.T) {
-	assert.True(t, createTalismanRCWithFileIgnores(line, ignoreDetector).Accept(testAddition(path), detectorName), "%s is expected to accept a file named %s.", line, path)
+	assert.True(t, createTalismanRCWithFileIgnores(line, ignoreDetector, []string{}).Accept(testAddition(path), detectorName), "%s is expected to accept a file named %s.", line, path)
 }
 
 func testAddition(path string) gitrepo.Addition {
 	return gitrepo.NewAddition(path, make([]byte, 0))
 }
 
-func createTalismanRCWithFileIgnores(filename string, detector string) *TalismanRC {
+func testAdditionWithData(path string, content []byte) gitrepo.Addition {
+	return gitrepo.NewAddition(path, content)
+}
+
+func createTalismanRCWithFileIgnores(filename string, detector string, allowedPatterns []string) *TalismanRC {
 	fileIgnoreConfig := &FileIgnoreConfig{}
 	fileIgnoreConfig.FileName = filename
 	if detector != "" {
 		fileIgnoreConfig.IgnoreDetectors = []string{detector}
+	}
+	if len(allowedPatterns) != 0 {
+		fileIgnoreConfig.AllowedPatterns = allowedPatterns
 	}
 
 	return &TalismanRC{IgnoreConfigs: []IgnoreConfig{fileIgnoreConfig}}
