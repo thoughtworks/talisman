@@ -2,6 +2,7 @@ package filecontent
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"talisman/detector/helpers"
 	"talisman/detector/severity"
@@ -20,10 +21,10 @@ var emptyTalismanRC = &talismanrc.TalismanRC{IgnoreConfigs: []talismanrc.IgnoreC
 var defaultChecksumCompareUtility = helpers.
 	NewChecksumCompare(nil, utility.MakeHasher("default", "."), emptyTalismanRC)
 var dummyCallback = func() {}
+var filename = "filename"
 
 func TestShouldNotFlagSafeText(t *testing.T) {
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
-	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte("prettySafe"))}
 
 	NewFileContentDetector(emptyTalismanRC).
@@ -33,7 +34,6 @@ func TestShouldNotFlagSafeText(t *testing.T) {
 
 func TestShouldIgnoreFileIfNeeded(t *testing.T) {
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
-	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte("prettySafe"))}
 	talismanRCIWithFilenameIgnore := &talismanrc.TalismanRC{
 		IgnoreConfigs: []talismanrc.IgnoreConfig{
@@ -59,7 +59,6 @@ func TestShouldNotFlag4CharSafeText(t *testing.T) {
 		 the encoded value of i· rather just a plain abcd input see
 	stackoverflow.com/questions/8571501/how-to-check-whether-the-string-is-base64-encoded-or-not#comment23919648_8571649*/
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
-	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte("abcd"))}
 
 	NewFileContentDetector(emptyTalismanRC).
@@ -71,7 +70,6 @@ func TestShouldNotFlagLowEntropyBase64Text(t *testing.T) {
 	const lowEntropyString string = "YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWEK"
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	content := []byte(lowEntropyString)
-	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 
 	NewFileContentDetector(emptyTalismanRC).
@@ -82,7 +80,6 @@ func TestShouldNotFlagLowEntropyBase64Text(t *testing.T) {
 func TestShouldFlagPotentialAWSSecretKeys(t *testing.T) {
 	const awsSecretAccessKey string = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
-	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(awsSecretAccessKey))}
 	filePath := additions[0].Path
 
@@ -99,7 +96,6 @@ func TestShouldFlagPotentialAWSSecretKeys(t *testing.T) {
 func TestShouldFlagPotentialSecretWithoutTrimmingWhenLengthLessThan50Characters(t *testing.T) {
 	const secret string = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9asdfa"
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
-	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(secret))}
 	filePath := additions[0].Path
 
@@ -117,7 +113,6 @@ func TestShouldFlagPotentialJWT(t *testing.T) {
 		"OiJDaHJpcyBTZXZpbGxlamEiLCJhZG1pbiI6dHJ1ZX0.03f329983b86f7d9a9f5fef85305880101d5e302afafa20154d094b229f757"
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	content := []byte(jwt)
-	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 	filePath := additions[0].Path
 
@@ -141,7 +136,6 @@ func TestShouldFlagPotentialSecretsWithinJavaCode(t *testing.T) {
 		"}"
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	content := []byte(dangerousJavaCode)
-	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 	filePath := additions[0].Path
 
@@ -162,7 +156,6 @@ func TestShouldNotFlagPotentialSecretsWithinSafeJavaCode(t *testing.T) {
 		"	}\r\n\r\n" +
 		"}"
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
-	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(safeJavaCode))}
 
 	NewFileContentDetector(emptyTalismanRC).
@@ -173,7 +166,6 @@ func TestShouldNotFlagPotentialSecretsWithinSafeJavaCode(t *testing.T) {
 func TestShouldNotFlagPotentialSecretsWithinSafeLongMethodName(t *testing.T) {
 	safeLongMethodName := "TestBase64DetectorShouldNotDetectLongMethodNamesEvenWithRidiculousHighEntropyWordsMightExist"
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
-	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(safeLongMethodName))}
 
 	NewFileContentDetector(emptyTalismanRC).
@@ -184,7 +176,6 @@ func TestShouldNotFlagPotentialSecretsWithinSafeLongMethodName(t *testing.T) {
 func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
 	const hex string = "68656C6C6F20776F726C6421"
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
-	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(hex))}
 	filePath := additions[0].Path
 
@@ -198,7 +189,6 @@ func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
 func TestShouldNotFlagPotentialCreditCardNumberIfAboveThreshold(t *testing.T) {
 	const creditCardNumber string = "340000000000009"
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
-	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(creditCardNumber))}
 	talismanRCWithThreshold := &talismanrc.TalismanRC{Threshold: severity.High}
 	checksumCompareWithThreshold := helpers.
@@ -210,12 +200,44 @@ func TestShouldNotFlagPotentialCreditCardNumberIfAboveThreshold(t *testing.T) {
 	assert.False(t, results.HasFailures(), "Expected no base64 detection when threshold is higher")
 }
 
+func TestShouldNotFlagPotentialSecretsIfIgnored(t *testing.T) {
+	const hex string = "68656C6C6F20776F726C6421"
+	talismanRCWithIgnores := &talismanrc.TalismanRC{
+		AllowedPatterns: []*regexp.Regexp{regexp.MustCompile("[0-9a-fA-F]*")}}
+	results := helpers.NewDetectionResults(talismanrc.HookMode)
+	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(hex))}
+
+	NewFileContentDetector(emptyTalismanRC).
+		Test(defaultChecksumCompareUtility, additions, talismanRCWithIgnores, results, dummyCallback)
+
+	assert.False(t, results.HasFailures(), "Expected file ignore allowed pattern for hex text")
+}
+
+func TestResultsShouldNotFlagCreditCardNumberIfSpecifiedInFileIgnores(t *testing.T) {
+	const creditCardNumber string = "340000000000009"
+	results := helpers.NewDetectionResults(talismanrc.HookMode)
+	fileIgnoreConfig := &talismanrc.FileIgnoreConfig{
+		FileName: filename, Checksum: "",
+		AllowedPatterns: []string{creditCardNumber},
+	}
+	talismanRCWithFileIgnore := &talismanrc.TalismanRC{
+		IgnoreConfigs:   []talismanrc.IgnoreConfig{fileIgnoreConfig},
+	}
+	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(creditCardNumber))}
+
+	NewFileContentDetector(emptyTalismanRC).
+		Test(defaultChecksumCompareUtility, additions, talismanRCWithFileIgnore, results, dummyCallback)
+	
+	assert.False(t, results.HasFailures(), "Expected the creditcard number to be ignored based on talisman RC")
+
+}
+
+
 func TestResultsShouldContainHexTextsIfHexAndBase64ExistInFile(t *testing.T) {
 	const hex string = "68656C6C6F20776F726C6421"
 	const base64 string = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 	const hexAndBase64 = hex + "\n" + base64
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
-	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(hexAndBase64))}
 	filePath := additions[0].Path
 
@@ -232,7 +254,6 @@ func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) 
 	const base64 string = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
 	const hexAndBase64 = hex + "\n" + base64
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
-	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(hexAndBase64))}
 	filePath := additions[0].Path
 
@@ -248,7 +269,6 @@ func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) 
 func TestResultsShouldContainCreditCardNumberIfCreditCardNumberExistInFile(t *testing.T) {
 	const creditCardNumber string = "340000000000009"
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
-	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(creditCardNumber))}
 	filePath := additions[0].Path
 

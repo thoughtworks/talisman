@@ -50,7 +50,7 @@ func (detector PatternDetector) Test(comparator helpers.ChecksumCompare, current
 				ignoredFilePaths <- addition.Path
 				return
 			}
-			detections := detector.secretsPattern.check(processAllowedPatterns(addition, ignoreConfig), ignoreConfig.Threshold)
+			detections := detector.secretsPattern.check(ignoreConfig.FilterAllowedPatternsFromAddition(addition), ignoreConfig.Threshold)
 			matches <- match{name: addition.Name, path: addition.Path, detections: detections, commits: addition.Commits}
 		}(addition)
 	}
@@ -75,24 +75,6 @@ func (detector PatternDetector) Test(comparator helpers.ChecksumCompare, current
 			detector.processIgnore(ignore, result)
 		}
 	}
-}
-
-func processAllowedPatterns(addition gitrepo.Addition, tRC *talismanrc.TalismanRC) string {
-	additionPathAsString := string(addition.Path)
-	// Processing global allowed patterns
-	for _, pattern := range tRC.AllowedPatterns {
-		addition.Data = pattern.ReplaceAll(addition.Data, []byte(""))
-	}
-
-	// Processing allowed patterns based on file path
-	for _, ignoreConfig := range tRC.IgnoreConfigs {
-		if ignoreConfig.GetFileName() == additionPathAsString {
-			for _, pattern := range ignoreConfig.GetAllowedPatterns() {
-				addition.Data = pattern.ReplaceAll(addition.Data, []byte(""))
-			}
-		}
-	}
-	return string(addition.Data)
 }
 
 func (detector PatternDetector) processIgnore(ignoredFilePath gitrepo.FilePath, result *helpers.DetectionResults) {
