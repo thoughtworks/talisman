@@ -135,6 +135,14 @@ function run() {
     verify_checksum ${TALISMAN_BINARY_NAME}
   }
 
+  function verify_binary_is_working() {
+    chmod +x ${TEMP_DIR}/${TALISMAN_BINARY_NAME}
+    if ! ${TEMP_DIR}/${TALISMAN_BINARY_NAME} --version; then
+        echo_error "Binary is not working, SKIPPING UPGRADE, Please open issue on github with your OS name and version"
+        exit 0
+    fi
+  }
+
   function download_talisman_hook_script() {
     echo_debug "Running download_talisman_hook_script"
     curl --silent https://raw.githubusercontent.com/${INSTALL_ORG_REPO}/master/global_install_scripts/talisman_hook_script.bash >${TEMP_DIR}/talisman_hook_script
@@ -174,6 +182,7 @@ function run() {
   set_talisman_binary_name
   echo "Downloading latest talisman binary..."
   download_talisman_binary
+  verify_binary_is_working
   setup_talisman
   if [ -z "$UPDATE_TYPE" ]; then
     echo "Downloading latest talisman hook script..."
