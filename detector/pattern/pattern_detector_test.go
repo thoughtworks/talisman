@@ -29,6 +29,9 @@ func TestShouldDetectPasswordPatterns(t *testing.T) {
 		shouldPassDetectionOfSecretPattern(filename, []byte(values[i]+"=UnsafeString"), t)
 		shouldPassDetectionOfSecretPattern(filename, []byte("."+values[i]+"=randomStringGoesHere}"), t)
 		shouldPassDetectionOfSecretPattern(filename, []byte(":"+values[i]+" randomStringGoesHere"), t)
+		shouldPassDetectionOfSecretPattern(filename, []byte(values[i]+" ,\"randomStringGoesHere\""), t)
+		shouldPassDetectionOfSecretPattern(filename, []byte("'" + values[i]+"' ,\"randomStringGoesHere\""), t)
+		shouldPassDetectionOfSecretPattern(filename, []byte("\"" + values[i]+"\" ,\"randomStringGoesHere\""), t)
 		shouldPassDetectionOfSecretPattern(filename,
 			[]byte("\"SERVER_"+strings.ToUpper(values[i])+"\" : UnsafeString"),
 			t)
@@ -55,7 +58,7 @@ func TestShouldDetectPasswordPatterns(t *testing.T) {
 
 	shouldFailDetectionOfSecretPattern(filename, []byte("\"pAsSWoRD\" :1234567"), t)
 	shouldFailDetectionOfSecretPattern(filename, []byte(`setPassword("12345678")`), t)
-	shouldFailDetectionOfSecretPattern(filename, []byte(`setenv(password, "12345678")`), t)
+	shouldFailDetectionOfSecretPattern(filename, []byte(`setenv(password,123456)`), t)
 	shouldFailDetectionOfSecretPattern(filename, []byte(`random=12345678)`), t)
 }
 
