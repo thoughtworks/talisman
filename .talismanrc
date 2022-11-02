@@ -21,7 +21,7 @@ fileignoreconfig:
 - filename: detector/pattern/match_pattern_test.go
   checksum: c95b8106ced5ad34ec1d00773a05f8789715034a734197c93cdaa4ed5036c177
 - filename: detector/pattern/pattern_detector.go
-  checksum: 98c4edddc95b4b974ed9b3e4f48079f2503b5c85309fadf37878a3d28de31e72
+  checksum: 78cddc944d4092ae2e88535d04f05281784848a990fb55a9d38339f29080a239
 - filename: detector/pattern/pattern_detector_test.go
   checksum: 4d70b790f28f2d23d506f808d489aa43f1efd2514549ae6a83a535e1223382e3
 - filename: detector/pattern_detector_test.go
