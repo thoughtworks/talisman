@@ -6,7 +6,7 @@ pushd dist || exit
 
 binary=$1
 
-if [[ $binary == *"arm"* ]]; then
+if [[ $binary == *"darwin"* -o  $binary == *"arm"* ]]; then
   exit 0
 fi
 
