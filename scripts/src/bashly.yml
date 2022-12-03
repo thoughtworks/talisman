@@ -35,6 +35,17 @@ commands:
             default: thoughtworks/talisman
             help: The repo org to download from
 
+      - name: update
+        help: Update talisman binaries if newer version is available
+
+        flags:
+          - import: verbose_flag.yml
+          - arg: repo-org
+            short: -r
+            long: --repo-org
+            default: thoughtworks/talisman
+            help: The repo org to download from
+
       - name: search-repos
         help: Search for git repositories,
 
