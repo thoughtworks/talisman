@@ -9,5 +9,5 @@ current_version=$(talisman --version | awk '{print $2}')
 
 
 if [[ "$latest_version" != "$current_version" ]]; then
-    $(source_dir)/cli configure download
+    $(source_dir)/talisman-cli configure download
 fi

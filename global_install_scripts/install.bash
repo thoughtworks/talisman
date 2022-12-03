@@ -72,7 +72,6 @@ function run() {
   }
   export -f echo_success
 
-
   function operating_system() {
     OS=$(uname -s)
     case $OS in
@@ -130,10 +129,14 @@ function run() {
   function get_dependent_scripts() {
     echo_debug "Downloading dependent scripts"
     curl --silent "${SCRIPT_BASE}/talisman_hook_script.bash" >${TEMP_DIR}/talisman_hook_script.bash
-    curl --silent "https://raw.githubusercontent.com/${SCRIPT_ORG_REPO}/javier-installation-refactor/cli" >${TEMP_DIR}/cli
-    curl --silent "${SCRIPT_BASE}/setup_talisman_hook_in_repo.bash" >${REPO_HOOK_SETUP_SCRIPT_PATH}
-    chmod +x ${REPO_HOOK_SETUP_SCRIPT_PATH}
-    chmod +x ${TEMP_DIR}/cli
+    #    cat ./global_install_scripts/talisman_hook_script.bash >${TEMP_DIR}/talisman_hook_script.bash
+
+    mkdir -p $HOME/.talisman/bin
+
+    curl --silent "https://raw.githubusercontent.com/${SCRIPT_ORG_REPO}/javier-installation-refactor/talisman-cli" >${TEMP_DIR}/talisman-cli
+    #    cat ./talisman-cli >$HOME/.talisman/bin/talisman-cli
+    chmod +x $HOME/.talisman/bin/talisman-cli
+
     echo_debug "Contents of temp_dir: $(ls ${TEMP_DIR})"
   }
 
@@ -316,9 +319,11 @@ function run() {
       EXTRA_SEARCH_OPTS="-xdev \( -path '/private/var' -prune \) -o"
     fi
     EXCEPTIONS_FILE=${TEMP_DIR}/pre-existing-hooks.paths
+    #    EXCEPTIONS_FILE=${HOME}/pre-existing-hooks.paths
     touch ${EXCEPTIONS_FILE}
 
-    CMD_STRING="${SUDO_PREFIX} ${SEARCH_CMD} ${SEARCH_ROOT} ${EXTRA_SEARCH_OPTS} -name .git -type d -exec ${REPO_HOOK_SETUP_SCRIPT_PATH} ${TALISMAN_HOOK_SCRIPT_PATH} ${EXCEPTIONS_FILE} {} ${HOOK_SCRIPT} \;"
+    CMD_STRING="${SUDO_PREFIX} ${SEARCH_CMD} ${SEARCH_ROOT} ${EXTRA_SEARCH_OPTS} -name .git -type d -exec "$HOME/.talisman/bin/talisman-cli" configure hooks --hook-script-path ${TALISMAN_HOOK_SCRIPT_PATH} -e ${EXCEPTIONS_FILE}  --git-dir {} --hook-name ${HOOK_SCRIPT} \;"
+    #    CMD_STRING="${SUDO_PREFIX} ${SEARCH_CMD} ${SEARCH_ROOT} ${EXTRA_SEARCH_OPTS} -name .git -type d -exec ${REPO_HOOK_SETUP_SCRIPT_PATH} ${TALISMAN_HOOK_SCRIPT_PATH} ${EXCEPTIONS_FILE} {} ${HOOK_SCRIPT} \;"
     echo_debug "EXECUTING: ${CMD_STRING}"
     eval "${CMD_STRING}" || true
 
@@ -362,14 +367,17 @@ END_OF_SCRIPT
 
   set_talisman_binary_name
   get_dependent_scripts
+  setup_talisman
+
+  #  ${TEMP_DIR}/talisman-cli configure download-cli
+  ${TALISMAN_SETUP_DIR}/talisman-cli configure download-cli
 
   # currently doesn't check if the talisman binary and the talisman hook script are upto date
   # would be good to create a separate script which does the upgrade and the initial install
-  if [[ ! -x ${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME} || ! -x ${TALISMAN_HOOK_SCRIPT_PATH} || -n ${FORCE_DOWNLOAD} ]]; then
-    ${TEMP_DIR}/cli configure download
-    echo
+  if [[ ! -x ${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME} || ! -x ${TALISMAN_SETUP_DIR}/talisman-cli || ! -x ${TALISMAN_HOOK_SCRIPT_PATH} || -n ${FORCE_DOWNLOAD} ]]; then
+    ${TALISMAN_SETUP_DIR}/talisman-cli configure download
     echo "Setting up talisman binary and helper script in $HOME/.talisman"
-    setup_talisman
+
   fi
 
   echo "Setting up ${HOOK_SCRIPT} hook in git template directory"
@@ -381,7 +389,7 @@ END_OF_SCRIPT
     read -e -p "Please enter root directory to search for git repos (Default: ${HOME}): " SEARCH_ROOT
   fi
   SEARCH_ROOT=${SEARCH_ROOT:-$HOME}
-  setup_git_talisman_hooks_at $SEARCH_ROOT
+  setup_git_talisman_hooks_at "$SEARCH_ROOT"
 }
 
 run $0 $@

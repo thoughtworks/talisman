@@ -12,11 +12,12 @@ temp_dir=$(mktemp -d)
 cyan_ln "Downloading talisman binary."
 mkdir -p $HOME/.talisman/bin
 curl --location --silent "${download_url}" >"$temp_dir"/"$binary_name"
-curl --location --silent "${checksum_url}" | grep "$binary_name"  >"$temp_dir"/checksums
+curl --location --silent "${checksum_url}" | grep "$binary_name" >"$temp_dir"/checksums
 
 pushd "$temp_dir" 2>&1 >/dev/null || exit
 sha256sum -c checksums
 
+$(source_dir)/talisman-cli configure download-cli
 
 if [ $? -eq 0 ]; then
   mv "$temp_dir"/"$binary_name" "$HOME"/.talisman/bin/talisman

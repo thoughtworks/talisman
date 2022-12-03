@@ -1,6 +1,6 @@
-name: cli
+name: talisman-cli
 help: Development Utilities
-version: 0.2.0
+version: 0.2.5
 
 commands:
 
@@ -16,16 +16,48 @@ commands:
         help: Configure talisman hooks
 
         flags:
-          - arg: hook
+          - arg: hook-name
             short: -H
-            long: --hook
+            long: --hook-name
             help: Which git hook to install
             required: true
             allowed: [ pre-commit, pre-push ]
+          - arg: hook-script-path
+            long: --hook-script-path
+            help: Path to the talisman hook script
+            required: true
+          - arg: template-path
+            short: -t
+            long: --template-path
+            help: Path to the template file
+            default: $HOME/.git-template
+          - arg: exceptions-file-path
+            short: -e
+            long: --exceptions-file-path
+            help: Path to the exceptions file
+            required: true
+          - arg: git-dir
+            long: --git-dir
+            help: Path to the git directory
+            required: true
+
+
           - import: verbose_flag.yml
+
 
       - name: download
         help: Download talisman binaries
+
+        flags:
+          - import: verbose_flag.yml
+          - arg: repo-org
+            short: -r
+            long: --repo-org
+            default: thoughtworks/talisman
+            help: The repo org to download from
+
+      - name: download-cli
+        help: Download talisman cli scripts
 
         flags:
           - import: verbose_flag.yml

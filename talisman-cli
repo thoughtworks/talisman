@@ -16,27 +16,28 @@ version_command() {
 }
 
 # :command.usage
-cli_usage() {
+talisman_cli_usage() {
   if [[ -n $long_usage ]]; then
-    printf "cli - Development Utilities\n"
+    printf "talisman-cli - Development Utilities\n"
     echo
 
   else
-    printf "cli - Development Utilities\n"
+    printf "talisman-cli - Development Utilities\n"
     echo
 
   fi
 
   printf "Usage:\n"
-  printf "  cli COMMAND\n"
-  printf "  cli [COMMAND] --help | -h\n"
-  printf "  cli --version | -v\n"
+  printf "  talisman-cli COMMAND\n"
+  printf "  talisman-cli [COMMAND] --help | -h\n"
+  printf "  talisman-cli --version | -v\n"
   echo
   # :command.usage_commands
   printf "Environment Commands:\n"
   echo "  configure                Configure development environment"
   echo "  configure hooks          Configure talisman hooks"
   echo "  configure download       Download talisman binaries"
+  echo "  configure download-cli   Download talisman cli scripts"
   echo "  configure update         Update talisman binaries if newer version is available"
   echo "  configure search-repos   Search for git repositories,"
   echo
@@ -60,13 +61,13 @@ cli_usage() {
 }
 
 # :command.usage
-cli_configure_usage() {
+talisman_cli_configure_usage() {
   if [[ -n $long_usage ]]; then
-    printf "cli configure - Configure development environment\n"
+    printf "talisman-cli configure - Configure development environment\n"
     echo
 
   else
-    printf "cli configure - Configure development environment\n"
+    printf "talisman-cli configure - Configure development environment\n"
     echo
 
   fi
@@ -75,13 +76,14 @@ cli_configure_usage() {
   echo
 
   printf "Usage:\n"
-  printf "  cli configure COMMAND\n"
-  printf "  cli configure [COMMAND] --help | -h\n"
+  printf "  talisman-cli configure COMMAND\n"
+  printf "  talisman-cli configure [COMMAND] --help | -h\n"
   echo
   # :command.usage_commands
   printf "Commands:\n"
   echo "  hooks          Configure talisman hooks"
   echo "  download       Download talisman binaries"
+  echo "  download-cli   Download talisman cli scripts"
   echo "  update         Update talisman binaries if newer version is available"
   echo "  search-repos   Search for git repositories,"
   echo
@@ -99,20 +101,20 @@ cli_configure_usage() {
 }
 
 # :command.usage
-cli_configure_hooks_usage() {
+talisman_cli_configure_hooks_usage() {
   if [[ -n $long_usage ]]; then
-    printf "cli configure hooks - Configure talisman hooks\n"
+    printf "talisman-cli configure hooks - Configure talisman hooks\n"
     echo
 
   else
-    printf "cli configure hooks - Configure talisman hooks\n"
+    printf "talisman-cli configure hooks - Configure talisman hooks\n"
     echo
 
   fi
 
   printf "Usage:\n"
-  printf "  cli configure hooks [OPTIONS]\n"
-  printf "  cli configure hooks --help | -h\n"
+  printf "  talisman-cli configure hooks [OPTIONS]\n"
+  printf "  talisman-cli configure hooks --help | -h\n"
   echo
 
   # :command.long_usage
@@ -126,12 +128,33 @@ cli_configure_hooks_usage() {
 
     # :command.usage_flags
     # :flag.usage
-    echo "  --hook, -H HOOK (required)"
+    echo "  --hook-name, -H HOOK-NAME (required)"
     printf "    Which git hook to install\n"
     printf "    Allowed: pre-commit, pre-push\n"
     echo
 
     # :flag.usage
+    echo "  --hook-script-path HOOK-SCRIPT-PATH (required)"
+    printf "    Path to the talisman hook script\n"
+    echo
+
+    # :flag.usage
+    echo "  --template-path, -t TEMPLATE-PATH"
+    printf "    Path to the template file\n"
+    printf "    Default: $HOME/.git-template\n"
+    echo
+
+    # :flag.usage
+    echo "  --exceptions-file-path, -e EXCEPTIONS-FILE-PATH (required)"
+    printf "    Path to the exceptions file\n"
+    echo
+
+    # :flag.usage
+    echo "  --git-dir GIT-DIR (required)"
+    printf "    Path to the git directory\n"
+    echo
+
+    # :flag.usage
     echo "  --verbose, -v"
     printf "    Enable verbose output.\n"
     echo
@@ -140,20 +163,20 @@ cli_configure_hooks_usage() {
 }
 
 # :command.usage
-cli_configure_download_usage() {
+talisman_cli_configure_download_usage() {
   if [[ -n $long_usage ]]; then
-    printf "cli configure download - Download talisman binaries\n"
+    printf "talisman-cli configure download - Download talisman binaries\n"
     echo
 
   else
-    printf "cli configure download - Download talisman binaries\n"
+    printf "talisman-cli configure download - Download talisman binaries\n"
     echo
 
   fi
 
   printf "Usage:\n"
-  printf "  cli configure download [OPTIONS]\n"
-  printf "  cli configure download --help | -h\n"
+  printf "  talisman-cli configure download [OPTIONS]\n"
+  printf "  talisman-cli configure download --help | -h\n"
   echo
 
   # :command.long_usage
@@ -181,20 +204,20 @@ cli_configure_download_usage() {
 }
 
 # :command.usage
-cli_configure_update_usage() {
+talisman_cli_configure_download_cli_usage() {
   if [[ -n $long_usage ]]; then
-    printf "cli configure update - Update talisman binaries if newer version is available\n"
+    printf "talisman-cli configure download-cli - Download talisman cli scripts\n"
     echo
 
   else
-    printf "cli configure update - Update talisman binaries if newer version is available\n"
+    printf "talisman-cli configure download-cli - Download talisman cli scripts\n"
     echo
 
   fi
 
   printf "Usage:\n"
-  printf "  cli configure update [OPTIONS]\n"
-  printf "  cli configure update --help | -h\n"
+  printf "  talisman-cli configure download-cli [OPTIONS]\n"
+  printf "  talisman-cli configure download-cli --help | -h\n"
   echo
 
   # :command.long_usage
@@ -222,20 +245,61 @@ cli_configure_update_usage() {
 }
 
 # :command.usage
-cli_configure_search_repos_usage() {
+talisman_cli_configure_update_usage() {
   if [[ -n $long_usage ]]; then
-    printf "cli configure search-repos - Search for git repositories,\n"
+    printf "talisman-cli configure update - Update talisman binaries if newer version is available\n"
     echo
 
   else
-    printf "cli configure search-repos - Search for git repositories,\n"
+    printf "talisman-cli configure update - Update talisman binaries if newer version is available\n"
     echo
 
   fi
 
   printf "Usage:\n"
-  printf "  cli configure search-repos [OPTIONS]\n"
-  printf "  cli configure search-repos --help | -h\n"
+  printf "  talisman-cli configure update [OPTIONS]\n"
+  printf "  talisman-cli configure update --help | -h\n"
+  echo
+
+  # :command.long_usage
+  if [[ -n $long_usage ]]; then
+    printf "Options:\n"
+
+    # :command.usage_fixed_flags
+    echo "  --help, -h"
+    printf "    Show this help\n"
+    echo
+
+    # :command.usage_flags
+    # :flag.usage
+    echo "  --verbose, -v"
+    printf "    Enable verbose output.\n"
+    echo
+
+    # :flag.usage
+    echo "  --repo-org, -r REPO-ORG"
+    printf "    The repo org to download from\n"
+    printf "    Default: thoughtworks/talisman\n"
+    echo
+
+  fi
+}
+
+# :command.usage
+talisman_cli_configure_search_repos_usage() {
+  if [[ -n $long_usage ]]; then
+    printf "talisman-cli configure search-repos - Search for git repositories,\n"
+    echo
+
+  else
+    printf "talisman-cli configure search-repos - Search for git repositories,\n"
+    echo
+
+  fi
+
+  printf "Usage:\n"
+  printf "  talisman-cli configure search-repos [OPTIONS]\n"
+  printf "  talisman-cli configure search-repos --help | -h\n"
   echo
 
   # :command.long_usage
@@ -262,20 +326,20 @@ cli_configure_search_repos_usage() {
 }
 
 # :command.usage
-cli_run_usage() {
+talisman_cli_run_usage() {
   if [[ -n $long_usage ]]; then
-    printf "cli run - Run talisman git hook\n"
+    printf "talisman-cli run - Run talisman git hook\n"
     echo
 
   else
-    printf "cli run - Run talisman git hook\n"
+    printf "talisman-cli run - Run talisman git hook\n"
     echo
 
   fi
 
   printf "Usage:\n"
-  printf "  cli run [OPTIONS]\n"
-  printf "  cli run --help | -h\n"
+  printf "  talisman-cli run [OPTIONS]\n"
+  printf "  talisman-cli run --help | -h\n"
   echo
 
   # :command.long_usage
@@ -2653,13 +2717,13 @@ set +euo pipefail
 
 # src/lib/send_completions.sh
 send_completions() {
-  echo $'# cli completion                                           -*- shell-script -*-'
+  echo $'# talisman-cli completion                                  -*- shell-script -*-'
   echo $''
   echo $'# This bash completions script was generated by'
   echo $'# completely (https://github.com/dannyben/completely)'
   echo $'# Modifying it manually is not recommended'
   echo $''
-  echo $'_cli_completions_filter() {'
+  echo $'_talisman-cli_completions_filter() {'
   echo $'  local words="$1"'
   echo $'  local cur=${COMP_WORDS[COMP_CWORD]}'
   echo $'  local result=()'
@@ -2677,87 +2741,95 @@ send_completions() {
   echo $'  fi'
   echo $'}'
   echo $''
-  echo $'_cli_completions() {'
+  echo $'_talisman-cli_completions() {'
   echo $'  local cur=${COMP_WORDS[COMP_CWORD]}'
   echo $'  local compwords=("${COMP_WORDS[@]:1:$COMP_CWORD-1}")'
   echo $'  local compline="${compwords[*]}"'
   echo $''
   echo $'  case "$compline" in'
-  echo $'    \'configure hooks\'*\'--hook\')'
-  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_cli_completions_filter "pre-commit pre-push")" -- "$cur" )'
+  echo $'    \'configure hooks\'*\'--hook-name\')'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "pre-commit pre-push")" -- "$cur" )'
+  echo $'      ;;'
+  echo $''
+  echo $'    \'config hooks\'*\'--hook-name\')'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "pre-commit pre-push")" -- "$cur" )'
   echo $'      ;;'
   echo $''
   echo $'    \'configure search-repos\'*)'
-  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_cli_completions_filter "--help --path --verbose -h -p -v")" -- "$cur" )'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "--help --path --verbose -h -p -v")" -- "$cur" )'
   echo $'      ;;'
   echo $''
-  echo $'    \'config hooks\'*\'--hook\')'
-  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_cli_completions_filter "pre-commit pre-push")" -- "$cur" )'
+  echo $'    \'configure download-cli\'*)'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "--help --repo-org --verbose -h -r -v")" -- "$cur" )'
   echo $'      ;;'
   echo $''
   echo $'    \'config search-repos\'*)'
-  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_cli_completions_filter "--help --path --verbose -h -p -v")" -- "$cur" )'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "--help --path --verbose -h -p -v")" -- "$cur" )'
+  echo $'      ;;'
+  echo $''
+  echo $'    \'config download-cli\'*)'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "--help --repo-org --verbose -h -r -v")" -- "$cur" )'
   echo $'      ;;'
   echo $''
   echo $'    \'configure download\'*)'
-  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_cli_completions_filter "--help --repo-org --verbose -h -r -v")" -- "$cur" )'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "--help --repo-org --verbose -h -r -v")" -- "$cur" )'
   echo $'      ;;'
   echo $''
   echo $'    \'configure hooks\'*\'-H\')'
-  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_cli_completions_filter "pre-commit pre-push")" -- "$cur" )'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "pre-commit pre-push")" -- "$cur" )'
   echo $'      ;;'
   echo $''
   echo $'    \'configure update\'*)'
-  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_cli_completions_filter "--help --repo-org --verbose -h -r -v")" -- "$cur" )'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "--help --repo-org --verbose -h -r -v")" -- "$cur" )'
   echo $'      ;;'
   echo $''
   echo $'    \'configure hooks\'*)'
-  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_cli_completions_filter "--help --hook --verbose -H -h -v")" -- "$cur" )'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "--exceptions-file-path --git-dir --help --hook-name --hook-script-path --template-path --verbose -H -e -h -t -v")" -- "$cur" )'
   echo $'      ;;'
   echo $''
   echo $'    \'config hooks\'*\'-H\')'
-  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_cli_completions_filter "pre-commit pre-push")" -- "$cur" )'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "pre-commit pre-push")" -- "$cur" )'
   echo $'      ;;'
   echo $''
   echo $'    \'config download\'*)'
-  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_cli_completions_filter "--help --repo-org --verbose -h -r -v")" -- "$cur" )'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "--help --repo-org --verbose -h -r -v")" -- "$cur" )'
   echo $'      ;;'
   echo $''
   echo $'    \'config update\'*)'
-  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_cli_completions_filter "--help --repo-org --verbose -h -r -v")" -- "$cur" )'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "--help --repo-org --verbose -h -r -v")" -- "$cur" )'
   echo $'      ;;'
   echo $''
   echo $'    \'config hooks\'*)'
-  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_cli_completions_filter "--help --hook --verbose -H -h -v")" -- "$cur" )'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "--exceptions-file-path --git-dir --help --hook-name --hook-script-path --template-path --verbose -H -e -h -t -v")" -- "$cur" )'
   echo $'      ;;'
   echo $''
   echo $'    \'run\'*\'--hook\')'
-  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_cli_completions_filter "pre-commit pre-push")" -- "$cur" )'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "pre-commit pre-push")" -- "$cur" )'
   echo $'      ;;'
   echo $''
   echo $'    \'configure\'*)'
-  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_cli_completions_filter "--help -h download hooks search-repos update")" -- "$cur" )'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "--help -h download download-cli hooks search-repos update")" -- "$cur" )'
   echo $'      ;;'
   echo $''
   echo $'    \'run\'*\'-H\')'
-  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_cli_completions_filter "pre-commit pre-push")" -- "$cur" )'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "pre-commit pre-push")" -- "$cur" )'
   echo $'      ;;'
   echo $''
   echo $'    \'config\'*)'
-  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_cli_completions_filter "--help -h download hooks search-repos update")" -- "$cur" )'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "--help -h download download-cli hooks search-repos update")" -- "$cur" )'
   echo $'      ;;'
   echo $''
   echo $'    \'run\'*)'
-  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_cli_completions_filter "--help --hook -H -h")" -- "$cur" )'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "--help --hook -H -h")" -- "$cur" )'
   echo $'      ;;'
   echo $''
   echo $'    *)'
-  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_cli_completions_filter "--help --version -h -v config configure run")" -- "$cur" )'
+  echo $'      while read -r; do COMPREPLY+=( "$REPLY" ); done < <( compgen -W "$(_talisman-cli_completions_filter "--help --version -h -v config configure run")" -- "$cur" )'
   echo $'      ;;'
   echo $''
   echo $'  esac'
   echo $'} &&'
-  echo $'complete -F _cli_completions cli'
+  echo $'complete -F _talisman-cli_completions talisman-cli'
   echo $''
   echo $'# ex: filetype=sh'
 }
@@ -2821,60 +2893,49 @@ yaml_load() {
 # :command.command_functions
 
 # :command.function
-cli_configure_hooks_command() {
+talisman_cli_configure_hooks_command() {
   # src/configure_hooks_command.sh
   #!/usr/bin/env bash
 
-  #!/bin/bash
-  set -euo pipefail
+  repo_org="${args["--repo-org"]}"
+  binary_name="talisman_$(__os_name)_$(__arch)"
 
-  IFS=$'\n'
-  function run() {
+  hook_script_path="${args["--hook-script-path"]}"
+  exceptions_file="${args["--exceptions-file-path"]}"
+  git_dir="${args["--git-dir"]}"
+  hook_name="${args["--hook-name"]}"
 
-    TALISMAN_HOOK_SCRIPT_PATH=$1
-    EXCEPTIONS_FILE=$2 #pre-existing-hooks.paths
-    DOT_GIT_DIR=$3
-    HOOK_SCRIPT=$4
+  white_ln "Installing talisman in $git_dir"
 
-    REPO_HOOK_SCRIPT=${DOT_GIT_DIR}/hooks/${HOOK_SCRIPT}
-    #check if a hook already exists
-    if [ -e "${REPO_HOOK_SCRIPT}" ]; then
-      #check if already hooked up to talisman
-      if [ "${REPO_HOOK_SCRIPT}" -ef "${TALISMAN_HOOK_SCRIPT_PATH}" ]; then
-        echo_success "Talisman already setup in ${REPO_HOOK_SCRIPT}"
-      else
-        if [ -e "${DOT_GIT_DIR}/../.pre-commit-config.yaml" ]; then
-          echo_error "Pre-existing pre-commit.com hook detected in ${DOT_GIT_DIR}/hooks"
-        fi
-        echo ${DOT_GIT_DIR} | sed 's#/.git$##' >>${EXCEPTIONS_FILE}
-      fi
+  git_hook_script_path=${git_dir}/hooks/${hook_name}
+
+  #check if a hook already exists
+  if [ -e "${git_hook_script_path}" ]; then
+    #check if already hooked up to talisman
+    if [ "${git_hook_script_path}" -ef "${hook_script_path}" ]; then
+      green_ln "Talisman already setup in ${git_hook_script_path}"
     else
-      echo "Setting up ${HOOK_SCRIPT} hook in ${DOT_GIT_DIR}/hooks"
-      mkdir -p ${DOT_GIT_DIR}/hooks || (echo_error "Could not create hooks directory" && return)
-      LN_FLAGS="-sf"
-      [ -n "true" ] && LN_FLAGS="${LN_FLAGS}v"
-      OS=$(uname -s)
-      case $OS in
-      "MINGW32_NT-10.0-WOW" | "MINGW64_NT-10.0")
-        DOT_GIT_DIR_WIN=$(sed -e 's/\/\([a-z]\)\//\1:\\/' -e 's/\//\\/g' <<<"$DOT_GIT_DIR")
-        TALISMAN_HOOK_SCRIPT_PATH_WIN=$(sed -e 's/\/\([a-z]\)\//\1:\\/' -e 's/\//\\/g' <<<"$TALISMAN_HOOK_SCRIPT_PATH")
-        cmd <<<"mklink /H "${DOT_GIT_DIR_WIN}\\hooks\\${HOOK_SCRIPT}" "${TALISMAN_HOOK_SCRIPT_PATH_WIN}"" >/dev/null
-        ;;
-      *)
-        ln ${LN_FLAGS} ${TALISMAN_HOOK_SCRIPT_PATH} ${DOT_GIT_DIR}/hooks/${HOOK_SCRIPT}
-        ;;
-      esac
-
-      echo_success "DONE"
+      if [ -e "${DOT_GIT_DIR}/../.pre-commit-config.yaml" ]; then
+        red_ln "Pre-existing pre-commit.com hook detected in ${git_dir}/hooks"
+      fi
+      yellow_ln ${git_dir} | sed 's#/.git$##' >>${exceptions_file}
     fi
-  }
+  else
+    yellow_ln "Setting up ${hook_script_path} hook in ${git_dir}/hooks"
+    mkdir -p ${git_dir}/hooks || (echo_error "Could not create hooks directory" && return)
+    LN_FLAGS="-sf"
 
-  run $@
+    [ -n "true" ] && LN_FLAGS="${LN_FLAGS}v"
+
+    ln ${LN_FLAGS} "${hook_script_path}" "${git_dir}"/hooks/"${hook_name}"
+
+    green_ln "DONE"
+  fi
 
 }
 
 # :command.function
-cli_configure_download_command() {
+talisman_cli_configure_download_command() {
   # src/configure_download_command.sh
   #!/usr/bin/env bash
 
@@ -2895,6 +2956,8 @@ cli_configure_download_command() {
   pushd "$temp_dir" 2>&1 >/dev/null || exit
   sha256sum -c checksums
 
+  $(source_dir)/talisman-cli configure download-cli
+
   if [ $? -eq 0 ]; then
     mv "$temp_dir"/"$binary_name" "$HOME"/.talisman/bin/talisman
     chmod +x "$HOME"/.talisman/bin/talisman
@@ -2911,7 +2974,21 @@ cli_configure_download_command() {
 }
 
 # :command.function
-cli_configure_update_command() {
+talisman_cli_configure_download_cli_command() {
+  # src/configure_download_cli_command.sh
+  #!/usr/bin/env bash
+
+  repo_org="${args["--repo-org"]}"
+  github_url="https://raw.githubusercontent.com"
+  #curl --silent "$github_url/${repo_org}/javier-installation-refactor/talisman-cli" >${HOME}/.talisman/bin/talisman-cli
+  cat "/Users/javiermatias-cabrera/workspace/external-repos/talisman/talisman-cli" >${HOME}/.talisman/bin/talisman-cli
+  chmod +x ${HOME}/.talisman/bin/talisman-cli
+
+  green_ln "Installed talisman-cli version $(${HOME}/.talisman/bin/talisman-cli -v) at ${HOME}/.talisman/bin/talisman-cli"
+}
+
+# :command.function
+talisman_cli_configure_update_command() {
   # src/configure_update_command.sh
   #!/usr/bin/env bash
 
@@ -2923,12 +3000,12 @@ cli_configure_update_command() {
   current_version=$(talisman --version | awk '{print $2}')
 
   if [[ "$latest_version" != "$current_version" ]]; then
-      $(source_dir)/cli configure download
+      $(source_dir)/talisman-cli configure download
   fi
 }
 
 # :command.function
-cli_configure_search_repos_command() {
+talisman_cli_configure_search_repos_command() {
   # src/configure_search_repos_command.sh
   #!/usr/bin/env bash
   path="${args["--path"]}"
@@ -2950,7 +3027,7 @@ cli_configure_search_repos_command() {
 }
 
 # :command.function
-cli_run_command() {
+talisman_cli_run_command() {
   # src/run_command.sh
   #!/usr/bin/env bash
 
@@ -2978,7 +3055,7 @@ parse_requirements() {
 
   --help | -h )
     long_usage=yes
-    cli_usage
+    talisman_cli_usage
     exit
     ;;
 
@@ -2994,20 +3071,20 @@ parse_requirements() {
   configure | config )
     action="configure"
     shift
-    cli_configure_parse_requirements "$@"
+    talisman_cli_configure_parse_requirements "$@"
     shift $#
     ;;
 
   run )
     action="run"
     shift
-    cli_run_parse_requirements "$@"
+    talisman_cli_run_parse_requirements "$@"
     shift $#
     ;;
 
   # :command.command_fallback
   "" )
-    cli_usage >&2
+    talisman_cli_usage >&2
     exit 1
     ;;
 
@@ -3042,12 +3119,12 @@ parse_requirements() {
 }
 
 # :command.parse_requirements
-cli_configure_parse_requirements() {
+talisman_cli_configure_parse_requirements() {
   # :command.fixed_flags_filter
   case "${1:-}" in
   --help | -h )
     long_usage=yes
-    cli_configure_usage
+    talisman_cli_configure_usage
     exit
     ;;
 
@@ -3063,34 +3140,41 @@ cli_configure_parse_requirements() {
   hooks )
     action="hooks"
     shift
-    cli_configure_hooks_parse_requirements "$@"
+    talisman_cli_configure_hooks_parse_requirements "$@"
     shift $#
     ;;
 
   download )
     action="download"
     shift
-    cli_configure_download_parse_requirements "$@"
+    talisman_cli_configure_download_parse_requirements "$@"
+    shift $#
+    ;;
+
+  download-cli )
+    action="download-cli"
+    shift
+    talisman_cli_configure_download_cli_parse_requirements "$@"
     shift $#
     ;;
 
   update )
     action="update"
     shift
-    cli_configure_update_parse_requirements "$@"
+    talisman_cli_configure_update_parse_requirements "$@"
     shift $#
     ;;
 
   search-repos )
     action="search-repos"
     shift
-    cli_configure_search_repos_parse_requirements "$@"
+    talisman_cli_configure_search_repos_parse_requirements "$@"
     shift $#
     ;;
 
   # :command.command_fallback
   "" )
-    cli_configure_usage >&2
+    talisman_cli_configure_usage >&2
     exit 1
     ;;
 
@@ -3125,12 +3209,12 @@ cli_configure_parse_requirements() {
 }
 
 # :command.parse_requirements
-cli_configure_hooks_parse_requirements() {
+talisman_cli_configure_hooks_parse_requirements() {
   # :command.fixed_flags_filter
   case "${1:-}" in
   --help | -h )
     long_usage=yes
-    cli_configure_hooks_usage
+    talisman_cli_configure_hooks_usage
     exit
     ;;
 
@@ -3144,16 +3228,76 @@ cli_configure_hooks_parse_requirements() {
     key="$1"
     case "$key" in
     # :flag.case
-    --hook | -H )
+    --hook-name | -H )
 
       # :flag.case_arg
       if [[ -n ${2+x} ]]; then
 
-        args[--hook]="$2"
+        args[--hook-name]="$2"
         shift
         shift
       else
-        printf "%s\n" "--hook requires an argument: --hook, -H HOOK" >&2
+        printf "%s\n" "--hook-name requires an argument: --hook-name, -H HOOK-NAME" >&2
+        exit 1
+      fi
+      ;;
+
+    # :flag.case
+    --hook-script-path )
+
+      # :flag.case_arg
+      if [[ -n ${2+x} ]]; then
+
+        args[--hook-script-path]="$2"
+        shift
+        shift
+      else
+        printf "%s\n" "--hook-script-path requires an argument: --hook-script-path HOOK-SCRIPT-PATH" >&2
+        exit 1
+      fi
+      ;;
+
+    # :flag.case
+    --template-path | -t )
+
+      # :flag.case_arg
+      if [[ -n ${2+x} ]]; then
+
+        args[--template-path]="$2"
+        shift
+        shift
+      else
+        printf "%s\n" "--template-path requires an argument: --template-path, -t TEMPLATE-PATH" >&2
+        exit 1
+      fi
+      ;;
+
+    # :flag.case
+    --exceptions-file-path | -e )
+
+      # :flag.case_arg
+      if [[ -n ${2+x} ]]; then
+
+        args[--exceptions-file-path]="$2"
+        shift
+        shift
+      else
+        printf "%s\n" "--exceptions-file-path requires an argument: --exceptions-file-path, -e EXCEPTIONS-FILE-PATH" >&2
+        exit 1
+      fi
+      ;;
+
+    # :flag.case
+    --git-dir )
+
+      # :flag.case_arg
+      if [[ -n ${2+x} ]]; then
+
+        args[--git-dir]="$2"
+        shift
+        shift
+      else
+        printf "%s\n" "--git-dir requires an argument: --git-dir GIT-DIR" >&2
         exit 1
       fi
       ;;
@@ -3183,26 +3327,41 @@ cli_configure_hooks_parse_requirements() {
   done
 
   # :command.required_flags_filter
-  if [[ -z ${args[--hook]+x} ]]; then
-    printf "missing required flag: --hook, -H HOOK\n" >&2
+  if [[ -z ${args[--hook-name]+x} ]]; then
+    printf "missing required flag: --hook-name, -H HOOK-NAME\n" >&2
+    exit 1
+  fi
+  if [[ -z ${args[--hook-script-path]+x} ]]; then
+    printf "missing required flag: --hook-script-path HOOK-SCRIPT-PATH\n" >&2
+    exit 1
+  fi
+  if [[ -z ${args[--exceptions-file-path]+x} ]]; then
+    printf "missing required flag: --exceptions-file-path, -e EXCEPTIONS-FILE-PATH\n" >&2
+    exit 1
+  fi
+  if [[ -z ${args[--git-dir]+x} ]]; then
+    printf "missing required flag: --git-dir GIT-DIR\n" >&2
     exit 1
   fi
 
+  # :command.default_assignments
+  [[ -n ${args[--template-path]:-} ]] || args[--template-path]="$HOME/.git-template"
+
   # :command.whitelist_filter
-  if [[ ! ${args[--hook]} =~ ^(pre-commit|pre-push)$ ]]; then
-    printf "%s\n" "--hook must be one of: pre-commit, pre-push" >&2
+  if [[ ! ${args[--hook-name]} =~ ^(pre-commit|pre-push)$ ]]; then
+    printf "%s\n" "--hook-name must be one of: pre-commit, pre-push" >&2
     exit 1
   fi
 
 }
 
 # :command.parse_requirements
-cli_configure_download_parse_requirements() {
+talisman_cli_configure_download_parse_requirements() {
   # :command.fixed_flags_filter
   case "${1:-}" in
   --help | -h )
     long_usage=yes
-    cli_configure_download_usage
+    talisman_cli_configure_download_usage
     exit
     ;;
 
@@ -3260,12 +3419,75 @@ cli_configure_download_parse_requirements() {
 }
 
 # :command.parse_requirements
-cli_configure_update_parse_requirements() {
+talisman_cli_configure_download_cli_parse_requirements() {
   # :command.fixed_flags_filter
   case "${1:-}" in
   --help | -h )
     long_usage=yes
-    cli_configure_update_usage
+    talisman_cli_configure_download_cli_usage
+    exit
+    ;;
+
+  esac
+
+  # :command.command_filter
+  action="configure download-cli"
+
+  # :command.parse_requirements_while
+  while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+    # :flag.case
+    --verbose | -v )
+
+      # :flag.case_no_arg
+      args[--verbose]=1
+      shift
+      ;;
+
+    # :flag.case
+    --repo-org | -r )
+
+      # :flag.case_arg
+      if [[ -n ${2+x} ]]; then
+
+        args[--repo-org]="$2"
+        shift
+        shift
+      else
+        printf "%s\n" "--repo-org requires an argument: --repo-org, -r REPO-ORG" >&2
+        exit 1
+      fi
+      ;;
+
+    -?* )
+      printf "invalid option: %s\n" "$key" >&2
+      exit 1
+      ;;
+
+    * )
+      # :command.parse_requirements_case
+      # :command.parse_requirements_case_simple
+      printf "invalid argument: %s\n" "$key" >&2
+      exit 1
+
+      ;;
+
+    esac
+  done
+
+  # :command.default_assignments
+  [[ -n ${args[--repo-org]:-} ]] || args[--repo-org]="thoughtworks/talisman"
+
+}
+
+# :command.parse_requirements
+talisman_cli_configure_update_parse_requirements() {
+  # :command.fixed_flags_filter
+  case "${1:-}" in
+  --help | -h )
+    long_usage=yes
+    talisman_cli_configure_update_usage
     exit
     ;;
 
@@ -3323,12 +3545,12 @@ cli_configure_update_parse_requirements() {
 }
 
 # :command.parse_requirements
-cli_configure_search_repos_parse_requirements() {
+talisman_cli_configure_search_repos_parse_requirements() {
   # :command.fixed_flags_filter
   case "${1:-}" in
   --help | -h )
     long_usage=yes
-    cli_configure_search_repos_usage
+    talisman_cli_configure_search_repos_usage
     exit
     ;;
 
@@ -3383,12 +3605,12 @@ cli_configure_search_repos_parse_requirements() {
 }
 
 # :command.parse_requirements
-cli_run_parse_requirements() {
+talisman_cli_run_parse_requirements() {
   # :command.fixed_flags_filter
   case "${1:-}" in
   --help | -h )
     long_usage=yes
-    cli_run_usage
+    talisman_cli_run_usage
     exit
     ;;
 
@@ -3448,7 +3670,7 @@ cli_run_parse_requirements() {
 
 # :command.initialize
 initialize() {
-  version="0.2.0"
+  version="0.2.5"
   long_usage=''
   set -e
 
@@ -3467,49 +3689,57 @@ run() {
   if [[ $action == "configure" ]]; then
     if [[ ${args[--help]:-} ]]; then
       long_usage=yes
-      cli_configure_usage
+      talisman_cli_configure_usage
     else
-      cli_configure_command
+      talisman_cli_configure_command
     fi
 
   elif [[ $action == "configure hooks" ]]; then
     if [[ ${args[--help]:-} ]]; then
       long_usage=yes
-      cli_configure_hooks_usage
+      talisman_cli_configure_hooks_usage
     else
-      cli_configure_hooks_command
+      talisman_cli_configure_hooks_command
     fi
 
   elif [[ $action == "configure download" ]]; then
     if [[ ${args[--help]:-} ]]; then
       long_usage=yes
-      cli_configure_download_usage
+      talisman_cli_configure_download_usage
     else
-      cli_configure_download_command
+      talisman_cli_configure_download_command
+    fi
+
+  elif [[ $action == "configure download-cli" ]]; then
+    if [[ ${args[--help]:-} ]]; then
+      long_usage=yes
+      talisman_cli_configure_download_cli_usage
+    else
+      talisman_cli_configure_download_cli_command
     fi
 
   elif [[ $action == "configure update" ]]; then
     if [[ ${args[--help]:-} ]]; then
       long_usage=yes
-      cli_configure_update_usage
+      talisman_cli_configure_update_usage
     else
-      cli_configure_update_command
+      talisman_cli_configure_update_command
     fi
 
   elif [[ $action == "configure search-repos" ]]; then
     if [[ ${args[--help]:-} ]]; then
       long_usage=yes
-      cli_configure_search_repos_usage
+      talisman_cli_configure_search_repos_usage
     else
-      cli_configure_search_repos_command
+      talisman_cli_configure_search_repos_command
     fi
 
   elif [[ $action == "run" ]]; then
     if [[ ${args[--help]:-} ]]; then
       long_usage=yes
-      cli_run_usage
+      talisman_cli_run_usage
     else
-      cli_run_command
+      talisman_cli_run_command
     fi
 
   elif [[ $action == "root" ]]; then
