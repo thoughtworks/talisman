@@ -323,7 +323,6 @@ function run() {
     touch ${EXCEPTIONS_FILE}
 
     CMD_STRING="${SUDO_PREFIX} ${SEARCH_CMD} ${SEARCH_ROOT} ${EXTRA_SEARCH_OPTS} -name .git -type d -exec "$HOME/.talisman/bin/talisman-cli" configure hooks --hook-script-path ${TALISMAN_HOOK_SCRIPT_PATH} -e ${EXCEPTIONS_FILE}  --git-dir {} --hook-name ${HOOK_SCRIPT} \;"
-    #    CMD_STRING="${SUDO_PREFIX} ${SEARCH_CMD} ${SEARCH_ROOT} ${EXTRA_SEARCH_OPTS} -name .git -type d -exec ${REPO_HOOK_SETUP_SCRIPT_PATH} ${TALISMAN_HOOK_SCRIPT_PATH} ${EXCEPTIONS_FILE} {} ${HOOK_SCRIPT} \;"
     echo_debug "EXECUTING: ${CMD_STRING}"
     eval "${CMD_STRING}" || true
 

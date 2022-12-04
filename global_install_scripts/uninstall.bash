@@ -80,7 +80,6 @@ function run() {
     touch ${EXCEPTIONS_FILE}
 
     TALISMAN_PATH=${TALISMAN_SETUP_DIR}/talisman_hook_script
-#    CMD_STRING="${SUDO_PREFIX} ${SEARCH_CMD} ${SEARCH_ROOT} ${EXTRA_SEARCH_OPTS} -name .git -type d -exec ${DELETE_REPO_HOOK_SCRIPT} ${TALISMAN_PATH} ${EXCEPTIONS_FILE} {} ${HOOK_SCRIPT} \;"
     CMD_STRING="${SUDO_PREFIX} ${SEARCH_CMD} ${SEARCH_ROOT} ${EXTRA_SEARCH_OPTS} -name .git -type d -exec "$HOME/.talisman/bin/talisman-cli" remove hooks --hook-script-path ${TALISMAN_PATH} -e ${EXCEPTIONS_FILE}  --git-dir {} --hook-name ${HOOK_SCRIPT} \;"
     echo_debug "EXECUTING: ${CMD_STRING}"
     eval "${CMD_STRING}" || true
