@@ -127,15 +127,15 @@ function run() {
   }
 
   function get_dependent_scripts() {
+    mkdir -p $HOME/.talisman/bin
+
     echo_debug "Downloading dependent scripts"
     curl --silent "${SCRIPT_BASE}/talisman_hook_script.bash" >${TEMP_DIR}/talisman_hook_script.bash
     #    cat ./global_install_scripts/talisman_hook_script.bash >${TEMP_DIR}/talisman_hook_script.bash
 
-    mkdir -p $HOME/.talisman/bin
-
-    curl --silent "https://raw.githubusercontent.com/${SCRIPT_ORG_REPO}/javier-installation-refactor/talisman-cli" >${TEMP_DIR}/talisman-cli
-    #    cat ./talisman-cli >$HOME/.talisman/bin/talisman-cli
-    chmod +x $HOME/.talisman/bin/talisman-cli
+    curl --silent "https://raw.githubusercontent.com/${SCRIPT_ORG_REPO}/javier-installation-refactor/talisman-cli" >${HOME}/.talisman/bin/talisman-cli
+    #    cat ./talisman-cli >"$HOME"/.talisman/bin/talisman-cli
+    chmod +x "$HOME"/.talisman/bin/talisman-cli
 
     echo_debug "Contents of temp_dir: $(ls ${TEMP_DIR})"
   }
@@ -370,7 +370,7 @@ END_OF_SCRIPT
   setup_talisman
 
   #  ${TEMP_DIR}/talisman-cli configure download-cli
-  ${TALISMAN_SETUP_DIR}/talisman-cli configure download-cli
+  ${HOME}/.talisman/bin/talisman-cli configure download-cli
 
   # currently doesn't check if the talisman binary and the talisman hook script are upto date
   # would be good to create a separate script which does the upgrade and the initial install

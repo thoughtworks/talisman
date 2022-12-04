@@ -17,8 +17,6 @@ curl --location --silent "${checksum_url}" | grep "$binary_name" >"$temp_dir"/ch
 pushd "$temp_dir" 2>&1 >/dev/null || exit
 sha256sum -c checksums
 
-$(source_dir)/talisman-cli configure download-cli
-
 if [ $? -eq 0 ]; then
   mv "$temp_dir"/"$binary_name" "$HOME"/.talisman/bin/talisman
   chmod +x "$HOME"/.talisman/bin/talisman

@@ -6,7 +6,7 @@ commands:
 
   - name: configure
     alias: [ config ]
-    help: Configure development environment
+    help: Install and configure Talisman
     group: Environment
     expose: always
 
@@ -22,25 +22,29 @@ commands:
             help: Which git hook to install
             required: true
             allowed: [ pre-commit, pre-push ]
+
           - arg: hook-script-path
             long: --hook-script-path
             help: Path to the talisman hook script
             required: true
+
           - arg: template-path
             short: -t
             long: --template-path
             help: Path to the template file
             default: $HOME/.git-template
+
           - arg: exceptions-file-path
             short: -e
             long: --exceptions-file-path
             help: Path to the exceptions file
             required: true
+
           - arg: git-dir
             long: --git-dir
+            short: -g
             help: Path to the git directory
             required: true
-
 
           - import: verbose_flag.yml
 
@@ -87,6 +91,52 @@ commands:
             long: --path
             help: The path to search for git repositories
           - import: verbose_flag.yml
+
+  - name: remove
+    alias: [ rm ]
+    help: Remove Talisman
+    group: Environment
+    expose: always
+
+    commands:
+
+      - name: hooks
+        help: Remove talisman hooks
+
+        flags:
+          - arg: hook-name
+            short: -H
+            long: --hook-name
+            help: Which git hook to install
+            required: true
+            allowed: [ pre-commit, pre-push ]
+
+          - arg: hook-script-path
+            long: --hook-script-path
+            help: Path to the talisman hook script
+            required: true
+
+
+          - arg: template-path
+            short: -t
+            long: --template-path
+            help: Path to the template file
+            default: $HOME/.git-template
+
+          - arg: exceptions-file-path
+            short: -e
+            long: --exceptions-file-path
+            help: Path to the exceptions file
+            required: false
+
+          - arg: git-dir
+            long: --git-dir
+            short: -g
+            help: Path to the git directory
+            required: true
+
+          - import: verbose_flag.yml
+
 
   - name: run
     help: Run talisman git hook

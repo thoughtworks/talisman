@@ -26,6 +26,7 @@ blue() { print_in_color "\e[34m" "$*"; }
 magenta() { print_in_color "\e[35m" "$*"; }
 cyan() { print_in_color "\e[36m" "$*"; }
 white() { print_in_color "\e[37m" "$*"; }
+gray() { print_in_color "\e[0;37m" "$*"; }
 bold() { print_in_color "\e[1m" "$*"; }
 underlined() { print_in_color "\e[4m" "$*"; }
 red_bold() { print_in_color "\e[1;31m" "$*"; }
@@ -62,6 +63,7 @@ blue_ln() { println_in_color "\e[34m" "$*"; }
 magenta_ln() { println_in_color "\e[35m" "$*"; }
 cyan_ln() { println_in_color "\e[36m" "$*"; }
 white_ln() { println_in_color "\e[37m" "$*"; }
+gray_ln() { println_in_color "\e[0;37m" "$*"; }
 bold_ln() { println_in_color "\e[1m" "$*"; }
 underlined_ln() { println_in_color "\e[4m" "$*"; }
 red_bold_ln() { println_in_color "\e[1;31m" "$*"; }
