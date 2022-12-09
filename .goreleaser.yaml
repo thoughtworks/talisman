@@ -21,9 +21,9 @@ builds:
       - -s -w -X main.Version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
     main: ./cmd
 
-    hooks:
-      post:
-        - ./compress-binary.sh "{{ .Path }}"
+#    hooks:
+#      post:
+#        - ./compress-binary.sh "{{ .Path }}"
 
 
 release:
