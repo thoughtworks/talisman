@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"strings"
 	"talisman/detector/severity"
+	"talisman/gitrepo"
 	mock "talisman/internal/mock/prompt"
 	"talisman/prompt"
 	"talisman/talismanrc"
@@ -83,12 +84,16 @@ func TestErrorExitCodeInInteractive(t *testing.T) {
 
 	prompter := mock.NewMockPrompt(ctrl)
 	results := NewDetectionResults(talismanrc.HookMode)
+	gitAdditions := []gitrepo.Addition{
+		gitrepo.NewAddition("some_file.pem", []byte{}),
+		gitrepo.NewAddition("another.pem", []byte{}),
+	}
 
 	promptContext := prompt.NewPromptContext(true, prompter)
 	prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(2)
 	results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 	results.Fail("another.pem", "filecontent", "password", []string{}, severity.Low)
-	results.Report(promptContext, "default")
+	results.Report(gitAdditions, promptContext, "default")
 	assert.True(t, results.HasFailures())
 }
 
@@ -98,12 +103,16 @@ func TestSuccessExitCodeInInteractive(t *testing.T) {
 
 	prompter := mock.NewMockPrompt(ctrl)
 	results := NewDetectionResults(talismanrc.HookMode)
+	gitAdditions := []gitrepo.Addition{
+		gitrepo.NewAddition("some_file.pem", []byte{}),
+		gitrepo.NewAddition("another.pem", []byte{}),
+	}
 
 	promptContext := prompt.NewPromptContext(true, prompter)
 	prompter.EXPECT().Confirm(gomock.Any()).Return(true).Times(2)
 	results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 	results.Fail("another.pem", "filecontent", "password", []string{}, severity.Low)
-	results.Report(promptContext, "default")
+	results.Report(gitAdditions, promptContext, "default")
 	assert.False(t, results.HasFailures())
 }
 
@@ -152,7 +161,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
 
-		results.Report(promptContext, "default")
+		results.Report([]gitrepo.Addition{}, promptContext, "default")
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
@@ -163,9 +172,11 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 	t.Run("when user declines, entry should not be added to talismanrc", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add some_file.pem with above checksum in talismanrc ?").Return(false)
+		gitAdditions := []gitrepo.Addition{gitrepo.NewAddition("some_file.pem", []byte{})}
+
 		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 
-		results.Report(promptContext, "default")
+		results.Report(gitAdditions, promptContext, "default")
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
@@ -176,9 +187,11 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 	t.Run("when interactive flag is set to false, it should not ask user", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(false, prompter)
 		prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
+		gitAdditions := []gitrepo.Addition{gitrepo.NewAddition("some_file.pem", []byte{})}
+
 		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 
-		results.Report(promptContext, "default")
+		results.Report(gitAdditions, promptContext, "default")
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
@@ -189,6 +202,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 	t.Run("when user confirms, entry should be appended to given ignore file", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add some_file.pem with above checksum in talismanrc ?").Return(true)
+		gitAdditions := []gitrepo.Addition{gitrepo.NewAddition("some_file.pem", []byte{})}
 
 		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 
@@ -197,7 +211,7 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
   checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
 version: "1.0"
 `
-		results.Report(promptContext, "default")
+		results.Report(gitAdditions, promptContext, "default")
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
@@ -208,6 +222,8 @@ version: "1.0"
 	t.Run("when user confirms, entry for existing file should updated", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add existing.pem with above checksum in talismanrc ?").Return(true)
+		gitAdditions := []gitrepo.Addition{gitrepo.NewAddition("existing.pem", []byte{})}
+
 		results := NewDetectionResults(talismanrc.HookMode)
 		results.Fail("existing.pem", "filecontent", "This will bomb!", []string{}, severity.Low)
 
@@ -216,7 +232,7 @@ version: "1.0"
   checksum: 5bc0b0692a316bb2919263addaef0ffba3a21b9e1cca62a1028390e97e861e4e
 version: "1.0"
 `
-		results.Report(promptContext, "default")
+		results.Report(gitAdditions, promptContext, "default")
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)
@@ -228,6 +244,10 @@ version: "1.0"
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add some_file.pem with above checksum in talismanrc ?").Return(true)
 		prompter.EXPECT().Confirm("Do you want to add another.pem with above checksum in talismanrc ?").Return(true)
+		gitAdditions := []gitrepo.Addition{
+			gitrepo.NewAddition("some_file.pem", []byte{}),
+			gitrepo.NewAddition("another.pem", []byte{}),
+		}
 
 		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 		results.Fail("another.pem", "filecontent", "password", []string{}, severity.Low)
@@ -239,7 +259,31 @@ version: "1.0"
   checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
 version: "1.0"
 `
-		results.Report(promptContext, "default")
+		results.Report(gitAdditions, promptContext, "default")
+		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expectedFileContent, string(bytesFromFile))
+	})
+
+	_ = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
+	t.Run("suggested checksum is based on git additions, not the singular file", func(t *testing.T) {
+		promptContext := prompt.NewPromptContext(true, prompter)
+		prompter.EXPECT().Confirm("Do you want to add some_file.pem with above checksum in talismanrc ?").Return(true)
+		gitAdditions := []gitrepo.Addition{
+			gitrepo.NewAddition("some_file.pem", []byte{}),
+			gitrepo.NewAddition("subfolder/some_file.pem", []byte{}),
+		}
+
+		results := NewDetectionResults(talismanrc.HookMode)
+		results.Fail("some_file.pem", "filecontent", "This will bomb!", []string{}, severity.Low)
+
+		expectedFileContent := `fileignoreconfig:
+- filename: some_file.pem
+  checksum: c2093b0fdf75a5e75067f48c119c34f4ec2bfc23fb9e5520d5570d669fbc23be
+version: "1.0"
+`
+		results.Report(gitAdditions, promptContext, "default")
 		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
 
 		assert.NoError(t, err)

@@ -233,7 +233,7 @@ func (r *DetectionResults) ReportWarnings() string {
 }
 
 //Report returns a string documenting the various failures and ignored files for the current run
-func (r *DetectionResults) Report(promptContext prompt.PromptContext, mode string) string {
+func (r *DetectionResults) Report(currentAdditions []gitrepo.Addition, promptContext prompt.PromptContext, mode string) string {
 	var result string
 	var filePathsForFailures []string
 	var data [][]string
@@ -257,16 +257,24 @@ func (r *DetectionResults) Report(promptContext prompt.PromptContext, mode strin
 		table.AppendBulk(data)
 		table.Render()
 		fmt.Println()
-		r.suggestTalismanRC(filePathsForFailures, promptContext, mode)
+		r.suggestTalismanRC(filePathsForFailures, currentAdditions, promptContext, mode)
 	}
 	return result
 }
 
-func (r *DetectionResults) suggestTalismanRC(filePaths []string, promptContext prompt.PromptContext, mode string) {
+func (r *DetectionResults) suggestTalismanRC(filePaths []string, currentAdditions []gitrepo.Addition, promptContext prompt.PromptContext, mode string) {
 	var entriesToAdd []talismanrc.IgnoreConfig
 	hasher := utility.MakeHasher(mode, ".")
 	for _, filePath := range filePaths {
-		currentChecksum := hasher.CollectiveSHA256Hash([]string{filePath})
+		var patternPaths []string
+		for _, addition := range currentAdditions {
+			if addition.Matches(filePath) {
+				patternPaths = append(patternPaths, string(addition.Path))
+			}
+		}
+		patternPaths = utility.UniqueItems(patternPaths)
+
+		currentChecksum := hasher.CollectiveSHA256Hash(patternPaths)
 		fileIgnoreConfig := talismanrc.BuildIgnoreConfig(r.mode, filePath, currentChecksum, []string{})
 		entriesToAdd = append(entriesToAdd, fileIgnoreConfig)
 	}
