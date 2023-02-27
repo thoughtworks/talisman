@@ -93,7 +93,6 @@ func combineFileIgnores(exsiting, incoming []FileIgnoreConfig) []FileIgnoreConfi
 
 // RemoveAllowedPatterns removes globally- and per-file allowed patterns from an Addition
 func (tRC *TalismanRC) RemoveAllowedPatterns(addition gitrepo.Addition) string {
-	additionPathAsString := string(addition.Path)
 	// Processing global allowed patterns
 	for _, pattern := range tRC.AllowedPatterns {
 		addition.Data = pattern.ReplaceAll(addition.Data, []byte(""))
@@ -101,7 +100,7 @@ func (tRC *TalismanRC) RemoveAllowedPatterns(addition gitrepo.Addition) string {
 
 	// Processing allowed patterns based on file path
 	for _, ignoreConfig := range tRC.FileIgnoreConfig {
-		if ignoreConfig.GetFileName() == additionPathAsString {
+		if addition.Matches(ignoreConfig.GetFileName()) {
 			for _, pattern := range ignoreConfig.GetAllowedPatterns() {
 				addition.Data = pattern.ReplaceAll(addition.Data, []byte(""))
 			}

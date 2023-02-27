@@ -63,6 +63,20 @@ func TestShouldFilterAllowedPatternsFromAdditionBasedOnFileConfig(t *testing.T) 
 	assert.Equal(t, fileContentFiltered2, fileContent)
 }
 
+func TestShouldFilterAllowedPatternsFromAdditionBasedOnFileConfigWithWildcards(t *testing.T) {
+	const hexContent string = "68656C6C6F20776F726C6421"
+	const fileContent string = "Prefix content" + hexContent
+	gitRepoAddition1 := testAdditionWithData("foo/file1.yml", []byte(fileContent))
+	gitRepoAddition2 := testAdditionWithData("foo/file2.yml", []byte(fileContent))
+	talismanrc := createTalismanRCWithFileIgnores("foo/*.yml", "somedetector", []string{hexContent})
+
+	fileContentFiltered1 := talismanrc.RemoveAllowedPatterns(gitRepoAddition1)
+	fileContentFiltered2 := talismanrc.RemoveAllowedPatterns(gitRepoAddition2)
+
+	assert.Equal(t, fileContentFiltered1, "Prefix content")
+	assert.Equal(t, fileContentFiltered2, "Prefix content")
+}
+
 func TestDirectoryPatterns(t *testing.T) {
 	assertAccepts("foo/", "", "bar", t)
 	assertAccepts("foo/", "", "foo", t)
