@@ -7,10 +7,13 @@
 
 set -euo pipefail
 
+NO_HOOK_NAME="no-hook"
+
 DEBUG=${DEBUG:-''}
 HOOK_NAME="${1:-pre-push}"
 case "$HOOK_NAME" in
 pre-commit | pre-push) REPO_HOOK_TARGET=".git/hooks/${HOOK_NAME}" ;;
+"$NO_HOOK_NAME") REPO_HOOK_TARGET="";;
 *)
   echo "Unknown Hook name '${HOOK_NAME}'. Please check parameters"
   exit 1
@@ -90,7 +93,7 @@ run() {
         exit $E_UNSUPPORTED_ARCH
         ;;
       esac
-}
+  }
 
    binary_arch_suffix() {
     declare OS
@@ -171,6 +174,7 @@ CMD="${PWD}/${TALISMAN_BIN_TARGET} \${DEBUG_OPTS} --githook ${HOOK_NAME}"
 [[ -n "\${TALISMAN_DEBUG}" ]] && echo "Executing: \${CMD}"
 \${CMD}
 EOF
+
     chmod +x "$REPO_HOOK_TARGET"
 
     echo_success "Talisman successfully installed to '$REPO_HOOK_TARGET'."
@@ -241,7 +245,10 @@ EOF
     echo_success "Talisman successfully installed."
   }
 
-  if [ ! -d "./.git" ]; then
+  if [[ "$HOOK_NAME" == "$NO_HOOK_NAME" ]]; then
+    echo "Requested no hook to be created - installing binary only"
+    download_and_verify
+  elif [ ! -d "./.git" ]; then
     install_to_git_templates
   else
     install_to_repo
