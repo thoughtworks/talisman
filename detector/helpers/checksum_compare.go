@@ -23,8 +23,10 @@ func (cc *ChecksumCompare) IsScanNotRequired(addition gitrepo.Addition) bool {
 	for _, ignore := range cc.talismanRC.IgnoreConfigs {
 		if addition.Matches(ignore.GetFileName()) {
 			currentCollectiveChecksum = cc.calculator.CalculateCollectiveChecksumForPattern(ignore.GetFileName())
-			return ignore.ChecksumMatches(currentCollectiveChecksum)
+			if ignore.ChecksumMatches(currentCollectiveChecksum) {
+				return true
+			}
 		}
 	}
-	return false;
+	return false
 }

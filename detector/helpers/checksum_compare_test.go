@@ -58,4 +58,58 @@ func TestChecksumCompare_IsScanNotRequired(t *testing.T) {
 		assert.True(t, required)
 	})
 
+	t.Run("should find any matching talismanrc config", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSHA256Hasher := mockutility.NewMockSHA256Hasher(ctrl)
+		checksumCalculator := mockchecksumcalculator.NewMockChecksumCalculator(ctrl)
+		ignoreConfig := talismanrc.TalismanRC{
+			IgnoreConfigs: []talismanrc.IgnoreConfig{
+				&talismanrc.FileIgnoreConfig{
+					FileName: "some.txt",
+					Checksum: "sha1",
+				},
+				&talismanrc.FileIgnoreConfig{
+					FileName: "some.txt",
+					Checksum: "recent-sha1",
+				},
+			},
+		}
+		cc := NewChecksumCompare(checksumCalculator, mockSHA256Hasher, &ignoreConfig)
+		addition := gitrepo.Addition{Name: "some.txt"}
+		mockSHA256Hasher.EXPECT().CollectiveSHA256Hash([]string{string(addition.Path)}).Return("somesha")
+		checksumCalculator.EXPECT().CalculateCollectiveChecksumForPattern("some.txt").Return("recent-sha1").Times(2)
+
+		required := cc.IsScanNotRequired(addition)
+
+		assert.True(t, required)
+	})
+
+	t.Run("should find checksum talismanrc config only", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		mockSHA256Hasher := mockutility.NewMockSHA256Hasher(ctrl)
+		checksumCalculator := mockchecksumcalculator.NewMockChecksumCalculator(ctrl)
+		ignoreConfig := talismanrc.TalismanRC{
+			IgnoreConfigs: []talismanrc.IgnoreConfig{
+				&talismanrc.FileIgnoreConfig{
+					FileName:        "*.txt",
+					AllowedPatterns: []string{"key"},
+				},
+				&talismanrc.FileIgnoreConfig{
+					FileName: "some.txt",
+					Checksum: "sha1",
+				},
+			},
+		}
+		cc := NewChecksumCompare(checksumCalculator, mockSHA256Hasher, &ignoreConfig)
+		addition := gitrepo.Addition{Name: "some.txt"}
+		mockSHA256Hasher.EXPECT().CollectiveSHA256Hash([]string{string(addition.Path)}).Return("somesha")
+		checksumCalculator.EXPECT().CalculateCollectiveChecksumForPattern("*.txt").Return("sha1")
+		checksumCalculator.EXPECT().CalculateCollectiveChecksumForPattern("some.txt").Return("sha1")
+
+		required := cc.IsScanNotRequired(addition)
+
+		assert.True(t, required)
+	})
 }

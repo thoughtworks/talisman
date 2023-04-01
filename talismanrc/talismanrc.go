@@ -165,8 +165,7 @@ func (tRC *TalismanRC) Deny(addition gitrepo.Addition, detectorName string) bool
 }
 
 //Strip git addition 
-func(tRC *TalismanRC) FilterAllowedPatternsFromAddition(addition gitrepo.Addition) string {
-	additionPathAsString := string(addition.Path)
+func (tRC *TalismanRC) FilterAllowedPatternsFromAddition(addition gitrepo.Addition) string {
 	// Processing global allowed patterns
 	for _, pattern := range tRC.AllowedPatterns {
 		addition.Data = pattern.ReplaceAll(addition.Data, []byte(""))
@@ -174,7 +173,7 @@ func(tRC *TalismanRC) FilterAllowedPatternsFromAddition(addition gitrepo.Additio
 
 	// Processing allowed patterns based on file path
 	for _, ignoreConfig := range tRC.IgnoreConfigs {
-		if ignoreConfig.GetFileName() == additionPathAsString {
+		if addition.Matches(ignoreConfig.GetFileName()) {
 			for _, pattern := range ignoreConfig.GetAllowedPatterns() {
 				addition.Data = pattern.ReplaceAll(addition.Data, []byte(""))
 			}
