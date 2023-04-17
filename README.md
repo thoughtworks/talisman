@@ -88,6 +88,7 @@ bash -c "$(curl --silent https://thoughtworks.github.io/talisman/scripts/install
 bash -c "$(curl --silent https://thoughtworks.github.io/talisman/scripts/install.bash)" -- pre-push
 ```
 
+
 2. If you do not have TALISMAN\_HOME set up in your `$PATH`, you will be asked an appropriate place to set it up. Choose the option number where you set the profile source on your machine.
 
 
@@ -99,6 +100,15 @@ If you choose to set the `$PATH` later, please export TALISMAN\_HOME=$HOME/.tali
   This script will not clobber pre-existing hooks. If you have existing hooks, [look for ways to chain Talisman into them.](#handling-existing-hooks)
   
   - you can set SEARCH_ROOT environment variable with the path of the base directory before executing the installation so you don't need to input it manually during the installation
+
+
+#### Alternative installation using brew
+
+Talisman can also be installed using linuxbrew in Linux and homebrew in macOS by running the following command in terminal
+
+  ```
+brew install talisman
+```
 
 
 ### Handling existing hooks
