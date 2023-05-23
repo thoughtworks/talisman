@@ -118,6 +118,7 @@ func TestIgnoreAdditionsByScope(t *testing.T) {
 		"python": {
 			testAddition("poetry.lock"),
 			testAddition("Pipfile.lock"),
+			testAddition("requirements.txt"),
 		},
 	}
 
@@ -299,7 +300,6 @@ func TestFor(t *testing.T) {
 		assert.True(t, rc.IgnoreConfigs[2].ChecksumMatches("file3_checksum"))
 
 	})
-
 
 }
 
