@@ -42,7 +42,7 @@ func (p prompt) Confirm(message string) bool {
 	confirmation := false
 	err := survey.AskOne(confirmPrompt, &confirmation)
 	if err != nil {
-		log.Printf("error occured when getting input from user: %s", err)
+		log.Printf("error occurred when getting input from user: %s", err)
 		return false
 	}
 
