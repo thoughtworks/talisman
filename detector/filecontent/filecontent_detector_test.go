@@ -29,7 +29,7 @@ func TestShouldNotFlagSafeText(t *testing.T) {
 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
-	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
+	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
 }
 
 func TestShouldIgnoreFileIfNeeded(t *testing.T) {
@@ -63,7 +63,7 @@ func TestShouldNotFlag4CharSafeText(t *testing.T) {
 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
-	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
+	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
 }
 
 func TestShouldNotFlagLowEntropyBase64Text(t *testing.T) {
@@ -74,7 +74,7 @@ func TestShouldNotFlagLowEntropyBase64Text(t *testing.T) {
 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
-	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
+	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
 }
 
 func TestShouldFlagPotentialAWSSecretKeys(t *testing.T) {
@@ -88,7 +88,7 @@ func TestShouldFlagPotentialAWSSecretKeys(t *testing.T) {
 
 	expectedMessage := fmt.
 		Sprintf("Expected file to not contain base64 encoded texts such as: %s", awsSecretAccessKey)
-	assert.True(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
+	assert.True(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
 	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
 	assert.Len(t, results.Results, 1)
 }
@@ -103,7 +103,7 @@ func TestShouldFlagPotentialSecretWithoutTrimmingWhenLengthLessThan50Characters(
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
 
 	expectedMessage := fmt.Sprintf("Expected file to not contain base64 encoded texts such as: %s", secret)
-	assert.True(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
+	assert.True(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
 	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
 	assert.Len(t, results.Results, 1)
 }
@@ -121,7 +121,7 @@ func TestShouldFlagPotentialJWT(t *testing.T) {
 
 	expectedMessage := fmt.
 		Sprintf("Expected file to not contain base64 encoded texts such as: %s", jwt[:47]+"...")
-	assert.True(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
+	assert.True(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
 	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
 	assert.Len(t, results.Results, 1)
 }
@@ -143,7 +143,7 @@ func TestShouldFlagPotentialSecretsWithinJavaCode(t *testing.T) {
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
 	expectedMessage := "Expected file to not contain base64 encoded texts such as: " +
 		"accessKey=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPL..."
-	assert.True(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
+	assert.True(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
 	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
 	assert.Len(t, results.Results, 1)
 }
@@ -160,7 +160,7 @@ func TestShouldNotFlagPotentialSecretsWithinSafeJavaCode(t *testing.T) {
 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
-	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
+	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
 }
 
 func TestShouldNotFlagPotentialSecretsWithinSafeLongMethodName(t *testing.T) {
@@ -170,7 +170,7 @@ func TestShouldNotFlagPotentialSecretsWithinSafeLongMethodName(t *testing.T) {
 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
-	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
+	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
 }
 
 func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
