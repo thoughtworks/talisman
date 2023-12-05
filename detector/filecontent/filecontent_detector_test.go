@@ -29,7 +29,7 @@ func TestShouldNotFlagSafeText(t *testing.T) {
 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
-	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
+	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
 }
 
 func TestShouldIgnoreFileIfNeeded(t *testing.T) {
@@ -63,7 +63,7 @@ func TestShouldNotFlag4CharSafeText(t *testing.T) {
 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
-	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
+	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
 }
 
 func TestShouldNotFlagLowEntropyBase64Text(t *testing.T) {
@@ -74,7 +74,7 @@ func TestShouldNotFlagLowEntropyBase64Text(t *testing.T) {
 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
-	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
+	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
 }
 
 func TestShouldFlagPotentialAWSSecretKeys(t *testing.T) {
@@ -87,8 +87,8 @@ func TestShouldFlagPotentialAWSSecretKeys(t *testing.T) {
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
 
 	expectedMessage := fmt.
-		Sprintf("Expected file to not to contain base64 encoded texts such as: %s", awsSecretAccessKey)
-	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
+		Sprintf("Expected file to not contain base64 encoded texts such as: %s", awsSecretAccessKey)
+	assert.True(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
 	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
 	assert.Len(t, results.Results, 1)
 }
@@ -102,8 +102,8 @@ func TestShouldFlagPotentialSecretWithoutTrimmingWhenLengthLessThan50Characters(
 	NewFileContentDetector(emptyTalismanRC).
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
 
-	expectedMessage := fmt.Sprintf("Expected file to not to contain base64 encoded texts such as: %s", secret)
-	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
+	expectedMessage := fmt.Sprintf("Expected file to not contain base64 encoded texts such as: %s", secret)
+	assert.True(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
 	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
 	assert.Len(t, results.Results, 1)
 }
@@ -120,8 +120,8 @@ func TestShouldFlagPotentialJWT(t *testing.T) {
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
 
 	expectedMessage := fmt.
-		Sprintf("Expected file to not to contain base64 encoded texts such as: %s", jwt[:47]+"...")
-	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
+		Sprintf("Expected file to not contain base64 encoded texts such as: %s", jwt[:47]+"...")
+	assert.True(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
 	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
 	assert.Len(t, results.Results, 1)
 }
@@ -141,9 +141,9 @@ func TestShouldFlagPotentialSecretsWithinJavaCode(t *testing.T) {
 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
-	expectedMessage := "Expected file to not to contain base64 encoded texts such as: " +
+	expectedMessage := "Expected file to not contain base64 encoded texts such as: " +
 		"accessKey=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPL..."
-	assert.True(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
+	assert.True(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
 	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
 	assert.Len(t, results.Results, 1)
 }
@@ -160,7 +160,7 @@ func TestShouldNotFlagPotentialSecretsWithinSafeJavaCode(t *testing.T) {
 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
-	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
+	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
 }
 
 func TestShouldNotFlagPotentialSecretsWithinSafeLongMethodName(t *testing.T) {
@@ -170,7 +170,7 @@ func TestShouldNotFlagPotentialSecretsWithinSafeLongMethodName(t *testing.T) {
 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
-	assert.False(t, results.HasFailures(), "Expected file to not to contain base64 encoded texts")
+	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
 }
 
 func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
@@ -181,7 +181,7 @@ func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
-	expectedMessage := "Expected file to not to contain hex encoded texts such as: " + hex
+	expectedMessage := "Expected file to not contain hex encoded texts such as: " + hex
 	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
 	assert.Len(t, results.Results, 1)
 }
@@ -243,7 +243,7 @@ func TestResultsShouldContainHexTextsIfHexAndBase64ExistInFile(t *testing.T) {
 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
-	expectedMessage := "Expected file to not to contain hex encoded texts such as: " + hex
+	expectedMessage := "Expected file to not contain hex encoded texts such as: " + hex
 	messageReceived := strings.Join(getFailureMessages(results, filePath), " ")
 	assert.Regexp(t, expectedMessage, messageReceived, "Should contain hex detection message")
 	assert.Len(t, results.Results, 1)
@@ -260,7 +260,7 @@ func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
 
-	expectedMessage := "Expected file to not to contain base64 encoded texts such as: " + base64
+	expectedMessage := "Expected file to not contain base64 encoded texts such as: " + base64
 	messageReceived := strings.Join(getFailureMessages(results, filePath), " ")
 	assert.Regexp(t, expectedMessage, messageReceived, "Should contain base64 detection message")
 	assert.Len(t, results.Results, 1)
@@ -275,7 +275,7 @@ func TestResultsShouldContainCreditCardNumberIfCreditCardNumberExistInFile(t *te
 	NewFileContentDetector(emptyTalismanRC).
 		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
 
-	expectedMessage := "Expected file to not to contain credit card numbers such as: " + creditCardNumber
+	expectedMessage := "Expected file to not contain credit card numbers such as: " + creditCardNumber
 	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
 	assert.Len(t, results.Results, 1)
 }

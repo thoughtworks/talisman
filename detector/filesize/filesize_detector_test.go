@@ -29,7 +29,7 @@ func TestShouldNotFlagLargeFilesIfThresholdIsBelowSeverity(t *testing.T) {
 	talismanRCWithThreshold := &talismanrc.TalismanRC{Threshold: severity.High}
 	additions := []gitrepo.Addition{gitrepo.NewAddition("filename", content)}
 	NewFileSizeDetector(2).Test(helpers.NewChecksumCompare(nil, defaultHasher, talismanRCWithThreshold), additions, talismanRCWithThreshold, results, func() {})
-	assert.False(t, results.HasFailures(), "Expected file to not to fail the check against file size detector.")
+	assert.False(t, results.HasFailures(), "Expected file to not fail the check against file size detector.")
 	assert.True(t, results.HasWarnings(), "Expected file to have warnings against file size detector.")
 }
 
@@ -38,7 +38,7 @@ func TestShouldNotFlagSmallFiles(t *testing.T) {
 	content := []byte("m")
 	additions := []gitrepo.Addition{gitrepo.NewAddition("filename", content)}
 	NewFileSizeDetector(2).Test(helpers.NewChecksumCompare(nil, defaultHasher, talismanRC), additions, talismanRC, results, func() {})
-	assert.False(t, results.HasFailures(), "Expected file to not to fail the check against file size detector.")
+	assert.False(t, results.HasFailures(), "Expected file to not fail the check against file size detector.")
 }
 
 func TestShouldNotFlagIgnoredLargeFiles(t *testing.T) {
