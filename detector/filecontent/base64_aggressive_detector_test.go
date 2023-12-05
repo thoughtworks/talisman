@@ -29,7 +29,7 @@ func TestShouldFlagPotentialAWSAccessKeysInAggressiveMode(t *testing.T) {
 			results,
 			dummyCompletionCallbackFunc)
 
-	assert.True(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
+	assert.True(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
 }
 
 func TestShouldFlagPotentialAWSAccessKeysAtPropertyDefinitionInAggressiveMode(t *testing.T) {
@@ -46,7 +46,7 @@ func TestShouldFlagPotentialAWSAccessKeysAtPropertyDefinitionInAggressiveMode(t 
 			results,
 			dummyCompletionCallbackFunc)
 
-	assert.True(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
+	assert.True(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
 }
 
 func TestShouldNotFlagPotentialSecretsWithinSafeJavaCodeEvenInAggressiveMode(t *testing.T) {
@@ -68,5 +68,5 @@ func TestShouldNotFlagPotentialSecretsWithinSafeJavaCodeEvenInAggressiveMode(t *
 			results,
 			dummyCompletionCallbackFunc)
 
-	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts")
+	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
 }
