@@ -252,7 +252,7 @@ Talisman Report:
 |                 | failed checks against the                                                     |
 |                 | pattern ^.+\.pem$                                                             |
 +-----------------+-------------------------------------------------------------------------------+
-| danger.pem      | Expected file to not to contain hex encoded texts such as:                    |
+| danger.pem      | Expected file to not contain hex encoded texts such as:                    |
 |                 | awsSecretKey=c64e8c79aacf5ddb02f1274db2d973f363f4f553ab1692d8d203b4cc09692f79 |
 +-----------------+-------------------------------------------------------------------------------+
 ```

@@ -58,11 +58,11 @@ func (ct contentType) getInfo() string {
 func (ct contentType) getMessageFormat() string {
 	switch ct {
 	case base64Content:
-		return "Expected file to not to contain base64 encoded texts such as: %s"
+		return "Expected file to not contain base64 encoded texts such as: %s"
 	case hexContent:
-		return "Expected file to not to contain hex encoded texts such as: %s"
+		return "Expected file to not contain hex encoded texts such as: %s"
 	case creditCardContent:
-		return "Expected file to not to contain credit card numbers such as: %s"
+		return "Expected file to not contain credit card numbers such as: %s"
 	}
 
 	return ""
