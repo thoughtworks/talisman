@@ -153,7 +153,7 @@ In order to use husky, make sure you have already set TALISMAN_HOME to `$PATH`.
 ```
 + **New Users**
 
- If you want to use husky with multiple hooks along with talisman, add the following snippet to you package.json.
+ If you want to use husky with multiple hooks along with talisman, add the following snippet to your package.json.
 ###### Windows
 
  ```
