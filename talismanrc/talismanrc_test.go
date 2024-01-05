@@ -90,6 +90,7 @@ func TestIgnoreAdditionsByScope(t *testing.T) {
 	testTable := map[string][]gitrepo.Addition{
 		"node": {
 			testAddition("yarn.lock"),
+			testAddition("pnpm.lock"),
 			testAddition("package-lock.json"),
 			testAddition("node_modules/module1/foo.js")},
 		"go": {
