@@ -10,7 +10,7 @@
 ## Table of Contents
 - [What is Talisman?](#what-is-talisman)
 - [Installation](#installation)
-  - [[Recommended approach]](#recommended-approach)
+  - [Install onto path (recommended approach)](#install-onto-path-recommended-approach)
   - [Installation as a global hook template](#installation-as-a-global-hook-template)
     - [Handling existing hooks](#handling-existing-hooks)
       - [1. Pre-commit (Linux/Unix)](#1-pre-commit-linuxunix)
@@ -44,10 +44,12 @@
   - [Contributing to Talisman](#contributing-to-talisman)
 
 # What is Talisman?
-Talisman is a tool that installs a hook to your repository to ensure that potential secrets or sensitive information do not leave the developer's workstation.
 
-It validates the outgoing changeset for things that look suspicious - such as potential SSH
-keys, authorization tokens, private keys etc.
+Talisman is a tool that scans git changesets to ensure that potential secrets
+or sensitive information do not leave the developer's workstation.
+
+It validates the outgoing changeset for things that look suspicious - such as
+potential SSH keys, authorization tokens, private keys etc.
 
 # Installation
 
@@ -55,8 +57,9 @@ Talisman supports MAC OSX, Linux and Windows.
 
 Talisman can be installed and used in one of the following ways:
 
-1. As a git hook as a global [git hook template](https://git-scm.com/docs/git-init#_template_directory) and a CLI utility (for git repo scanning)
-2. As a git hook into a single git repository
+1. As a standalone executable
+2. As a git hook as a global [git hook template](https://git-scm.com/docs/git-init#_template_directory) and a CLI utility (for git repo scanning)
+3. As a git hook into a single git repository
 
 Talisman can be set up as either a pre-commit or pre-push hook on the git repositories.
 
@@ -64,11 +67,34 @@ Find the instructions below.
 
 *Disclaimer: Secrets creeping in via a forced push in a git repository cannot be detected by Talisman. A forced push is believed to be notorious in its own ways, and we suggest git repository admins to apply appropriate measures to authorize such activities.*
 
+## Install onto path (recommended approach)
 
-## [Recommended approach]
+We recommend installing `talisman` onto your path so that it is available for
+git hook frameworks and scripts. Pick the correct binary for your system from
+our [Releases Page](https://github.com/thoughtworks/talisman/releases), or run
+our [install script](https://github.com/thoughtworks/talisman/blob/main/install.sh):
+
+```
+bash -c "$(curl --silent https://raw.githubusercontent.com/thoughtworks/talisman/main/install.sh)"
+```
+
+Or set environment variable `INSTALL_LOCATION` to specify a custom location for
+the binary:
+
+```
+INSTALL_LOCATION=/usr/local/bin bash -c "$(curl --silent https://raw.githubusercontent.com/thoughtworks/talisman/main/install.sh)"
+```
+
+Or using linuxbrew in Linux and homebrew in macOS by running the following
+command in terminal:
+
+```
+brew install talisman
+```
+
 ## Installation as a global hook template
 
-We recommend installing Talisman as a **pre-commit git hook template**, as that will cause
+We offer scripts that will install Talisman as a **pre-commit git hook template**, as that will cause
 Talisman to be present, not only in your existing git repositories, but also in any new repository that you 'init' or
 'clone'.
 
@@ -100,15 +126,6 @@ If you choose to set the `$PATH` later, please export TALISMAN\_HOME=$HOME/.tali
   This script will not clobber pre-existing hooks. If you have existing hooks, [look for ways to chain Talisman into them.](#handling-existing-hooks)
   
   - you can set SEARCH_ROOT environment variable with the path of the base directory before executing the installation so you don't need to input it manually during the installation
-
-
-#### Alternative installation using brew
-
-Talisman can also be installed using linuxbrew in Linux and homebrew in macOS by running the following command in terminal
-
-  ```
-brew install talisman
-```
 
 
 ### Handling existing hooks
