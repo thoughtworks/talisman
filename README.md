@@ -12,15 +12,10 @@
 - [Installation](#installation)
   - [Install onto path (recommended approach)](#install-onto-path-recommended-approach)
   - [Installation as a global hook template](#installation-as-a-global-hook-template)
-    - [Handling existing hooks](#handling-existing-hooks)
-      - [1. Pre-commit (Linux/Unix)](#1-pre-commit-linuxunix)
-      - [2. Husky (Linux/Unix/Windows)](#2-husky-linuxunixwindows)
-          - [Windows](#windows)
-          - [Linux/Unix](#linuxunix)
-          - [Windows](#windows-1)
-          - [Linux/Unix](#linuxunix-1)
   - [Installation to a single project](#installation-to-a-single-project)
-    - [Handling existing hooks](#handling-existing-hooks-1)
+- [Using with hook frameworks](#using-with-hook-frameworks)
+  - [Pre-commit](#pre-commit)
+  - [Husky](#husky)
 - [Upgrading](#upgrading)
 - [Talisman in action](#talisman-in-action)
   - [Validations](#validations)
@@ -41,7 +36,7 @@
 - [Uninstallation](#uninstallation)
   - [Uninstallation from a global hook template](#uninstallation-from-a-global-hook-template)
   - [Uninstallation from a single repository](#uninstallation-from-a-single-repository)
-  - [Contributing to Talisman](#contributing-to-talisman)
+- [Contributing to Talisman](#contributing-to-talisman)
 
 # What is Talisman?
 
@@ -122,80 +117,10 @@ bash -c "$(curl --silent https://thoughtworks.github.io/talisman/scripts/install
 If you choose to set the `$PATH` later, please export TALISMAN\_HOME=$HOME/.talisman/bin to the path.
 
 
-3. Choose a base directory where Talisman should scan for all git repositories, and setup a git hook (pre-commit or pre-push, as chosen in step 1) as a symlink.
-  This script will not clobber pre-existing hooks. If you have existing hooks, [look for ways to chain Talisman into them.](#handling-existing-hooks)
+3. Choose a base directory where Talisman should scan for all git repositories, and set up a git hook (pre-commit or pre-push, as chosen in step 1) as a symlink.
+  This script will not clobber pre-existing hooks. If you have existing hooks you can add talisman through a [hook framework](#using-with-hook-frameworks)
   
   - you can set SEARCH_ROOT environment variable with the path of the base directory before executing the installation so you don't need to input it manually during the installation
-
-
-### Handling existing hooks
-Installation of Talisman globally does not clobber pre-existing hooks on repositories. <br>
-If the installation script finds any existing hooks, it will only indicate so on the console. <br>
-To achieve running multiple hooks we suggest (but not limited to) the following two tools
-
-#### 1. Pre-commit (Linux/Unix)
-Use [pre-commit](https://pre-commit.com) tool to manage all the existing hooks along with Talisman.
-In the suggestion, it will prompt the following code to be included in .pre-commit-config.yaml
-
-```
-    -   repo: local
-        hooks:
-        -   id: talisman-precommit
-            name: talisman
-            entry: bash -c 'if [ -n "${TALISMAN_HOME:-}" ]; then ${TALISMAN_HOME}/talisman_hook_script pre-commit; else echo "TALISMAN does not exist. Consider installing from https://github.com/thoughtworks/talisman . If you already have talisman installed, please ensure TALISMAN_HOME variable is set to where talisman_hook_script resides, for example, TALISMAN_HOME=${HOME}/.talisman/bin"; fi'
-            language: system
-            pass_filenames: false
-            types: [text]
-            verbose: true
-```
-
-#### 2. Husky (Linux/Unix/Windows)
-[husky](https://typicode.github.io/husky) is an npm module for managing git hooks.
-In order to use husky, make sure you have already set TALISMAN_HOME to `$PATH`.
-
-+ **Existing Users**
-
- If you already are using husky, add the following lines to husky pre-commit in package.json
-
- ###### Windows
-
- ```
-    "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" --githook pre-commit'"
-```
-
- ###### Linux/Unix
-
- ```
-    $TALISMAN_HOME/talisman_hook_script pre-commit
-```
-+ **New Users**
-
- If you want to use husky with multiple hooks along with talisman, add the following snippet to you package json.
-###### Windows
-
- ```
-     {
-        "husky": {
-          "hooks": {
-            "pre-commit": "bash -c '\"%TALISMAN_HOME%\\${TALISMAN_BINARY_NAME}\" --githook pre-commit'" && "other-scripts"
-            }
-        }
-    }
-```
-
- ###### Linux/Unix
-
- ```
-    {
-      "husky": {
-       "hooks": {
-         "pre-commit": "$TALISMAN_HOME/talisman_hook_script pre-commit" && "other-scripts"
-          }
-        }
-      }
-```
-
-
 
 ## Installation to a single project
 
@@ -214,24 +139,41 @@ cd my-git-project
 ~/install-talisman.sh pre-commit
 ```
 
-### Handling existing hooks
-Talisman will need to be chained with any existing git hooks.You can use [pre-commit](https://pre-commit.com) git hooks framework to handle this.
+*Disclaimer: Talisman cannot guarantee its functionality in Microsoft's unsupported versions of Windows. Anyway Talisman is successfully tested on Windows 7 and server 2008 R2, which might not work in future releases.*
 
-Add this to your `.pre-commit-config.yaml` (be sure to update `rev` to point to
-a real git revision!)
+# Using with hook frameworks
+
+Globally installing talisman as a hook will not clobber any existing hooks. If
+the installation script finds any existing hooks, it will only indicate so on
+the console. To run multiple hooks we suggest using a hook framework, such as
+pre-commit or husky. These instructions assume that the talisman executable is
+installed somewhere on your system's path.
+
+## Pre-commit
+
+Use [pre-commit](https://pre-commit.com) tool to manage all the existing hooks
+along with Talisman. In the suggestion, it will prompt the following code to be
+included in .pre-commit-config.yaml:
 
 ```yaml
 -   repo: https://github.com/thoughtworks/talisman
     rev: 'v1.28.0'  # Update me!
     hooks:
-    # either `commit` or `push` support
-    # -   id: talisman-push
-    - id: talisman-commit
-      entry: cmd --githook pre-commit
-
+      # both pre-commit and pre-push supported
+      # -   id: talisman-push
+      - id: talisman-commit
+        entry: cmd --githook pre-commit
 ```
 
-*Disclaimer: Talisman cannot guarantee its functionality in Microsoft's unsupported versions of Windows. Anyway Talisman is successfully tested on Windows 7 and server 2008 R2, which might not work in future releases.*
+## Husky
+
+[husky](https://typicode.github.io/husky) is an npm module for managing hooks.
+Add the following line to the husky pre-commit configuration in you
+`package.json`:
+
+```
+talisman --githook pre-commit
+```
 
 # Upgrading
 Since release v0.4.4, Talisman <b>automatically updates</b> the binary to the latest release, when the hook is invoked (at pre-commit/pre-push, as set up). So, just sit back, relax, and keep using the latest Talisman without any extra efforts.
@@ -521,8 +463,8 @@ To run the checksum please "cd" into the root of your repository and run the fol
 For Example:
 `talisman --checksum="*.pem *.txt"`
 
-1. This command finds all the .pem files in the respository and calculates collective checksum of all those files and outputs a yaml format for .talismanrc. In the same way it deals with the .txt files.
-2. Multiple file names / patterns can be given with space seperation.
+1. This command finds all the .pem files in the repository and calculates collective checksum of all those files and outputs a yaml format for .talismanrc. In the same way it deals with the .txt files.
+2. Multiple file names / patterns can be given with space separation.
 
 Example output:
 
@@ -608,6 +550,6 @@ When you installed Talisman, it must have created a pre-commit or pre-push hook 
 
 You can remove the hook manually by deleting the Talisman pre-commit or pre-push hook from .git/hooks folder in repository.
 
-## Contributing to Talisman
+# Contributing to Talisman
 
 To contribute to Talisman, have a look at our [contributing guide](contributing.md).
