@@ -105,12 +105,11 @@ function run() {
     download $CHECKSUM_FILE_NAME
 
     pushd "$TEMP_DIR" >/dev/null 2>&1
-    grep "$TALISMAN_BINARY_NAME" $CHECKSUM_FILE_NAME >$CHECKSUM_FILE_NAME.single
 
     if ! command -v shasum &> /dev/null; then
-      sha256sum -c $CHECKSUM_FILE_NAME.single
+      sha256sum --ignore-missing -c $CHECKSUM_FILE_NAME
     else
-      shasum -a 256 -c $CHECKSUM_FILE_NAME.single
+      shasum -a 256 --ignore-missing -c $CHECKSUM_FILE_NAME
     fi
     popd >/dev/null 2>&1
     echo_debug "Checksum verification successfully!"
@@ -134,6 +133,11 @@ function run() {
       exit 126
     fi
   }
+
+  if [ ! -d "$INSTALL_LOCATION" ]; then
+    echo_error "$INSTALL_LOCATION is not a directory!"
+    exit 1
+  fi
 
   set_talisman_binary_name
 
