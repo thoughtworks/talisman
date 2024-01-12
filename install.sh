@@ -1,9 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-declare TALISMAN_BINARY_NAME
+declare BINARY_NAME
 
 E_UNSUPPORTED_ARCH=5
+CHECKSUM_FILE_NAME='checksums'
+
 DEBUG=${DEBUG:-''}
 VERSION=${VERSION:-'latest'}
 INSTALL_ORG_REPO=${INSTALL_ORG_REPO:-'thoughtworks/talisman'}
@@ -68,28 +70,27 @@ function architecture() {
   esac
 }
 
-function set_talisman_binary_name() {
-  TALISMAN_BINARY_NAME="talisman_$(operating_system)_$(architecture)"
+function set_binary_name() {
+  BINARY_NAME="talisman_$(operating_system)_$(architecture)"
   if [ "$(operating_system)" = "windows" ]; then
-    TALISMAN_BINARY_NAME="$TALISMAN_BINARY_NAME.exe"
+    BINARY_NAME="$BINARY_NAME.exe"
   fi
+  echo_success "Selected $BINARY_NAME"
 }
 
 function download() {
-  OBJECT=$1
-  DOWNLOAD_URL=$(curl -Ls https://api.github.com/repos/"$INSTALL_ORG_REPO"/releases/latest |
-     grep download_url | awk '{print $2}' | tr -d '"' | grep "$OBJECT")
-
-  echo_debug "Downloading $OBJECT from $DOWNLOAD_URL"
-  curl --location --silent "$DOWNLOAD_URL" >"$TEMP_DIR/$OBJECT"
+  ASSETS=$(curl -Ls https://api.github.com/repos/"$INSTALL_ORG_REPO"/releases/latest |
+     grep download_url | awk '{print $2}' | tr -d '"')
+  BINARY_URL=$(echo "$ASSETS" | grep "$BINARY_NAME")
+  CHECKSUM_URL=$(echo "$ASSETS" | grep $CHECKSUM_FILE_NAME)
+  echo_debug "Downloading $BINARY_NAME and from $BINARY_URL"
+  curl --location --silent "$BINARY_URL" >"$TEMP_DIR/$BINARY_NAME"
+  echo_debug "Downloading $CHECKSUM_FILE_NAME and from $CHECKSUM_URL"
+  curl --location --silent "$CHECKSUM_URL" >"$TEMP_DIR/$CHECKSUM_FILE_NAME"
+  echo_success "Downloaded talisman binary and checksums"
 }
 
 function verify_checksum() {
-  FILE_NAME=$1
-  CHECKSUM_FILE_NAME='checksums'
-  echo_debug "Verifying checksum for $FILE_NAME"
-  download $CHECKSUM_FILE_NAME
-
   pushd "$TEMP_DIR" >/dev/null 2>&1
 
   if ! command -v shasum &> /dev/null; then
@@ -97,25 +98,20 @@ function verify_checksum() {
   else
     shasum -a 256 --ignore-missing -c $CHECKSUM_FILE_NAME
   fi
+
   popd >/dev/null 2>&1
-  echo_debug "Checksum verification successfully!"
-  echo
+  echo_success "Checksum OK"
 }
 
-function download_talisman_binary() {
-  download "$TALISMAN_BINARY_NAME"
-  verify_checksum "$TALISMAN_BINARY_NAME"
-}
-
-function install_talisman() {
-  if (touch "$INSTALL_LOCATION/$TALISMAN_BINARY_NAME" &>/dev/null); then
-    cp "$TEMP_DIR/$TALISMAN_BINARY_NAME" "$INSTALL_LOCATION/$TALISMAN_BINARY_NAME"
-    chmod +x "$INSTALL_LOCATION/$TALISMAN_BINARY_NAME"
-    ln -s "$INSTALL_LOCATION/$TALISMAN_BINARY_NAME" "$INSTALL_LOCATION/talisman"
+function install() {
+  if (touch "$INSTALL_LOCATION/$BINARY_NAME" &>/dev/null); then
+    cp "$TEMP_DIR/$BINARY_NAME" "$INSTALL_LOCATION/$BINARY_NAME"
+    chmod +x "$INSTALL_LOCATION/$BINARY_NAME"
+    ln -s "$INSTALL_LOCATION/$BINARY_NAME" "$INSTALL_LOCATION/talisman"
   elif (which sudo &>/dev/null); then
-    sudo cp "$TEMP_DIR/$TALISMAN_BINARY_NAME" "$INSTALL_LOCATION/$TALISMAN_BINARY_NAME"
-    sudo chmod +x "$INSTALL_LOCATION/$TALISMAN_BINARY_NAME"
-    sudo ln -s "$INSTALL_LOCATION/$TALISMAN_BINARY_NAME" "$INSTALL_LOCATION/talisman"
+    sudo cp "$TEMP_DIR/$BINARY_NAME" "$INSTALL_LOCATION/$BINARY_NAME"
+    sudo chmod +x "$INSTALL_LOCATION/$BINARY_NAME"
+    sudo ln -s "$INSTALL_LOCATION/$BINARY_NAME" "$INSTALL_LOCATION/talisman"
   else
     echo_error "Insufficient permission to install to $INSTALL_LOCATION"
     exit 126
@@ -133,10 +129,10 @@ function run() {
     exit 1
   fi
 
-  set_talisman_binary_name
-  echo_success "Downloading talisman binary"
-  download_talisman_binary
-  install_talisman
+  set_binary_name
+  download
+  verify_checksum
+  install
 }
 
 run
