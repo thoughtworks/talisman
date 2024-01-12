@@ -108,12 +108,14 @@ function download_talisman_binary() {
 }
 
 function install_talisman() {
-  if (touch "$INSTALL_LOCATION/talisman" &>/dev/null); then
-    cp "$TEMP_DIR/$TALISMAN_BINARY_NAME" "$INSTALL_LOCATION/talisman"
-    chmod +x "$INSTALL_LOCATION/talisman"
+  if (touch "$INSTALL_LOCATION/$TALISMAN_BINARY_NAME" &>/dev/null); then
+    cp "$TEMP_DIR/$TALISMAN_BINARY_NAME" "$INSTALL_LOCATION/$TALISMAN_BINARY_NAME"
+    chmod +x "$INSTALL_LOCATION/$TALISMAN_BINARY_NAME"
+    ln -s "$INSTALL_LOCATION/$TALISMAN_BINARY_NAME" "$INSTALL_LOCATION/talisman"
   elif (which sudo &>/dev/null); then
-    sudo cp "$TEMP_DIR/$TALISMAN_BINARY_NAME" "$INSTALL_LOCATION/talisman"
-    sudo chmod +x "$INSTALL_LOCATION/talisman"
+    sudo cp "$TEMP_DIR/$TALISMAN_BINARY_NAME" "$INSTALL_LOCATION/$TALISMAN_BINARY_NAME"
+    sudo chmod +x "$INSTALL_LOCATION/$TALISMAN_BINARY_NAME"
+    sudo ln -s "$INSTALL_LOCATION/$TALISMAN_BINARY_NAME" "$INSTALL_LOCATION/talisman"
   else
     echo_error "Insufficient permission to install to $INSTALL_LOCATION"
     exit 126
