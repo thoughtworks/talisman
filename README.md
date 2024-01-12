@@ -168,7 +168,7 @@ included in .pre-commit-config.yaml:
 ## Husky
 
 [husky](https://typicode.github.io/husky) is an npm module for managing hooks.
-Add the following line to the husky pre-commit configuration in you
+Add the following line to the husky pre-commit configuration in your
 `package.json`:
 
 ```
