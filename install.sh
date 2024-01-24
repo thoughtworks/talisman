@@ -80,7 +80,7 @@ function set_binary_name() {
 
 function download() {
   ASSETS=$(curl -Ls https://api.github.com/repos/"$INSTALL_ORG_REPO"/releases/latest |
-     grep download_url | awk '{print $2}' | tr -d '"')
+    grep download_url | awk '{print $2}' | tr -d '"')
   BINARY_URL=$(echo "$ASSETS" | grep "$BINARY_NAME")
   CHECKSUM_URL=$(echo "$ASSETS" | grep $CHECKSUM_FILE_NAME)
   echo_debug "Downloading $BINARY_NAME and from $BINARY_URL"
