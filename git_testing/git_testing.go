@@ -23,11 +23,9 @@ func Init(gitRoot string) *GitTesting {
 	testingRepo := &GitTesting{gitRoot}
 	output := testingRepo.ExecCommand("git", "init", ".")
 	logrus.Debugf("Git init result %v", string(output))
-	if os.Getenv("CI") != "" {
-		fmt.Println("Setting up git_repo")
-		testingRepo.ExecCommand("git", "config", "--global", "user.email", "talisman-test-user@example.com")
-		testingRepo.ExecCommand("git", "config", "--global", "user.name", "Talisman Test User")
-	}
+	testingRepo.ExecCommand("git", "config", "user.email", "talisman-test-user@example.com")
+	testingRepo.ExecCommand("git", "config", "user.name", "Talisman Test User")
+	testingRepo.ExecCommand("git", "config", "commit.gpgsign", "false")
 	return testingRepo
 }
 
@@ -35,8 +33,11 @@ func (git *GitTesting) GitClone(cloneName string) *GitTesting {
 	result := git.ExecCommand("git", "clone", git.gitRoot, cloneName)
 	Logger.Debugf("Clone result : %s\n", result)
 	Logger.Debugf("GitRoot :%s \t CloneRoot: %s\n", git.gitRoot, cloneName)
-	retval := &GitTesting{cloneName}
-	return retval
+	clone := &GitTesting{cloneName}
+	clone.ExecCommand("git", "config", "user.email", "talisman-test-user@example.com")
+	clone.ExecCommand("git", "config", "user.name", "Talisman Test User")
+	clone.ExecCommand("git", "config", "commit.gpgsign", "false")
+	return clone
 }
 
 func (git *GitTesting) SetupBaselineFiles(filenames ...string) {
@@ -125,7 +126,7 @@ func (git *GitTesting) Commit(fileName string, message string) {
 	git.ExecCommand("git", "commit", "-m", message)
 }
 
-//GetBlobDetails returns git blob details for a path
+// GetBlobDetails returns git blob details for a path
 func (git *GitTesting) GetBlobDetails(fileName string) string {
 	var output []byte
 	objectHashAndFilename := ""
@@ -145,7 +146,7 @@ func (git *GitTesting) GetBlobDetails(fileName string) string {
 	return objectHashAndFilename
 }
 
-//ExecCommand executes a command with given arguments in the git repo directory
+// ExecCommand executes a command with given arguments in the git repo directory
 func (git *GitTesting) ExecCommand(commandName string, args ...string) string {
 	var output []byte
 	git.doInGitRoot(func() {
@@ -176,12 +177,12 @@ func (git *GitTesting) doInGitRoot(operation func()) {
 	operation()
 }
 
-//GetRoot returns the root directory of the git-testing repo
+// GetRoot returns the root directory of the git-testing repo
 func (git *GitTesting) GetRoot() string {
 	return git.gitRoot
 }
 
-//RemoveHooks removes all file-system hooks from git-test repo
+// RemoveHooks removes all file-system hooks from git-test repo
 func (git *GitTesting) RemoveHooks() {
 	git.ExecCommand("rm", "-rf", ".git/hooks/")
 }
