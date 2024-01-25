@@ -48,3 +48,4 @@ out/
 # Go workspace file
 go.work
 
+release-notes.md
