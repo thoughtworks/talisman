@@ -98,7 +98,7 @@ Talisman to be present, not only in your existing git repositories, but also in 
   As a pre-commit hook:
 
   ```
-bash -c "$(curl --silent https://thoughtworks.github.io/talisman/scripts/install.bash)"
+bash -c "$(curl --silent https://raw.githubusercontent.com/thoughtworks/talisman/main/global_install_scripts/install.bash)"
 ```
 
   OR
@@ -106,7 +106,7 @@ bash -c "$(curl --silent https://thoughtworks.github.io/talisman/scripts/install
   As a pre-push hook:
 
   ```
-bash -c "$(curl --silent https://thoughtworks.github.io/talisman/scripts/install.bash)" -- pre-push
+bash -c "$(curl --silent https://raw.githubusercontent.com/thoughtworks/talisman/main/global_install_scripts/install.bash)" -- pre-push
 ```
 
 
@@ -126,7 +126,7 @@ If you choose to set the `$PATH` later, please export TALISMAN\_HOME=$HOME/.tali
 
 ```bash
 # Download the talisman installer script
-curl https://thoughtworks.github.io/talisman/install.sh > ~/install-talisman.sh
+curl https://raw.githubusercontent.com/thoughtworks/talisman/main/install.sh > ~/install-talisman.sh
 chmod +x ~/install-talisman.sh
 ```
 
@@ -528,13 +528,13 @@ Run the following command on your terminal to uninstall talisman globally from y
 For pre-commit hook:
 
 ```
-bash -c "$(curl --silent https://thoughtworks.github.io/talisman/scripts/uninstall.bash)"
+bash -c "$(curl --silent https://raw.githubusercontent.com/thoughtworks/talisman/main/global_install_scripts/uninstall.bash)"
 ```
 
 For pre-push hook:
 
 ```
-bash -c "$(curl --silent https://thoughtworks.github.io/talisman/scripts/uninstall.bash)" -- pre-push
+bash -c "$(curl --silent https://raw.githubusercontent.com/thoughtworks/talisman/main/global_install_scripts/uninstall.bash)" -- pre-push
 ```
 
 This will

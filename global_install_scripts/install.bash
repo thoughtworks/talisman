@@ -177,6 +177,7 @@ function run() {
     sed -e "s@\${TALISMAN_BINARY}@"${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME}"@" ${TEMP_DIR}/talisman_hook_script.bash >${TALISMAN_HOOK_SCRIPT_PATH}
     chmod +x ${TALISMAN_HOOK_SCRIPT_PATH}
     add_talisman_home_as $TALISMAN_SETUP_DIR
+    sudo ln -s "${TALISMAN_SETUP_DIR}/${TALISMAN_BINARY_NAME}" /usr/local/bin/talisman
   }
 
   function setup_git_template_talisman_hook() {
