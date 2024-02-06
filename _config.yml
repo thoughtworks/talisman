@@ -8,7 +8,7 @@
 # Site settings
 title: Talisman
 email: talisman-maintainers@thoughtworks.com
-description: > # this means to ignore newlines until "baseurl:"
+description: >
   Talisman is a tool is to validate code changes that are to be pushed out of a
   local Git repository on a developer's workstation. By hooking into the
   pre-push hook provided by Git, it validates the outgoing changeset for things
@@ -22,12 +22,12 @@ url: "https://thoughtworks.github.io" # the base hostname & protocol for your si
 permalink: pretty
 
 exclude:
- - vendor
+  - vendor
 
 # Build settings
 markdown: kramdown
 
-remote_theme: pmarsceill/just-the-docs
+theme: just-the-docs
 
 # Color scheme supports "light" (default) and "dark"
 color_scheme: dark
