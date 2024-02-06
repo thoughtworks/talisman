@@ -12,7 +12,8 @@ permalink: docs/how-it-works
 Talisman works based on pattern matching for files, content, patterns, entropy etc. in your commit changesets.
 
 ## Validations
-If you wish to see how the code works, you can find the detectors [here.](https://github.com/thoughtworks/talisman/tree/master/detector)
+
+If you wish to see how the code works, you can find the detectors [here](https://github.com/thoughtworks/talisman/tree/main/detector).
 
 The following detectors execute against the changesets to detect secrets/sensitive information:
 
@@ -23,5 +24,6 @@ The following detectors execute against the changesets to detect secrets/sensiti
 * **Credit card numbers** - scans for content that could be potential credit card numbers
 * **File names** - scans for file names and extensions that could indicate them potentially containing secrets, such as keys, credentials etc.
 
-You can explore further to add your own [custom configurations](./configuring-talisman) , such as, checking for [custom patterns](./configuring-talisman/set-custom-patterns.md), set [custom thresholds](./configuring-talisman/set-custom-patterns.md) etc. 
-
+You can explore further to add your own [custom configurations](./configuring-talisman)
+such as checking for [custom patterns](./configuring-talisman/set-custom-patterns.md)
+or setting [custom thresholds](./configuring-talisman/set-custom-patterns.md).

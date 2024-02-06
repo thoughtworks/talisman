@@ -18,12 +18,12 @@ If at all you need to manually upgrade, here are the steps:
 <br>[Recommended] Update Talisman binary and hook scripts to the latest release:
 
 ```bash
-curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/update_talisman.bash > /tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash
+curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/main/global_install_scripts/update_talisman.bash > /tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash
 ```
 
 
 Update only Talisman binary by executing:
 
 ```bash
-curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/update_talisman.bash > /tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash talisman-binary
+curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/main/global_install_scripts/update_talisman.bash > /tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash talisman-binary
 ```

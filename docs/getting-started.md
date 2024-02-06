@@ -38,11 +38,15 @@ Created by [ThoughtWorks](https://www.thoughtworks.com) as an [open-sourced proj
 
 ### License
 
-Talisman is distributed by an [MIT license](https://github.com/thoughtworks/talisman/blob/master/LICENSE).
+Talisman is distributed under under the [MIT license](https://github.com/thoughtworks/talisman/blob/main/LICENSE).
 
 ### Contributing
 
-We love contributors who also share the passion of securing code-bases and of open-source. When contributing to this repository, please first discuss the change you wish to make by raising an issue, or any other method with the owners of this repository before making a change. Read more about becoming a contributor in our document for [CONTRIBUTING](https://github.com/thoughtworks/talisman/blob/master/contributing.md).
+We love contributors who also share the passion of securing code-bases and of
+open-source. When contributing to this repository, please first discuss the
+change you wish to make by raising an issue, or any other method with the owners
+of this repository before making a change. Read more about becoming a
+contributor in our document for [CONTRIBUTING](https://github.com/thoughtworks/talisman/blob/main/contributing.md).
 
 #### Thank you to the contributors of Talisman!
 
@@ -58,4 +62,5 @@ We love contributors who also share the passion of securing code-bases and of op
 
 Talisman is committed to fostering a welcoming community.
 
-View our [Code of Conduct](https://github.com/thoughtworks/talisman/blob/master/CODE_OF_CONDUCT.md) on our GitHub repository.
+View our [Code of Conduct](https://github.com/thoughtworks/talisman/blob/main/CODE_OF_CONDUCT.md)
+on our GitHub repository.

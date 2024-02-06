@@ -18,13 +18,13 @@ Run the following command on your terminal to uninstall talisman globally from y
 For pre-commit hook:
 
 ```
-curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/uninstall.bash > /tmp/uninstall_talisman.bash && /bin/bash /tmp/uninstall_talisman.bash
+curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/main/global_install_scripts/uninstall.bash > /tmp/uninstall_talisman.bash && /bin/bash /tmp/uninstall_talisman.bash
 ```
 
 For pre-push hook:
 
 ```
-curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/uninstall.bash > /tmp/uninstall_talisman.bash && /bin/bash /tmp/uninstall_talisman.bash pre-push
+curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/main/global_install_scripts/uninstall.bash > /tmp/uninstall_talisman.bash && /bin/bash /tmp/uninstall_talisman.bash pre-push
 ```
 
 This will

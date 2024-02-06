@@ -19,12 +19,12 @@ Follow the steps below:
 1. Run the following command on your terminal, to download and install the binary at $HOME/.talisman/bin
  > As a pre-commit hook:
 ```
-curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/install.bash > /tmp/install_talisman.bash && /bin/bash /tmp/install_talisman.bash
+curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/main/global_install_scripts/install.bash > /tmp/install_talisman.bash && /bin/bash /tmp/install_talisman.bash
 ```
  > OR
  > As a pre-push hook:
   ```
-curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/install.bash > /tmp/install_talisman.bash && /bin/bash /tmp/install_talisman.bash pre-push
+curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/main/global_install_scripts/install.bash > /tmp/install_talisman.bash && /bin/bash /tmp/install_talisman.bash pre-push
 ```
 2. If you do not have `TALISMAN_HOME` set up in your `$PATH`, you will be asked an appropriate place to set it up. Choose the option number where you set the profile source on your machine.
  > _Remember to execute `source` on the path file or restart your terminal._

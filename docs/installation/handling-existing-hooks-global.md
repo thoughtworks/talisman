@@ -41,10 +41,8 @@ In the suggestion, it will prompt the following code to be included in .pre-comm
 ---
 ## With Husky tool (for Linux/Unix/Windows)
 
-[husky](https://github.com/typicode/husky/blob/master/DOCS.md) is an npm module for managing git hooks.
-In order to use husky, make sure you have already set TALISMAN_HOME to `$PATH`.
-
-
+[husky](https://typicode.github.io/husky/) is an npm module for managing git
+hooks. In order to use husky, make sure you have set TALISMAN_HOME to `$PATH`.
 
 **Existing Users** 
 {: .ls-8 .text-mono }
