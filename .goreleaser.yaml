@@ -2,10 +2,7 @@ project_name: talisman
 
 before:
   hooks:
-    # You may remove this if you don't use go modules.
     - go mod tidy
-    # you may remove this if you don't need go generate
-#    - go generate ./...
 
 builds:
   - env:
@@ -21,28 +18,19 @@ builds:
       - -s -w -X main.Version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}}
     main: ./cmd
 
-#    hooks:
-#      post:
-#        - ./compress-binary.sh "{{ .Path }}"
-
-
 release:
   draft: true
   replace_existing_draft: true
 
-
 archives:
-
   - meta: false
     format: binary
     wrap_in_directory: true
-
     name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
 
 checksum:
   name_template: 'checksums'
   algorithm: sha256
-
 
 snapshot:
   name_template: "{{ incpatch .Version }}-next"

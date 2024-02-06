@@ -2,34 +2,29 @@ name: Test
 
 on:
   push:
+    branches: '**'
   pull_request:
     branches: [ main ]
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version-file: go.mod
-
-    - name: Test
-      run: |
-        git config user.email "talisman-maintainers@thoughtworks.com"
-        git config user.name "Talisman Maintainers"
-        go test -covermode=count -coverprofile=coverage.out -v ./...
-
-    - name: Codecov
-      # You may pin to the exact commit or the version.
-      # uses: codecov/codecov-action@e156083f13aff6830c92fc5faa23505779fbf649
-      uses: codecov/codecov-action@v1.2.1
-
-    - name: Install bash_unit
-      run: bash <(curl -s https://raw.githubusercontent.com/pgrange/bash_unit/master/install.sh)
-
-    - name: Test install script
-      run: ./bash_unit test-install.sh
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Test
+        run: |
+          git config user.email "talisman-maintainers@thoughtworks.com"
+          git config user.name "Talisman Maintainers"
+          go test -covermode=count -coverprofile=coverage.out -v ./...
+      - name: Codecov
+        # You may pin to the exact commit or the version.
+        # uses: codecov/codecov-action@e156083f13aff6830c92fc5faa23505779fbf649
+        uses: codecov/codecov-action@v1.2.1
+      - name: Install bash_unit
+        run: bash <(curl -s https://raw.githubusercontent.com/pgrange/bash_unit/master/install.sh)
+      - name: Test install script
+        run: ./bash_unit test-install.sh

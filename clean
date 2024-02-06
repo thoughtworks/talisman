@@ -1,2 +1,0 @@
-#!/usr/bin/env bash
-rm -vf dist/checksums dist/talisman_{d,l,w}*
