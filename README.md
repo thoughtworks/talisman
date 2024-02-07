@@ -12,10 +12,11 @@
 - [Installation](#installation)
   - [Install onto path (recommended approach)](#install-onto-path-recommended-approach)
   - [Installation as a global hook template](#installation-as-a-global-hook-template)
-  - [Installation to a single project](#installation-to-a-single-project)
-- [Using with hook frameworks](#using-with-hook-frameworks)
-  - [Pre-commit](#pre-commit)
-  - [Husky](#husky)
+- [Configuring a project](#configuring-a-project)
+  - [Using with hook frameworks](#using-with-hook-frameworks)
+    - [Pre-commit](#pre-commit)
+    - [Husky](#husky)
+  - [Directly invoking talisman](#directly-invoking-talisman)
 - [Upgrading](#upgrading)
 - [Talisman in action](#talisman-in-action)
   - [Validations](#validations)
@@ -122,26 +123,9 @@ If you choose to set the `$PATH` later, please export TALISMAN\_HOME=$HOME/.tali
   
   - you can set SEARCH_ROOT environment variable with the path of the base directory before executing the installation so you don't need to input it manually during the installation
 
-## Installation to a single project
+# Configuring a project
 
-```bash
-# Download the talisman installer script
-curl https://raw.githubusercontent.com/thoughtworks/talisman/main/install.sh > ~/install-talisman.sh
-chmod +x ~/install-talisman.sh
-```
-
-```bash
-# Install to a single project
-cd my-git-project
-# as a pre-push hook
-~/install-talisman.sh
-# or as a pre-commit hook
-~/install-talisman.sh pre-commit
-```
-
-*Disclaimer: Talisman cannot guarantee its functionality in Microsoft's unsupported versions of Windows. Anyway Talisman is successfully tested on Windows 7 and server 2008 R2, which might not work in future releases.*
-
-# Using with hook frameworks
+## Using with hook frameworks
 
 Globally installing talisman as a hook will not clobber any existing hooks. If
 the installation script finds any existing hooks, it will only indicate so on
@@ -149,11 +133,11 @@ the console. To run multiple hooks we suggest using a hook framework, such as
 pre-commit or husky. These instructions assume that the talisman executable is
 installed somewhere on your system's path.
 
-## Pre-commit
+### Pre-commit
 
-Use [pre-commit](https://pre-commit.com) tool to manage all the existing hooks
-along with Talisman. In the suggestion, it will prompt the following code to be
-included in .pre-commit-config.yaml:
+Use [pre-commit](https://pre-commit.com) to manage existing hooks along with
+Talisman. Reference our [pre-commit-hooks](.pre-commit-hooks.yaml) in your
+`.pre-commit-config.yaml`:
 
 ```yaml
 -   repo: https://github.com/thoughtworks/talisman
@@ -165,7 +149,7 @@ included in .pre-commit-config.yaml:
         entry: cmd --githook pre-commit
 ```
 
-## Husky
+### Husky
 
 [husky](https://typicode.github.io/husky) is an npm module for managing hooks.
 Add the following line to the husky pre-commit configuration in your
@@ -173,6 +157,17 @@ Add the following line to the husky pre-commit configuration in your
 
 ```
 talisman --githook pre-commit
+```
+
+## Directly invoking talisman
+
+Once the talisman executable is [installed](#install-onto-path-recommended-approach)
+you can configure a standalone pre-commit hook for a git repository:
+
+```bash
+cd my-git-project
+echo "talisman -g pre-commit" >> .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
 ```
 
 # Upgrading
