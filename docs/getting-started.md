@@ -24,9 +24,9 @@ Talisman is a tool to help you prevent or detect potential secrets from getting 
 It supports MAC OSX, Linux and Windows 10.
 
 Follow the quick links below based on your use-case:
-1. [Install Talisman](#installation)
-2. [Use Talisman as a pre-commit/pre-push hook](#as-a-hook)
-3. [Use Talisman as a repository scanner](#as-a-git-scanner)
+1. [Install Talisman](../installation/installation.md)
+2. [Use Talisman as a pre-commit/pre-push hook](../how-to-use/as-a-hook.md)
+3. [Use Talisman as a repository scanner](../how-to-use/as-a-git-scanner.md)
 
 You can also follow the links given in the menu options for a more detailed navigation.
 
