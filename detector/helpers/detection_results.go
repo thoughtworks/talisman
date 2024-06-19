@@ -45,10 +45,10 @@ type ResultsSummary struct {
 	Types FailureTypes `json:"types"`
 }
 
-//DetectionResults represents all interesting information collected during a detection run.
-//It serves as a collecting parameter for the tests performed by the various Detectors in the DetectorChain
-//Currently, it keeps track of failures and ignored files.
-//The results are grouped by FilePath for easy reporting of all detected problems with individual files.
+// DetectionResults represents all interesting information collected during a detection run.
+// It serves as a collecting parameter for the tests performed by the various Detectors in the DetectorChain
+// Currently, it keeps track of failures and ignored files.
+// The results are grouped by FilePath for easy reporting of all detected problems with individual files.
 type DetectionResults struct {
 	mode    talismanrc.Mode
 	Summary ResultsSummary   `json:"summary"`
@@ -64,7 +64,7 @@ func (r *DetectionResults) getResultDetailsForFilePath(fileName gitrepo.FilePath
 	return nil
 }
 
-//NewDetectionResults is a new DetectionResults struct. It represents the pre-run state of a Detection run.
+// NewDetectionResults is a new DetectionResults struct. It represents the pre-run state of a Detection run.
 func NewDetectionResults(mode talismanrc.Mode) *DetectionResults {
 	return &DetectionResults{
 		mode,
@@ -76,9 +76,9 @@ func NewDetectionResults(mode talismanrc.Mode) *DetectionResults {
 
 }
 
-//Fail is used to mark the supplied FilePath as failing a detection for a supplied reason.
-//Detectors are encouraged to provide context sensitive messages so that fixing the errors is made simple for the end user
-//Fail may be called multiple times for each FilePath and the calls accumulate the provided reasons
+// Fail is used to mark the supplied FilePath as failing a detection for a supplied reason.
+// Detectors are encouraged to provide context sensitive messages so that fixing the errors is made simple for the end user
+// Fail may be called multiple times for each FilePath and the calls accumulate the provided reasons
 func (r *DetectionResults) Fail(filePath gitrepo.FilePath, category string, message string, commits []string, severity severity.Severity) {
 	isFilePresentInResults := false
 	for resultIndex := 0; resultIndex < len(r.Results); resultIndex++ {
@@ -131,8 +131,8 @@ func (r *DetectionResults) Warn(filePath gitrepo.FilePath, category string, mess
 	r.Summary.Types.Warnings++
 }
 
-//Ignore is used to mark the supplied FilePath as being ignored.
-//The most common reason for this is that the FilePath is Denied by the Ignores supplied to the Detector, however, Detectors may use more sophisticated reasons to ignore files.
+// Ignore is used to mark the supplied FilePath as being ignored.
+// The most common reason for this is that the FilePath is Denied by the Ignores supplied to the Detector, however, Detectors may use more sophisticated reasons to ignore files.
 func (r *DetectionResults) Ignore(filePath gitrepo.FilePath, category string) {
 
 	isFilePresentInResults := false
@@ -176,12 +176,12 @@ func (r *DetectionResults) updateResultsSummary(category string, decr bool) {
 	}
 }
 
-//HasFailures answers if any Failures were detected for any FilePath in the current run
+// HasFailures answers if any Failures were detected for any FilePath in the current run
 func (r *DetectionResults) HasFailures() bool {
 	return r.Summary.Types.Filesize > 0 || r.Summary.Types.Filename > 0 || r.Summary.Types.Filecontent > 0
 }
 
-//HasIgnores answers if any FilePaths were ignored in the current run
+// HasIgnores answers if any FilePaths were ignored in the current run
 func (r *DetectionResults) HasIgnores() bool {
 	return r.Summary.Types.Ignores > 0
 }
@@ -194,12 +194,12 @@ func (r *DetectionResults) HasDetectionMessages() bool {
 	return r.HasWarnings() || r.HasFailures() || r.HasIgnores()
 }
 
-//Successful answers if no detector was able to find any possible result to fail the run
+// Successful answers if no detector was able to find any possible result to fail the run
 func (r *DetectionResults) Successful() bool {
 	return !r.HasFailures()
 }
 
-//GetFailures returns the various reasons that a given FilePath was marked as failing by all the detectors in the current run
+// GetFailures returns the various reasons that a given FilePath was marked as failing by all the detectors in the current run
 func (r *DetectionResults) GetFailures(fileName gitrepo.FilePath) []Details {
 	results := r.getResultDetailsForFilePath(fileName)
 	if results == nil {
@@ -232,7 +232,7 @@ func (r *DetectionResults) ReportWarnings() string {
 	return results.String()
 }
 
-//Report returns a string documenting the various failures and ignored files for the current run
+// Report returns a string documenting the various failures and ignored files for the current run
 func (r *DetectionResults) Report(promptContext prompt.PromptContext, mode string) string {
 	var result string
 	var filePathsForFailures []string
@@ -273,7 +273,8 @@ func (r *DetectionResults) suggestTalismanRC(filePaths []string, promptContext p
 
 	if promptContext.Interactive && runtime.GOOS != "windows" {
 		confirmedEntries := getUserConfirmation(entriesToAdd, promptContext)
-		talismanrc.ConfigFromFile().AddIgnores(r.mode, confirmedEntries)
+		talismanrcConfig, _ := talismanrc.ConfigFromFile()
+		talismanrcConfig.AddIgnores(r.mode, confirmedEntries)
 
 		for _, confirmedEntry := range confirmedEntries {
 			resultsDetails := r.getResultDetailsForFilePath(gitrepo.FilePath(confirmedEntry.GetFileName()))
@@ -329,7 +330,7 @@ func confirm(config talismanrc.IgnoreConfig, promptContext prompt.PromptContext)
 	return promptContext.Prompt.Confirm(confirmationString)
 }
 
-//ReportFileFailures adds a string to table documenting the various failures detected on the supplied FilePath by all detectors in the current run
+// ReportFileFailures adds a string to table documenting the various failures detected on the supplied FilePath by all detectors in the current run
 func (r *DetectionResults) ReportFileFailures(filePath gitrepo.FilePath) [][]string {
 	failureList := r.getResultDetailsForFilePath(filePath).FailureList
 	var data [][]string
