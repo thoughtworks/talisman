@@ -201,6 +201,7 @@ func fromPersistedRC(configFromTalismanRCFile *persistedRC, mode Mode) *Talisman
 	tRC.ScopeConfig = configFromTalismanRCFile.ScopeConfig
 	tRC.Experimental = configFromTalismanRCFile.Experimental
 	tRC.CustomPatterns = configFromTalismanRCFile.CustomPatterns
+	tRC.CustomSeverities = configFromTalismanRCFile.CustomSeverities
 	tRC.Experimental = configFromTalismanRCFile.Experimental
 	tRC.AllowedPatterns = make([]*regexp.Regexp, len(configFromTalismanRCFile.AllowedPatterns))
 	for i, p := range configFromTalismanRCFile.AllowedPatterns {

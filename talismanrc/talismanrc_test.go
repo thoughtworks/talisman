@@ -82,6 +82,19 @@ func TestShouldConvertThresholdToValue(t *testing.T) {
 	assert.Equal(t, persistedTalismanrc.Threshold, severity.High)
 }
 
+func TestObeysCustomSeverityLevelsAndThreshold(t *testing.T) {
+	talismanRCContents := []byte(`threshold: high
+custom_severities:
+- detector: Base64Content
+  severity: low
+`)
+	persistedRC := newPersistedRC(talismanRCContents)
+	talismanRC := fromPersistedRC(persistedRC, ScanMode)
+	assert.Equal(t, newPersistedRC(talismanRCContents).Threshold, severity.High)
+	assert.Equal(t, len(newPersistedRC(talismanRCContents).CustomSeverities), 1)
+	assert.Equal(t, persistedRC.CustomSeverities, talismanRC.CustomSeverities)
+}
+
 func TestDirectoryPatterns(t *testing.T) {
 	assertAccepts("foo/", "", "bar", t)
 	assertAccepts("foo/", "", "foo", t)
