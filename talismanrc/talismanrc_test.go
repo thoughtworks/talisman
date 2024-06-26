@@ -18,19 +18,22 @@ func init() {
 	logr.SetOutput(ioutil.Discard)
 }
 
-func TestShouldIgnoreEmptyLinesInTheFile(t *testing.T) {
-	defaultRepoFileReader := repoFileReader()
-	for _, s := range []string{"", " ", "  ", "\t", " \t", "\t\t \t"} {
-		setRepoFileReader(func(string) ([]byte, error) {
-			return []byte(s), nil
-		})
+func TestForTalismanFileStructure(t *testing.T) {
+	var repoFileReader = func(string) ([]byte, error) {
+		return []byte(`fileignoreconfig:
+- filename: testfile_1.yml
+  checksum: file1_checksum
 
-		talismanRC := For(HookMode)
-		assert.True(t, talismanRC.AcceptsAll(), "Expected '%s' to result in no ignore patterns.", s)
-		talismanRC = For(ScanMode)
-		assert.True(t, talismanRC.AcceptsAll(), "Expected '%s' to result in no ignore patterns.", s)
+  
+custom_patterns:
+- 'pwd_[a-z]{8,20}'`), nil
 	}
-	setRepoFileReader(defaultRepoFileReader)
+	t.Run("talismanrc should not fail as long as the yaml structure is correct", func(t *testing.T) {
+		setRepoFileReader(repoFileReader)
+		rc, _ := For(HookMode)
+		assert.Equal(t, 1, len(rc.IgnoreConfigs))
+		assert.Equal(t, 1, len(rc.CustomPatterns))
+	})
 }
 
 func TestShouldIgnoreUnformattedFiles(t *testing.T) {
@@ -40,9 +43,9 @@ func TestShouldIgnoreUnformattedFiles(t *testing.T) {
 			return []byte(s), nil
 		})
 
-		talismanRC := For(HookMode)
+		talismanRC, _ := For(HookMode)
 		assert.True(t, talismanRC.AcceptsAll(), "Expected commented line '%s' to result in no ignore patterns", s)
-		talismanRC = For(ScanMode)
+		talismanRC, _ = For(ScanMode)
 		assert.True(t, talismanRC.AcceptsAll(), "Expected commented line '%s' to result in no ignore patterns", s)
 	}
 	setRepoFileReader(defaultRepoFileReader)
@@ -75,7 +78,8 @@ func TestShouldFilterAllowedPatternsFromAdditionBasedOnFileConfig(t *testing.T) 
 
 func TestShouldConvertThresholdToValue(t *testing.T) {
 	talismanRCContents := []byte("threshold: high")
-	assert.Equal(t, newPersistedRC(talismanRCContents).Threshold, severity.High)
+	persistedTalismanrc, _ := newPersistedRC(talismanRCContents)
+	assert.Equal(t, persistedTalismanrc.Threshold, severity.High)
 }
 
 func TestObeysCustomSeverityLevelsAndThreshold(t *testing.T) {
@@ -173,7 +177,7 @@ func TestAddIgnoreFilesInHookMode(t *testing.T) {
 	os.Remove(DefaultRCFileName)
 	talismanRCConfig := createTalismanRCWithScopeIgnores([]string{})
 	talismanRCConfig.base.AddIgnores(HookMode, []IgnoreConfig{ignoreConfig})
-	talismanRCConfigFromFile := ConfigFromFile()
+	talismanRCConfigFromFile, _ := ConfigFromFile()
 	assert.Equal(t, 1, len(talismanRCConfigFromFile.FileIgnoreConfig))
 	os.Remove(DefaultRCFileName)
 }
@@ -303,7 +307,7 @@ func TestFor(t *testing.T) {
 	}
 	t.Run("talismanrc.For(mode) should read multiple entries in rc file correctly", func(t *testing.T) {
 		setRepoFileReader(repoFileReader)
-		rc := For(HookMode)
+		rc, _ := For(HookMode)
 		assert.Equal(t, 3, len(rc.IgnoreConfigs))
 
 		assert.Equal(t, rc.IgnoreConfigs[0].GetFileName(), "testfile_1.yml")
@@ -329,7 +333,7 @@ func TestForScan(t *testing.T) {
 	}
 	t.Run("talismanrc.ForScan(ignoreHistory) should populate talismanrc for scan mode with ignore history", func(t *testing.T) {
 		setRepoFileReader(repoFileReader)
-		rc := ForScan(true)
+		rc, _ := ForScan(true)
 
 		assert.Equal(t, 3, len(rc.IgnoreConfigs))
 
@@ -337,7 +341,7 @@ func TestForScan(t *testing.T) {
 
 	t.Run("talismanrc.ForScan(ignoreHistory) should populate talismanrc for scan mode without ignore history", func(t *testing.T) {
 		setRepoFileReader(repoFileReader)
-		rc := ForScan(false)
+		rc, _ := ForScan(false)
 
 		assert.Equal(t, 0, len(rc.IgnoreConfigs))
 

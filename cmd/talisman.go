@@ -143,25 +143,45 @@ func run(promptContext prompt.PromptContext) (returnCode int) {
 	fields := make(map[string]interface{})
 	_ = json.Unmarshal(optionsBytes, &fields)
 	log.WithFields(fields).Debug("Talisman execution environment")
-	defer  utility.DestroyHashers()
+	defer utility.DestroyHashers()
 	if options.Checksum != "" {
 		log.Infof("Running %s patterns against checksum calculator", options.Checksum)
 		return NewChecksumCmd(strings.Fields(options.Checksum)).Run()
 	} else if options.Scan {
 		log.Infof("Running scanner")
-		return NewScannerCmd(options.IgnoreHistory, options.ReportDirectory).Run(talismanrc.ForScan(options.IgnoreHistory))
+		talismanrcForScan, err := talismanrc.ForScan(options.IgnoreHistory)
+		if err != nil {
+			return EXIT_FAILURE
+		}
+		return NewScannerCmd(options.IgnoreHistory, options.ReportDirectory).Run(talismanrcForScan)
 	} else if options.ScanWithHtml {
 		log.Infof("Running scanner with html report")
-		return NewScannerCmd(options.IgnoreHistory, "talisman_html_report").Run(talismanrc.ForScan(options.IgnoreHistory))
+		talismanrcForScan, err := talismanrc.ForScan(options.IgnoreHistory)
+		if err != nil {
+			return EXIT_FAILURE
+		}
+		return NewScannerCmd(options.IgnoreHistory, "talisman_html_report").Run(talismanrcForScan)
 	} else if options.Pattern != "" {
 		log.Infof("Running scan for %s", options.Pattern)
-		return NewPatternCmd(options.Pattern).Run(talismanrc.For(talismanrc.HookMode), promptContext)
+		talismanrcForScan, err := talismanrc.For(talismanrc.HookMode)
+		if err != nil {
+			return EXIT_FAILURE
+		}
+		return NewPatternCmd(options.Pattern).Run(talismanrcForScan, promptContext)
 	} else if options.GitHook == PreCommit {
 		log.Infof("Running %s hook", options.GitHook)
-		return NewPreCommitHook().Run(talismanrc.For(talismanrc.HookMode), promptContext)
+		talismanrcForScan, err := talismanrc.For(talismanrc.HookMode)
+		if err != nil {
+			return EXIT_FAILURE
+		}
+		return NewPreCommitHook().Run(talismanrcForScan, promptContext)
 	} else {
 		log.Infof("Running %s hook", options.GitHook)
-		return NewPrePushHook(talismanInput).Run(talismanrc.For(talismanrc.HookMode), promptContext)
+		talismanrcForScan, err := talismanrc.For(talismanrc.HookMode)
+		if err != nil {
+			return EXIT_FAILURE
+		}
+		return NewPrePushHook(talismanInput).Run(talismanrcForScan, promptContext)
 	}
 }
 
