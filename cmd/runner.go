@@ -31,7 +31,7 @@ func (r *runner) Run(tRC *talismanrc.TalismanRC, promptContext prompt.PromptCont
 	setCustomSeverities(tRC)
 	additionsToScan := tRC.FilterAdditions(r.additions)
 	detector.DefaultChain(tRC, r.mode).Test(additionsToScan, tRC, r.results)
-	r.printReport(promptContext)
+	r.printReport(additionsToScan, promptContext)
 	exitStatus := r.exitStatus()
 	return exitStatus
 }
@@ -42,12 +42,12 @@ func setCustomSeverities(tRC *talismanrc.TalismanRC) {
 	}
 }
 
-func (r *runner) printReport(promptContext prompt.PromptContext) {
+func (r *runner) printReport(currentAdditions []gitrepo.Addition, promptContext prompt.PromptContext) {
 	if r.results.HasWarnings() {
 		fmt.Println(r.results.ReportWarnings())
 	}
 	if r.results.HasIgnores() || r.results.HasFailures() {
-		r.results.Report(promptContext, r.mode)
+		r.results.Report(currentAdditions, promptContext, r.mode)
 	}
 }
 
