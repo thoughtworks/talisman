@@ -88,10 +88,10 @@ custom_severities:
 - detector: Base64Content
   severity: low
 `)
-	persistedRC := newPersistedRC(talismanRCContents)
+	persistedRC, _ := newPersistedRC(talismanRCContents)
 	talismanRC := fromPersistedRC(persistedRC, ScanMode)
-	assert.Equal(t, newPersistedRC(talismanRCContents).Threshold, severity.High)
-	assert.Equal(t, len(newPersistedRC(talismanRCContents).CustomSeverities), 1)
+	assert.Equal(t, persistedRC.Threshold, severity.High)
+	assert.Equal(t, len(persistedRC.CustomSeverities), 1)
 	assert.Equal(t, persistedRC.CustomSeverities, talismanRC.CustomSeverities)
 }
 
