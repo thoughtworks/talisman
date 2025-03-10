@@ -6,8 +6,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Go Report Card](https://goreportcard.com/badge/thoughtworks/talisman)](https://goreportcard.com/report/thoughtworks/talisman) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/thoughtworks/talisman/issues) [![Build Status](https://github.com/thoughtworks/talisman/actions/workflows/test-and-coverage.yml/badge.svg?branch=master)](https://github.com/thoughtworks/talisman/actions/workflows/test-and-coverage.yml) [![Coverage Status](https://codecov.io/gh/thoughtworks/talisman/branch/master/graph/badge.svg)](https://codecov.io/gh/thoughtworks/talisman)
 
-
 ## Table of Contents
+
 - [What is Talisman?](#what-is-talisman)
 - [Installation](#installation)
   - [Install onto path (recommended approach)](#install-onto-path-recommended-approach)
@@ -141,7 +141,7 @@ Talisman. Reference our [pre-commit-hooks](.pre-commit-hooks.yaml) in your
 
 ```yaml
 -   repo: https://github.com/thoughtworks/talisman
-    rev: 'v1.28.0'  # Update me!
+    rev: 'v1.32.1'  # Update me!
     hooks:
       # both pre-commit and pre-push supported
       # -   id: talisman-push
@@ -206,7 +206,7 @@ Talisman Report:
 |                 | failed checks against the                                                     |
 |                 | pattern ^.+\.pem$                                                             |
 +-----------------+-------------------------------------------------------------------------------+
-| danger.pem      | Expected file to not contain hex encoded texts such as:                    |
+| danger.pem      | Expected file to not contain hex encoded texts such as:                       |
 |                 | awsSecretKey=c64e8c79aacf5ddb02f1274db2d973f363f4f553ab1692d8d203b4cc09692f79 |
 +-----------------+-------------------------------------------------------------------------------+
 ```
