@@ -50,6 +50,13 @@ private.pem
   ignore_detectors: []
   `
 
+const talismanRCForHelloTxtFile = `
+fileignoreconfig:
+- filename: hello.txt
+  checksum: edf37f1d33525d1710c3f5dc3437778c483def1d2e98b5a3495fc627eb1be588
+  ignore_detectors: []
+`
+
 func init() {
 	git_testing.Logger = logrus.WithField("Environment", "Debug")
 	git_testing.Logger.Debug("Acceptance test started")
@@ -268,6 +275,23 @@ func TestPatternFindsSecretInNestedFile(t *testing.T) {
 	})
 }
 
+func TestFilesWithSameNameWithinRepositoryAreHandledAsSeparateFiles(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		git.SetupBaselineFiles("simple-file", "some-dir/hello.txt")
+		git.CreateFileWithContents("hello.txt", awsAccessKeyIDExample)
+		git.AddAndcommit("*", "Start of Scan before talismanrc")
+		assert.Equal(t, 1, runTalismanInPrePushMode(git), "Expected run() to return 1 since secret is detected in hello")
+		git.CreateFileWithContents(".talismanrc", talismanRCForHelloTxtFile)
+
+		git.AppendFileContent("some-dir/hello.txt", "More safe content")
+		assert.Equal(t, 0, runTalismanInPrePushMode(git), "Expected run() to return 0 since hello checksum is added to fileignoreconfig in talismanrc")
+		git.AddAndcommit("some-dir/hello.txt", "Start of second scan")
+		assert.Equal(t, 0, runTalismanInPrePushMode(git), "Expected run() to return 0 since hello in subfolder was only changed")
+		git.AppendFileContent("hello.txt", "More safe content in unsafe file")
+		git.AddAndcommit("hello.txt", "Start of third scan - new hash is required")
+		assert.Equal(t, 1, runTalismanInPrePushMode(git), "Expected run() to return 1 since hello checksum is changed")
+	})
+}
 func TestIgnoreHistoryDoesNotDetectRemovedSecrets(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		options.Debug = false

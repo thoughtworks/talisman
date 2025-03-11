@@ -49,7 +49,7 @@ func TestChecksumCompare_IsScanNotRequired(t *testing.T) {
 			},
 		}
 		cc := NewChecksumCompare(checksumCalculator, mockSHA256Hasher, &ignoreConfig)
-		addition := gitrepo.Addition{Name: "some.txt"}
+		addition := gitrepo.Addition{Name: "some.txt", Path: "some.txt"}
 		mockSHA256Hasher.EXPECT().CollectiveSHA256Hash([]string{string(addition.Path)}).Return("somesha")
 		checksumCalculator.EXPECT().CalculateCollectiveChecksumForPattern("some.txt").Return("sha1")
 

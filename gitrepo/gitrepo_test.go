@@ -215,11 +215,67 @@ func TestMatchShouldAllowWildcardPatternMatches(t *testing.T) {
 	assert.False(t, file3.Matches(pattern))
 }
 
+func TestMatchShouldMatchExactFileIfNoPatternIsProvided(t *testing.T) {
+	file1 := Addition{Path: "bigfile", Name: "bigfile"}
+	file2 := Addition{Path: "subfolder/bigfile", Name: "bigfile"}
+	file3 := Addition{Path: "somefile", Name: "somefile"}
+	pattern := "bigfile"
+
+	assert.True(t, file1.Matches(pattern))
+	assert.False(t, file2.Matches(pattern))
+	assert.False(t, file3.Matches(pattern))
+}
+
+func TestMatchShouldAllowStarPattern(t *testing.T) {
+	file1 := Addition{Path: "GitRepoPath1/File1.txt", Name: "File1.txt"}
+	file2 := Addition{Path: "GitRepoPath1/File2.txt", Name: "File2.txt"}
+	file3 := Addition{Path: "GitRepoPath1/somefile", Name: "somefile"}
+	file4 := Addition{Path: "somefile.jpg", Name: "somefile.jpg"}
+	file5 := Addition{Path: "somefile.txt", Name: "somefile.txt"}
+	file6 := Addition{Path: "File1.txt", Name: "File1.txt"}
+	file7 := Addition{Path: "File3.txt", Name: "File3.txt"}
+
+	pattern := "GitRepoPath1/*.txt"
+
+	assert.True(t, file1.Matches(pattern))
+	assert.True(t, file2.Matches(pattern))
+	assert.False(t, file3.Matches(pattern))
+	assert.False(t, file4.Matches(pattern))
+	assert.False(t, file5.Matches(pattern))
+
+	pattern1 := "*.txt"
+	assert.True(t, file1.Matches(pattern1))
+	assert.True(t, file2.Matches(pattern1))
+	assert.False(t, file3.Matches(pattern1))
+	assert.False(t, file4.Matches(pattern1))
+	assert.True(t, file5.Matches(pattern1))
+
+	pattern2 := "File?.txt"
+	assert.True(t, file1.Matches(pattern2))
+	assert.True(t, file2.Matches(pattern2))
+	assert.True(t, file6.Matches(pattern2))
+
+	pattern3 := "File[1].txt"
+	assert.True(t, file1.Matches(pattern3))
+	assert.False(t, file2.Matches(pattern3))
+	assert.True(t, file6.Matches(pattern3))
+
+	pattern4 := "File[1-2].txt"
+	assert.True(t, file1.Matches(pattern4))
+	assert.True(t, file2.Matches(pattern4))
+	assert.True(t, file6.Matches(pattern4))
+	assert.False(t, file7.Matches(pattern4))
+
+	pattern5 := "File\\1.txt"
+	assert.True(t, file1.Matches(pattern5))
+	assert.True(t, file6.Matches(pattern5))
+}
+
 func setupOriginAndClones(originLocation, cloneLocation string) (*git_testing.GitTesting, GitRepo) {
 	origin := RepoLocatedAt(originLocation)
 	git := git_testing.Init(origin.root)
 	git.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
-	git.SetupBaselineFiles("c.txt", filepath.Join( "folder b","c.txt"))
+	git.SetupBaselineFiles("c.txt", filepath.Join("folder b", "c.txt"))
 	cwd, _ := os.Getwd()
 	gitClone := git.GitClone(filepath.Join(cwd, cloneLocation))
 	return gitClone, RepoLocatedAt(cloneLocation)
