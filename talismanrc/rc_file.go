@@ -2,7 +2,6 @@ package talismanrc
 
 import (
 	"fmt"
-	"regexp"
 	"talisman/utility"
 
 	logr "github.com/sirupsen/logrus"
@@ -11,13 +10,18 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-var (
-	emptyStringPattern = regexp.MustCompile(`^\s*$`)
-	fs                 = afero.NewOsFs()
-	currentRCFileName  = DefaultRCFileName
+const (
+	//DefaultRCFileName represents the name of default file in which all the ignore patterns are configured in new version
+	DefaultRCVersion         = "1.0"
+	DefaultRCFileName string = ".talismanrc"
 )
 
-func ReadConfigFromRCFile(fileReader func(string) ([]byte, error)) (*persistedRC, error) {
+var (
+	fs                = afero.NewOsFs()
+	currentRCFileName = DefaultRCFileName
+)
+
+func readConfigFromRCFile(fileReader func(string) ([]byte, error)) (*persistedRC, error) {
 	fileContents, err := fileReader(currentRCFileName)
 	if err != nil {
 		panic(err)
@@ -38,12 +42,6 @@ func newPersistedRC(fileContents []byte) (*persistedRC, error) {
 	}
 	return &talismanRCFromFile, nil
 }
-
-const (
-	//DefaultRCFileName represents the name of default file in which all the ignore patterns are configured in new version
-	DefaultRCVersion         = "1.0"
-	DefaultRCFileName string = ".talismanrc"
-)
 
 func SetFs__(_fs afero.Fs) {
 	fs = _fs
@@ -68,16 +66,4 @@ var repoFileReader = func() RepoFileReader {
 
 func setRepoFileReader(rfr RepoFileReader) {
 	repoFileReader = func() RepoFileReader { return rfr }
-}
-
-func ConfigFromFile() (*persistedRC, error) {
-	return ReadConfigFromRCFile(repoFileReader())
-}
-
-func MakeWithFileIgnores(fileIgnoreConfigs []FileIgnoreConfig) *persistedRC {
-	return &persistedRC{FileIgnoreConfig: fileIgnoreConfigs, Version: DefaultRCVersion}
-}
-
-func BuildIgnoreConfig(filepath, checksum string, detectors []string) IgnoreConfig {
-	return &FileIgnoreConfig{FileName: filepath, Checksum: checksum, IgnoreDetectors: detectors}
 }
