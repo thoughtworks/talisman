@@ -2,7 +2,7 @@ package talismanrc
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"regexp"
 	"testing"
@@ -15,16 +15,19 @@ import (
 )
 
 func init() {
-	logr.SetOutput(ioutil.Discard)
+	logr.SetOutput(io.Discard)
 }
 
-func TestForTalismanFileStructure(t *testing.T) {
+var defaultRepoFileReader = repoFileReader()
+
+func TestLoadsValidYaml(t *testing.T) {
 	var repoFileReader = func(string) ([]byte, error) {
-		return []byte(`fileignoreconfig:
+		return []byte(`
+---
+fileignoreconfig:
 - filename: testfile_1.yml
   checksum: file1_checksum
 
-  
 custom_patterns:
 - 'pwd_[a-z]{8,20}'`), nil
 	}
@@ -34,10 +37,10 @@ custom_patterns:
 		assert.Equal(t, 1, len(rc.IgnoreConfigs))
 		assert.Equal(t, 1, len(rc.CustomPatterns))
 	})
+	setRepoFileReader(defaultRepoFileReader)
 }
 
 func TestShouldIgnoreUnformattedFiles(t *testing.T) {
-	defaultRepoFileReader := repoFileReader()
 	for _, s := range []string{"#", "#monkey", "# this monkey likes bananas  "} {
 		setRepoFileReader(func(string) ([]byte, error) {
 			return []byte(s), nil
