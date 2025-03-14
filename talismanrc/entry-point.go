@@ -30,7 +30,7 @@ func newPersistedRC(fileContents []byte) (*persistedRC, error) {
 	err := yaml.Unmarshal(fileContents, &talismanRCFromFile)
 	if err != nil {
 		logr.Errorf("Unable to parse .talismanrc : %v", err)
-		fmt.Println(fmt.Errorf("\n\x1b[1m\x1b[31mUnable to parse .talismanrc %s. Please ensure it is following the right YAML structure\x1b[0m\x1b[0m\n", err))
+		fmt.Println(fmt.Errorf("\n\x1b[1m\x1b[31mUnable to parse .talismanrc %s. Please ensure it is following the right YAML structure\x1b[0m\x1b[0m", err))
 		return &persistedRC{}, err
 	}
 	if talismanRCFromFile.Version == "" {
@@ -78,13 +78,6 @@ func MakeWithFileIgnores(fileIgnoreConfigs []FileIgnoreConfig) *persistedRC {
 	return &persistedRC{FileIgnoreConfig: fileIgnoreConfigs, Version: DefaultRCVersion}
 }
 
-func BuildIgnoreConfig(mode Mode, filepath, checksum string, detectors []string) IgnoreConfig {
-	var result IgnoreConfig
-	switch mode {
-	case HookMode:
-		result = &FileIgnoreConfig{FileName: filepath, Checksum: checksum, IgnoreDetectors: detectors}
-	case ScanMode:
-		result = &FileIgnoreConfig{FileName: filepath, Checksum: checksum, IgnoreDetectors: detectors}
-	}
-	return result
+func BuildIgnoreConfig(filepath, checksum string, detectors []string) IgnoreConfig {
+	return &FileIgnoreConfig{FileName: filepath, Checksum: checksum, IgnoreDetectors: detectors}
 }

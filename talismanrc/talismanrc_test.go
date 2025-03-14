@@ -164,7 +164,7 @@ func TestMakeWithFileIgnores(t *testing.T) {
 }
 
 func TestBuildIgnoreConfig(t *testing.T) {
-	ignoreConfig := BuildIgnoreConfig(HookMode, "filename", "asdfasdfasdfasdfasdf", nil)
+	ignoreConfig := BuildIgnoreConfig("filename", "asdfasdfasdfasdfasdf", nil)
 	assert.IsType(t, &FileIgnoreConfig{}, ignoreConfig)
 }
 
