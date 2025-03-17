@@ -44,7 +44,7 @@ fileignoreconfig:
 `
 const invalidTalismanRC = `
 fileignoreconfig:
-- filename: 
+- filename:
 private.pem
   checksum: checksum_value
   ignore_detectors: []
@@ -292,22 +292,30 @@ func TestFilesWithSameNameWithinRepositoryAreHandledAsSeparateFiles(t *testing.T
 		assert.Equal(t, 1, runTalismanInPrePushMode(git), "Expected run() to return 1 since hello checksum is changed")
 	})
 }
-func TestIgnoreHistoryDoesNotDetectRemovedSecrets(t *testing.T) {
+
+func TestScan(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		options.Debug = false
 		options.Pattern = "./**/*.*"
 		options.Scan = true
-		options.IgnoreHistory = true
 
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("some-dir/should-not-be-included.txt", awsAccessKeyIDExample)
 		git.AddAndcommit("*", "Initial Commit")
-		git.RemoveFile("some-dir/should-not-be-included.txt")
-		git.AddAndcommit("*", "Removed secret")
 		git.CreateFileWithContents("some-dir/should-be-included.txt", "safeContents")
 		git.AddAndcommit("*", "Start of Scan")
+		git.RemoveFile("some-dir/should-not-be-included.txt")
+		git.AddAndcommit("*", "Removed secret")
 
-		assert.Equal(t, 0, runTalisman(git), "Expected run() to return 0 since secret was removed from head")
+		t.Run("Detects removed secrets", func(t *testing.T) {
+			options.IgnoreHistory = false
+			assert.Equal(t, 1, runTalisman(git), "Expected run() to return 1 because of removed secret in history")
+		})
+
+		t.Run("Does not detect removed secrets when ignoring history", func(t *testing.T) {
+			options.IgnoreHistory = true
+			assert.Equal(t, 0, runTalisman(git), "Expected run() to return 0 since secret was removed from head")
+		})
 	})
 }
 
