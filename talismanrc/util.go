@@ -1,5 +1,9 @@
 package talismanrc
 
+import "regexp"
+
+var emptyStringPattern = regexp.MustCompile(`^\s*$`)
+
 func isEmptyString(str string) bool {
 	return emptyStringPattern.MatchString(str)
 }

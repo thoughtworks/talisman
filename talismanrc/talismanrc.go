@@ -33,15 +33,14 @@ type TalismanRC struct {
 }
 
 type persistedRC struct {
-	FileIgnoreConfig []FileIgnoreConfig              `yaml:"fileignoreconfig,omitempty"`
-	ScopeConfig      []ScopeConfig                   `yaml:"scopeconfig,omitempty"`
-	CustomPatterns   []PatternString                 `yaml:"custom_patterns,omitempty"`
-	CustomSeverities []CustomSeverityConfig          `yaml:"custom_severities,omitempty"`
-	AllowedPatterns  []string                        `yaml:"allowed_patterns,omitempty"`
-	Experimental     ExperimentalConfig              `yaml:"experimental,omitempty"`
-	Threshold        severity.Severity               `default:"low" yaml:"threshold,omitempty"`
-	ScanConfig       map[CommitID][]FileIgnoreConfig `yaml:"scanconfig,omitempty"`
-	Version          string                          `default:"2.0" yaml:"version"`
+	FileIgnoreConfig []FileIgnoreConfig     `yaml:"fileignoreconfig,omitempty"`
+	ScopeConfig      []ScopeConfig          `yaml:"scopeconfig,omitempty"`
+	CustomPatterns   []PatternString        `yaml:"custom_patterns,omitempty"`
+	CustomSeverities []CustomSeverityConfig `yaml:"custom_severities,omitempty"`
+	AllowedPatterns  []string               `yaml:"allowed_patterns,omitempty"`
+	Experimental     ExperimentalConfig     `yaml:"experimental,omitempty"`
+	Threshold        severity.Severity      `default:"low" yaml:"threshold,omitempty"`
+	Version          string                 `default:"2.0" yaml:"version"`
 }
 
 // SuggestRCFor returns the talismanRC file content corresponding to input ignore configs
@@ -202,7 +201,6 @@ func fromPersistedRC(configFromTalismanRCFile *persistedRC, mode Mode) *Talisman
 	tRC.Experimental = configFromTalismanRCFile.Experimental
 	tRC.CustomPatterns = configFromTalismanRCFile.CustomPatterns
 	tRC.CustomSeverities = configFromTalismanRCFile.CustomSeverities
-	tRC.Experimental = configFromTalismanRCFile.Experimental
 	tRC.AllowedPatterns = make([]*regexp.Regexp, len(configFromTalismanRCFile.AllowedPatterns))
 	for i, p := range configFromTalismanRCFile.AllowedPatterns {
 		tRC.AllowedPatterns[i] = regexp.MustCompile(p)
@@ -234,4 +232,16 @@ func ForScan(ignoreHistory bool) (*TalismanRC, error) {
 		return For(HookMode)
 	}
 	return For(ScanMode)
+}
+
+func ConfigFromFile() (*persistedRC, error) {
+	return readConfigFromRCFile(repoFileReader())
+}
+
+func MakeWithFileIgnores(fileIgnoreConfigs []FileIgnoreConfig) *persistedRC {
+	return &persistedRC{FileIgnoreConfig: fileIgnoreConfigs, Version: DefaultRCVersion}
+}
+
+func BuildIgnoreConfig(filepath, checksum string, detectors []string) IgnoreConfig {
+	return &FileIgnoreConfig{FileName: filepath, Checksum: checksum, IgnoreDetectors: detectors}
 }

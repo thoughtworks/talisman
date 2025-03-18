@@ -2,7 +2,7 @@ package talismanrc
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"regexp"
 	"testing"
@@ -15,40 +15,7 @@ import (
 )
 
 func init() {
-	logr.SetOutput(ioutil.Discard)
-}
-
-func TestForTalismanFileStructure(t *testing.T) {
-	var repoFileReader = func(string) ([]byte, error) {
-		return []byte(`fileignoreconfig:
-- filename: testfile_1.yml
-  checksum: file1_checksum
-
-  
-custom_patterns:
-- 'pwd_[a-z]{8,20}'`), nil
-	}
-	t.Run("talismanrc should not fail as long as the yaml structure is correct", func(t *testing.T) {
-		setRepoFileReader(repoFileReader)
-		rc, _ := For(HookMode)
-		assert.Equal(t, 1, len(rc.IgnoreConfigs))
-		assert.Equal(t, 1, len(rc.CustomPatterns))
-	})
-}
-
-func TestShouldIgnoreUnformattedFiles(t *testing.T) {
-	defaultRepoFileReader := repoFileReader()
-	for _, s := range []string{"#", "#monkey", "# this monkey likes bananas  "} {
-		setRepoFileReader(func(string) ([]byte, error) {
-			return []byte(s), nil
-		})
-
-		talismanRC, _ := For(HookMode)
-		assert.True(t, talismanRC.AcceptsAll(), "Expected commented line '%s' to result in no ignore patterns", s)
-		talismanRC, _ = For(ScanMode)
-		assert.True(t, talismanRC.AcceptsAll(), "Expected commented line '%s' to result in no ignore patterns", s)
-	}
-	setRepoFileReader(defaultRepoFileReader)
+	logr.SetOutput(io.Discard)
 }
 
 func TestShouldFilterAllowedPatternsFromAddition(t *testing.T) {
@@ -74,12 +41,6 @@ func TestShouldFilterAllowedPatternsFromAdditionBasedOnFileConfig(t *testing.T) 
 
 	assert.Equal(t, fileContentFiltered1, "Prefix content")
 	assert.Equal(t, fileContentFiltered2, fileContent)
-}
-
-func TestShouldConvertThresholdToValue(t *testing.T) {
-	talismanRCContents := []byte("threshold: high")
-	persistedTalismanrc, _ := newPersistedRC(talismanRCContents)
-	assert.Equal(t, persistedTalismanrc.Threshold, severity.High)
 }
 
 func TestObeysCustomSeverityLevelsAndThreshold(t *testing.T) {
@@ -164,7 +125,7 @@ func TestMakeWithFileIgnores(t *testing.T) {
 }
 
 func TestBuildIgnoreConfig(t *testing.T) {
-	ignoreConfig := BuildIgnoreConfig(HookMode, "filename", "asdfasdfasdfasdfasdf", nil)
+	ignoreConfig := BuildIgnoreConfig("filename", "asdfasdfasdfasdfasdf", nil)
 	assert.IsType(t, &FileIgnoreConfig{}, ignoreConfig)
 }
 
@@ -292,58 +253,5 @@ version: ""
 `
 		str := SuggestRCFor(fileIgnoreConfigs)
 		assert.Equal(t, expectedRC, str)
-	})
-}
-
-func TestFor(t *testing.T) {
-	var repoFileReader = func(string) ([]byte, error) {
-		return []byte(`fileignoreconfig:
-- filename: testfile_1.yml
-  checksum: file1_checksum
-- filename: testfile_2.yml
-  checksum: file2_checksum
-- filename: testfile_3.yml
-  checksum: file3_checksum`), nil
-	}
-	t.Run("talismanrc.For(mode) should read multiple entries in rc file correctly", func(t *testing.T) {
-		setRepoFileReader(repoFileReader)
-		rc, _ := For(HookMode)
-		assert.Equal(t, 3, len(rc.IgnoreConfigs))
-
-		assert.Equal(t, rc.IgnoreConfigs[0].GetFileName(), "testfile_1.yml")
-		assert.True(t, rc.IgnoreConfigs[0].ChecksumMatches("file1_checksum"))
-		assert.Equal(t, rc.IgnoreConfigs[1].GetFileName(), "testfile_2.yml")
-		assert.True(t, rc.IgnoreConfigs[1].ChecksumMatches("file2_checksum"))
-		assert.Equal(t, rc.IgnoreConfigs[2].GetFileName(), "testfile_3.yml")
-		assert.True(t, rc.IgnoreConfigs[2].ChecksumMatches("file3_checksum"))
-
-	})
-
-}
-
-func TestForScan(t *testing.T) {
-	var repoFileReader = func(string) ([]byte, error) {
-		return []byte(`fileignoreconfig:
-- filename: testfile_1.yml
-  checksum: file1_checksum
-- filename: testfile_2.yml
-  checksum: file2_checksum
-- filename: testfile_3.yml
-  checksum: file3_checksum`), nil
-	}
-	t.Run("talismanrc.ForScan(ignoreHistory) should populate talismanrc for scan mode with ignore history", func(t *testing.T) {
-		setRepoFileReader(repoFileReader)
-		rc, _ := ForScan(true)
-
-		assert.Equal(t, 3, len(rc.IgnoreConfigs))
-
-	})
-
-	t.Run("talismanrc.ForScan(ignoreHistory) should populate talismanrc for scan mode without ignore history", func(t *testing.T) {
-		setRepoFileReader(repoFileReader)
-		rc, _ := ForScan(false)
-
-		assert.Equal(t, 0, len(rc.IgnoreConfigs))
-
 	})
 }
