@@ -9,7 +9,6 @@ import (
 	"talisman/gitrepo"
 	mock "talisman/internal/mock/checksumcalculator"
 	"talisman/talismanrc"
-	"talisman/utility"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -18,8 +17,7 @@ import (
 )
 
 var emptyTalismanRC = &talismanrc.TalismanRC{IgnoreConfigs: []talismanrc.IgnoreConfig{}}
-var defaultChecksumCompareUtility = helpers.
-	NewChecksumCompare(nil, utility.MakeHasher("default", "."), emptyTalismanRC)
+var defaultChecksumCompareUtility = helpers.NewChecksumCompare(nil, emptyTalismanRC)
 var dummyCallback = func() {}
 var filename = "filename"
 
@@ -44,8 +42,7 @@ func TestShouldIgnoreFileIfNeeded(t *testing.T) {
 	mockChecksumCalculator.EXPECT().
 		CalculateCollectiveChecksumForPattern("filename").
 		Return("mock-checksum-for-filename")
-	checksumCompare := helpers.
-		NewChecksumCompare(mockChecksumCalculator, utility.MakeHasher("default", "."), talismanRCIWithFilenameIgnore)
+	checksumCompare := helpers.NewChecksumCompare(mockChecksumCalculator, talismanRCIWithFilenameIgnore)
 
 	NewFileContentDetector(talismanRCIWithFilenameIgnore).
 		Test(checksumCompare, additions, talismanRCIWithFilenameIgnore, results, dummyCallback)
@@ -191,8 +188,7 @@ func TestShouldNotFlagPotentialCreditCardNumberIfAboveThreshold(t *testing.T) {
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(creditCardNumber))}
 	talismanRCWithThreshold := &talismanrc.TalismanRC{Threshold: severity.High}
-	checksumCompareWithThreshold := helpers.
-		NewChecksumCompare(nil, utility.MakeHasher("default", "."), talismanRCWithThreshold)
+	checksumCompareWithThreshold := helpers.NewChecksumCompare(nil, talismanRCWithThreshold)
 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(checksumCompareWithThreshold, additions, talismanRCWithThreshold, results, dummyCallback)
@@ -221,17 +217,16 @@ func TestResultsShouldNotFlagCreditCardNumberIfSpecifiedInFileIgnores(t *testing
 		AllowedPatterns: []string{creditCardNumber},
 	}
 	talismanRCWithFileIgnore := &talismanrc.TalismanRC{
-		IgnoreConfigs:   []talismanrc.IgnoreConfig{fileIgnoreConfig},
+		IgnoreConfigs: []talismanrc.IgnoreConfig{fileIgnoreConfig},
 	}
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(creditCardNumber))}
 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(defaultChecksumCompareUtility, additions, talismanRCWithFileIgnore, results, dummyCallback)
-	
+
 	assert.False(t, results.HasFailures(), "Expected the creditcard number to be ignored based on talisman RC")
 
 }
-
 
 func TestResultsShouldContainHexTextsIfHexAndBase64ExistInFile(t *testing.T) {
 	const hex string = "68656C6C6F20776F726C6421"

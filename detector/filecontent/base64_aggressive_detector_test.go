@@ -2,7 +2,6 @@ package filecontent
 
 import (
 	"talisman/detector/helpers"
-	"talisman/utility"
 	"testing"
 
 	"talisman/gitrepo"
@@ -23,7 +22,7 @@ func TestShouldFlagPotentialAWSAccessKeysInAggressiveMode(t *testing.T) {
 
 	aggressiveModeFileContentDetector.
 		Test(
-			helpers.NewChecksumCompare(nil, utility.MakeHasher("default", "."), _blankTalismanRC),
+			helpers.NewChecksumCompare(nil, _blankTalismanRC),
 			additions,
 			_blankTalismanRC,
 			results,
@@ -40,7 +39,7 @@ func TestShouldFlagPotentialAWSAccessKeysAtPropertyDefinitionInAggressiveMode(t 
 
 	aggressiveModeFileContentDetector.
 		Test(
-			helpers.NewChecksumCompare(nil, utility.MakeHasher("default", "."), _blankTalismanRC),
+			helpers.NewChecksumCompare(nil, _blankTalismanRC),
 			additions,
 			_blankTalismanRC,
 			results,
@@ -62,7 +61,7 @@ func TestShouldNotFlagPotentialSecretsWithinSafeJavaCodeEvenInAggressiveMode(t *
 
 	aggressiveModeFileContentDetector.
 		Test(
-			helpers.NewChecksumCompare(nil, utility.MakeHasher("default", "."), _blankTalismanRC),
+			helpers.NewChecksumCompare(nil, _blankTalismanRC),
 			additions,
 			_blankTalismanRC,
 			results,

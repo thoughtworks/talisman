@@ -5,7 +5,6 @@ import (
 	"talisman/gitrepo"
 	mockchecksumcalculator "talisman/internal/mock/checksumcalculator"
 	"talisman/talismanrc"
-	"talisman/utility"
 
 	"github.com/golang/mock/gomock"
 	logr "github.com/sirupsen/logrus"
@@ -23,7 +22,7 @@ func TestChecksumCompare_IsScanNotRequired(t *testing.T) {
 		ignoreConfig := &talismanrc.TalismanRC{
 			IgnoreConfigs: []talismanrc.IgnoreConfig{},
 		}
-		cc := NewChecksumCompare(nil, utility.MakeHasher("default", "."), ignoreConfig)
+		cc := NewChecksumCompare(nil, ignoreConfig)
 		addition := gitrepo.Addition{Path: "some.txt"}
 
 		required := cc.IsScanNotRequired(addition)
@@ -43,7 +42,7 @@ func TestChecksumCompare_IsScanNotRequired(t *testing.T) {
 				},
 			},
 		}
-		cc := NewChecksumCompare(checksumCalculator, utility.MakeHasher("default", "."), &ignoreConfig)
+		cc := NewChecksumCompare(checksumCalculator, &ignoreConfig)
 		addition := gitrepo.Addition{Name: "some.txt"}
 		checksumCalculator.EXPECT().CalculateCollectiveChecksumForPattern("some.txt").Return("sha1")
 

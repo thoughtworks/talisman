@@ -4,18 +4,16 @@ import (
 	"talisman/checksumcalculator"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
-	"talisman/utility"
 )
 
 type ChecksumCompare struct {
 	calculator checksumcalculator.ChecksumCalculator
-	hasher     utility.SHA256Hasher
 	talismanRC *talismanrc.TalismanRC
 }
 
 // NewChecksumCompare returns new instance of the ChecksumCompare
-func NewChecksumCompare(calculator checksumcalculator.ChecksumCalculator, hasher utility.SHA256Hasher, talismanRCConfig *talismanrc.TalismanRC) ChecksumCompare {
-	return ChecksumCompare{calculator: calculator, hasher: hasher, talismanRC: talismanRCConfig}
+func NewChecksumCompare(calculator checksumcalculator.ChecksumCalculator, talismanRCConfig *talismanrc.TalismanRC) ChecksumCompare {
+	return ChecksumCompare{calculator: calculator, talismanRC: talismanRCConfig}
 }
 
 func (cc *ChecksumCompare) IsScanNotRequired(addition gitrepo.Addition) bool {
