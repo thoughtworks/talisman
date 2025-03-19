@@ -42,6 +42,13 @@ fileignoreconfig:
   checksum: 1db800b79e6e9695adc451f77be974dc47bcd84d42873560d7767bfca30db8b1
   ignore_detectors: []
 `
+const invalidTalismanRC = `
+fileignoreconfig:
+- filename: 
+private.pem
+  checksum: checksum_value
+  ignore_detectors: []
+  `
 
 const talismanRCForHelloTxtFile = `
 fileignoreconfig:
@@ -318,6 +325,64 @@ func TestIgnoreHistoryDetectsExistingIssuesOnHead(t *testing.T) {
 		git.AddAndcommit("*", "Another Commit")
 
 		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 1 since secret exists on head")
+	})
+}
+
+func TestTalismanFailsIfTalismanrcIsInvalidYamlInPrePushMode(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents(".talismanrc", invalidTalismanRC)
+		git.AddAndcommit("*", "Incorrect Talismanrc commit")
+
+		assert.Equal(t, 1, runTalismanInPrePushMode(git), "Expected run() to return 1 and fails as talismanrc is invalid")
+	})
+}
+
+func TestTalismanFailsIfTalismanrcIsInvalidYamlInPreCommitMode(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		options.Debug = true
+		options.GitHook = PreCommit
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents(".talismanrc", invalidTalismanRC)
+		git.AddAndcommit("*", "Incorrect Talismanrc commit")
+
+		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 0 and pass as pem file was ignored")
+	})
+}
+
+func TestTalismanFailsIfTalismanrcIsInvalidYamlInScanMode(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		options.Debug = true
+		options.Scan = true
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents(".talismanrc", invalidTalismanRC)
+		git.AddAndcommit("*", "Incorrect Talismanrc commit")
+
+		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 0 and pass as pem file was ignored")
+	})
+}
+
+func TestTalismanFailsIfTalismanrcIsInvalidYamlInScanWithHTMLMode(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		options.Debug = true
+		options.ScanWithHtml = true
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents(".talismanrc", invalidTalismanRC)
+		git.AddAndcommit("*", "Incorrect Talismanrc commit")
+
+		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 0 and pass as pem file was ignored")
+	})
+}
+
+func TestTalismanFailsIfTalismanrcIsInvalidYamlInPatternMode(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		options.Debug = false
+		options.Pattern = "./*.*"
+
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents(".talismanrc", invalidTalismanRC)
+
+		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 1 and fail as pem file was present in the repo")
 	})
 }
 

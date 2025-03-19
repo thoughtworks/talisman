@@ -1,10 +1,9 @@
 package helpers
 
 import (
-	"io/ioutil"
+	"io"
 	"talisman/gitrepo"
 	mockchecksumcalculator "talisman/internal/mock/checksumcalculator"
-	mockutility "talisman/internal/mock/utility"
 	"talisman/talismanrc"
 
 	"github.com/golang/mock/gomock"
@@ -15,20 +14,16 @@ import (
 )
 
 func init() {
-	logr.SetOutput(ioutil.Discard)
+	logr.SetOutput(io.Discard)
 }
 func TestChecksumCompare_IsScanNotRequired(t *testing.T) {
 
 	t.Run("should return false if talismanrc is empty", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		mockSHA256Hasher := mockutility.NewMockSHA256Hasher(ctrl)
 		ignoreConfig := &talismanrc.TalismanRC{
 			IgnoreConfigs: []talismanrc.IgnoreConfig{},
 		}
-		cc := NewChecksumCompare(nil, mockSHA256Hasher, ignoreConfig)
+		cc := NewChecksumCompare(nil, ignoreConfig)
 		addition := gitrepo.Addition{Path: "some.txt"}
-		mockSHA256Hasher.EXPECT().CollectiveSHA256Hash([]string{string(addition.Path)}).Return("somesha")
 
 		required := cc.IsScanNotRequired(addition)
 
@@ -38,7 +33,6 @@ func TestChecksumCompare_IsScanNotRequired(t *testing.T) {
 	t.Run("should loop through talismanrc configs", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		mockSHA256Hasher := mockutility.NewMockSHA256Hasher(ctrl)
 		checksumCalculator := mockchecksumcalculator.NewMockChecksumCalculator(ctrl)
 		ignoreConfig := talismanrc.TalismanRC{
 			IgnoreConfigs: []talismanrc.IgnoreConfig{
@@ -48,9 +42,8 @@ func TestChecksumCompare_IsScanNotRequired(t *testing.T) {
 				},
 			},
 		}
-		cc := NewChecksumCompare(checksumCalculator, mockSHA256Hasher, &ignoreConfig)
 		addition := gitrepo.Addition{Name: "some.txt", Path: "some.txt"}
-		mockSHA256Hasher.EXPECT().CollectiveSHA256Hash([]string{string(addition.Path)}).Return("somesha")
+		cc := NewChecksumCompare(checksumCalculator, &ignoreConfig)
 		checksumCalculator.EXPECT().CalculateCollectiveChecksumForPattern("some.txt").Return("sha1")
 
 		required := cc.IsScanNotRequired(addition)

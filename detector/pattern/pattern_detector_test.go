@@ -7,14 +7,13 @@ import (
 	"talisman/detector/severity"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
-	"talisman/utility"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 var talismanRC = &talismanrc.TalismanRC{}
-var defaultChecksumCompare = helpers.NewChecksumCompare(nil, utility.MakeHasher("default", "."), talismanRC)
+var defaultChecksumCompare = helpers.NewChecksumCompare(nil, talismanRC)
 var dummyCallback = func() {}
 
 var (
@@ -30,8 +29,8 @@ func TestShouldDetectPasswordPatterns(t *testing.T) {
 		shouldPassDetectionOfSecretPattern(filename, []byte("."+values[i]+"=randomStringGoesHere}"), t)
 		shouldPassDetectionOfSecretPattern(filename, []byte(":"+values[i]+" randomStringGoesHere"), t)
 		shouldPassDetectionOfSecretPattern(filename, []byte(values[i]+" ,\"randomStringGoesHere\""), t)
-		shouldPassDetectionOfSecretPattern(filename, []byte("'" + values[i]+"' ,\"randomStringGoesHere\""), t)
-		shouldPassDetectionOfSecretPattern(filename, []byte("\"" + values[i]+"\" ,\"randomStringGoesHere\""), t)
+		shouldPassDetectionOfSecretPattern(filename, []byte("'"+values[i]+"' ,\"randomStringGoesHere\""), t)
+		shouldPassDetectionOfSecretPattern(filename, []byte("\""+values[i]+"\" ,\"randomStringGoesHere\""), t)
 		shouldPassDetectionOfSecretPattern(filename,
 			[]byte("\"SERVER_"+strings.ToUpper(values[i])+"\" : UnsafeString"),
 			t)
@@ -104,7 +103,7 @@ func TestShouldOnlyWarnSecretPatternIfBelowThreshold(t *testing.T) {
 	filename := "secret.txt"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 	talismanRCWithThreshold := &talismanrc.TalismanRC{Threshold: severity.High}
-	checksumCompare := helpers.NewChecksumCompare(nil, utility.MakeHasher("default", "."), talismanRCWithThreshold)
+	checksumCompare := helpers.NewChecksumCompare(nil, talismanRCWithThreshold)
 
 	NewPatternDetector(customPatterns).Test(checksumCompare, additions, talismanRCWithThreshold, results, dummyCallback)
 

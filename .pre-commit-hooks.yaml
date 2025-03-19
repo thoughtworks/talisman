@@ -1,17 +1,19 @@
 -   id: talisman-commit
     name: talisman
-    entry: talisman --githook pre-commit
-    stages: [commit]
+    entry: cmd --githook pre-commit
+    stages: [pre-commit]
     # talisman currently discovers files by itself and does not take them on the cli
     pass_filenames: false
     types: [text]
     language: golang
+    minimum_pre_commit_version: 3.2.0
 
 -   id: talisman-push
     name: talisman
-    entry: talisman --githook pre-push
-    stages: [push]
+    entry: cmd --githook pre-push
+    stages: [pre-push]
     # talisman currently discovers files by itself and does not take them on the cli
     pass_filenames: false
     types: [text]
     language: golang
+    minimum_pre_commit_version: 3.2.0

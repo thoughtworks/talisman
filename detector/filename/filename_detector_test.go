@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"talisman/detector/helpers"
 	"talisman/detector/severity"
-	"talisman/utility"
 	"testing"
 
 	"talisman/gitrepo"
@@ -17,7 +16,7 @@ import (
 )
 
 var talismanRC = &talismanrc.TalismanRC{}
-var defaultChecksumCompareUtility = helpers.NewChecksumCompare(nil, utility.MakeHasher("default", "."), talismanRC)
+var defaultChecksumCompareUtility = helpers.NewChecksumCompare(nil, talismanRC)
 
 func TestShouldFlagPotentialSSHPrivateKeys(t *testing.T) {
 	shouldFail("id_rsa", "^.+_rsa$", severity.Low, t)
@@ -169,7 +168,7 @@ func shouldNotFailWithDefaultDetectorAndIgnores(fileName, ignore string, thresho
 	fileIgnoreConfig := &talismanrc.FileIgnoreConfig{}
 	fileIgnoreConfig.FileName = ignore
 	fileIgnoreConfig.IgnoreDetectors = []string{"filename"}
-	talismanRC := talismanrc.For(talismanrc.HookMode)
+	talismanRC, _ := talismanrc.For(talismanrc.HookMode)
 	talismanRC.IgnoreConfigs = []talismanrc.IgnoreConfig{fileIgnoreConfig}
 
 	DefaultFileNameDetector(threshold).
