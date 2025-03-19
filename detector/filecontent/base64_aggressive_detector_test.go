@@ -13,6 +13,7 @@ import (
 var _blankTalismanRC = &talismanrc.TalismanRC{}
 var dummyCompletionCallbackFunc = func() {}
 var aggressiveModeFileContentDetector = NewFileContentDetector(_blankTalismanRC).AggressiveMode()
+var defaultCompareChecker = *helpers.BuildCC("default", _blankTalismanRC, gitrepo.RepoLocatedAt("."))
 
 func TestShouldFlagPotentialAWSAccessKeysInAggressiveMode(t *testing.T) {
 	const awsAccessKeyIDExample string = "AKIAIOSFODNN7EXAMPLE\n"
@@ -22,7 +23,7 @@ func TestShouldFlagPotentialAWSAccessKeysInAggressiveMode(t *testing.T) {
 
 	aggressiveModeFileContentDetector.
 		Test(
-			helpers.NewChecksumCompare(nil, _blankTalismanRC),
+			defaultCompareChecker,
 			additions,
 			_blankTalismanRC,
 			results,
@@ -39,7 +40,7 @@ func TestShouldFlagPotentialAWSAccessKeysAtPropertyDefinitionInAggressiveMode(t 
 
 	aggressiveModeFileContentDetector.
 		Test(
-			helpers.NewChecksumCompare(nil, _blankTalismanRC),
+			defaultCompareChecker,
 			additions,
 			_blankTalismanRC,
 			results,
@@ -61,7 +62,7 @@ func TestShouldNotFlagPotentialSecretsWithinSafeJavaCodeEvenInAggressiveMode(t *
 
 	aggressiveModeFileContentDetector.
 		Test(
-			helpers.NewChecksumCompare(nil, _blankTalismanRC),
+			defaultCompareChecker,
 			additions,
 			_blankTalismanRC,
 			results,

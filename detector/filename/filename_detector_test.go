@@ -16,7 +16,7 @@ import (
 )
 
 var talismanRC = &talismanrc.TalismanRC{}
-var defaultChecksumCompareUtility = helpers.NewChecksumCompare(nil, talismanRC)
+var defaultChecksumCompareUtility = *helpers.BuildCC("default", talismanRC, gitrepo.RepoLocatedAt("."))
 
 func TestShouldFlagPotentialSSHPrivateKeys(t *testing.T) {
 	shouldFail("id_rsa", "^.+_rsa$", severity.Low, t)

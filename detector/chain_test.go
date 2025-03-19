@@ -31,14 +31,16 @@ func (p PassingDetection) Test(comparator helpers.ChecksumCompare, currentAdditi
 }
 
 func TestEmptyValidationChainPassesAllValidations(t *testing.T) {
-	v := NewChain("pre-push")
+	cc := helpers.BuildCC("pre-push", nil, gitrepo.RepoLocatedAt("."))
+	v := NewChain(cc)
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	v.Test(nil, &talismanrc.TalismanRC{}, results)
 	assert.False(t, results.HasFailures(), "Empty validation chain is expected to always pass")
 }
 
 func TestValidationChainWithFailingValidationAlwaysFails(t *testing.T) {
-	v := NewChain("pre-push")
+	cc := helpers.BuildCC("pre-push", nil, gitrepo.RepoLocatedAt("."))
+	v := NewChain(cc)
 	v.AddDetector(PassingDetection{})
 	v.AddDetector(FailingDetection{})
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
@@ -52,8 +54,8 @@ func TestDefaultChainShouldCreateChainSpecifiedModeAndPresetDetectors(t *testing
 		Threshold:      severity.Medium,
 		CustomPatterns: []talismanrc.PatternString{"AKIA*"},
 	}
-	v := DefaultChain(talismanRC, "pre-push")
-	assert.Equal(t, "pre-push", v.mode)
+	cc := helpers.BuildCC("pre-push", talismanRC, gitrepo.RepoLocatedAt("."))
+	v := DefaultChain(talismanRC, cc)
 	assert.Equal(t, 3, len(v.detectors))
 
 	defaultFileNameDetector := filename.DefaultFileNameDetector(talismanRC.Threshold)

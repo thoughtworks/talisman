@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"talisman/detector"
 	"talisman/detector/helpers"
 	"talisman/detector/severity"
@@ -10,14 +11,14 @@ import (
 	"talisman/talismanrc"
 )
 
-//runner represents a single run of the validations for a given commit range
+// runner represents a single run of the validations for a given commit range
 type runner struct {
 	additions []gitrepo.Addition
 	results   *helpers.DetectionResults
 	mode      string
 }
 
-//NewRunner returns a new runner.
+// NewRunner returns a new runner.
 func NewRunner(additions []gitrepo.Addition, mode string) *runner {
 	return &runner{
 		additions: additions,
@@ -26,11 +27,16 @@ func NewRunner(additions []gitrepo.Addition, mode string) *runner {
 	}
 }
 
-//Run will validate the commit range for errors and return either COMPLETED_SUCCESSFULLY or COMPLETED_WITH_ERRORS
+// Run will validate the commit range for errors and return either COMPLETED_SUCCESSFULLY or COMPLETED_WITH_ERRORS
 func (r *runner) Run(tRC *talismanrc.TalismanRC, promptContext prompt.PromptContext) int {
+	wd, _ := os.Getwd()
+	repo := gitrepo.RepoLocatedAt(wd)
+	cc := helpers.BuildCC(r.mode, tRC, repo)
+
 	setCustomSeverities(tRC)
 	additionsToScan := tRC.FilterAdditions(r.additions)
-	detector.DefaultChain(tRC, r.mode).Test(additionsToScan, tRC, r.results)
+
+	detector.DefaultChain(tRC, cc).Test(additionsToScan, tRC, r.results)
 	r.printReport(promptContext)
 	exitStatus := r.exitStatus()
 	return exitStatus

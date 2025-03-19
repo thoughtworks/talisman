@@ -13,7 +13,7 @@ import (
 )
 
 var talismanRC = &talismanrc.TalismanRC{}
-var defaultChecksumCompare = helpers.NewChecksumCompare(nil, talismanRC)
+var defaultChecksumCompare = *helpers.BuildCC("default", talismanRC, gitrepo.RepoLocatedAt("."))
 var dummyCallback = func() {}
 
 var (
@@ -103,7 +103,7 @@ func TestShouldOnlyWarnSecretPatternIfBelowThreshold(t *testing.T) {
 	filename := "secret.txt"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 	talismanRCWithThreshold := &talismanrc.TalismanRC{Threshold: severity.High}
-	checksumCompare := helpers.NewChecksumCompare(nil, talismanRCWithThreshold)
+	checksumCompare := *helpers.BuildCC("default", talismanRCWithThreshold, gitrepo.RepoLocatedAt("."))
 
 	NewPatternDetector(customPatterns).Test(checksumCompare, additions, talismanRCWithThreshold, results, dummyCallback)
 
