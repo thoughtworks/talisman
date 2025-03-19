@@ -65,27 +65,27 @@ var (
 	}
 )
 
-//FileNameDetector represents tests performed against the fileName of the Additions.
-//The Paths of the supplied Additions are tested against the configured patterns and if any of them match, it is logged as a failure during the run
+// FileNameDetector represents tests performed against the fileName of the Additions.
+// The Paths of the supplied Additions are tested against the configured patterns and if any of them match, it is logged as a failure during the run
 type FileNameDetector struct {
 	flagPatterns []*severity.PatternSeverity
 	threshold    severity.Severity
 }
 
-//DefaultFileNameDetector returns a FileNameDetector that tests Additions against the pre-configured patterns
+// DefaultFileNameDetector returns a FileNameDetector that tests Additions against the pre-configured patterns
 func DefaultFileNameDetector(threshold severity.Severity) detector.Detector {
 	return NewFileNameDetector(filenamePatterns, threshold)
 }
 
-//NewFileNameDetector returns a FileNameDetector that tests Additions against the supplied patterns
+// NewFileNameDetector returns a FileNameDetector that tests Additions against the supplied patterns
 func NewFileNameDetector(patternsWithSeverity []*severity.PatternSeverity, threshold severity.Severity) detector.Detector {
 	return FileNameDetector{patternsWithSeverity, threshold}
 }
 
-//Test tests the fileNames of the Additions to ensure that they don't look suspicious
+// Test tests the fileNames of the Additions to ensure that they don't look suspicious
 func (fd FileNameDetector) Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *helpers.DetectionResults, additionCompletionCallback func()) {
 	for _, addition := range currentAdditions {
-		if ignoreConfig.Deny(addition, "filename") || comparator.IsScanNotRequired(addition) {
+		if comparator.ShouldIgnore(addition, "filename") {
 			log.WithFields(log.Fields{
 				"filePath": addition.Path,
 			}).Info("Ignoring addition as it was specified to be ignored.")

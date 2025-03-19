@@ -21,8 +21,8 @@ func BuildCC(hasherMode string, talismanRC *talismanrc.TalismanRC, repo gitrepo.
 	return &ChecksumCompare{calculator: calculator, talismanRC: talismanRC}
 }
 
-// IsScanNotRequired returns true if an Addition's checksum matches one ignored by the .talismanrc file
-func (cc *ChecksumCompare) IsScanNotRequired(addition gitrepo.Addition) bool {
+// isScanNotRequired returns true if an Addition's checksum matches one ignored by the .talismanrc file
+func (cc *ChecksumCompare) isScanNotRequired(addition gitrepo.Addition) bool {
 	for _, ignore := range cc.talismanRC.IgnoreConfigs {
 		if addition.Matches(ignore.GetFileName()) {
 			currentCollectiveChecksum := cc.calculator.CalculateCollectiveChecksumForPattern(ignore.GetFileName())
@@ -32,6 +32,7 @@ func (cc *ChecksumCompare) IsScanNotRequired(addition gitrepo.Addition) bool {
 	return false
 }
 
+// ShouldIgnore returns true if the talismanRC indicates that a Detector should ignore an Addition
 func (cc *ChecksumCompare) ShouldIgnore(addition gitrepo.Addition, detectorType string) bool {
-	return cc.talismanRC.Deny(addition, detectorType) || cc.IsScanNotRequired(addition)
+	return cc.talismanRC.Deny(addition, detectorType) || cc.isScanNotRequired(addition)
 }
