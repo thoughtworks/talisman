@@ -18,6 +18,10 @@ import (
 var talismanRC = &talismanrc.TalismanRC{}
 var defaultChecksumCompareUtility = *helpers.BuildCC("default", talismanRC, gitrepo.RepoLocatedAt("."))
 
+func checksumCompareWithTalismanRC(tRC *talismanrc.TalismanRC) *helpers.ChecksumCompare {
+	return helpers.BuildCC("default", tRC, gitrepo.RepoLocatedAt("."))
+}
+
 func TestShouldFlagPotentialSSHPrivateKeys(t *testing.T) {
 	shouldFail("id_rsa", "^.+_rsa$", severity.Low, t)
 	shouldFail("id_dsa", "^.+_dsa.*$", severity.Low, t)
@@ -165,18 +169,19 @@ func shouldIgnoreFilesWhichWouldOtherwiseTriggerErrors(
 
 func shouldNotFailWithDefaultDetectorAndIgnores(fileName, ignore string, threshold severity.Severity, t *testing.T) {
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
-	fileIgnoreConfig := &talismanrc.FileIgnoreConfig{}
-	fileIgnoreConfig.FileName = ignore
-	fileIgnoreConfig.IgnoreDetectors = []string{"filename"}
+	fileIgnoreConfig := &talismanrc.FileIgnoreConfig{
+		FileName:        ignore,
+		IgnoreDetectors: []string{"filename"},
+	}
 	talismanRC, _ := talismanrc.For(talismanrc.HookMode)
 	talismanRC.IgnoreConfigs = []talismanrc.IgnoreConfig{fileIgnoreConfig}
 
 	DefaultFileNameDetector(threshold).
-		Test(defaultChecksumCompareUtility, additionsNamed(fileName), talismanRC, results, func() {})
+		Test(*checksumCompareWithTalismanRC(talismanRC), additionsNamed(fileName), talismanRC, results, func() {})
 
 	assert.True(t,
 		results.Successful(),
-		"Expected file %s to be ignored by pattern", fileName, ignore)
+		"Expected file %s to be ignored by pattern %s", fileName, ignore)
 }
 
 func shouldFailWithSpecificPattern(fileName, pattern string, threshold severity.Severity, t *testing.T) {
@@ -188,7 +193,7 @@ func shouldFailWithSpecificPattern(fileName, pattern string, threshold severity.
 
 	assert.True(t,
 		results.HasFailures(),
-		"Expected file %s to fail the check against the %s pattern", fileName, pattern)
+		"Expected file %s to fail the check against pattern %s", fileName, pattern)
 }
 
 func shouldFailWithDefaultDetector(fileName, pattern string, severity severity.Severity, t *testing.T) {

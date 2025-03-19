@@ -109,7 +109,7 @@ func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentA
 		go func(addition gitrepo.Addition) {
 			defer waitGroup.Done()
 			defer additionCompletionCallback()
-			if talismanRC.Deny(addition, "filecontent") || comparator.IsScanNotRequired(addition) {
+			if comparator.ShouldIgnore(addition, "filecontent") {
 				ignoredFilePaths <- addition.Path
 				return
 			}

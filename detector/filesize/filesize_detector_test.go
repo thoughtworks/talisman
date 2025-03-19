@@ -14,6 +14,10 @@ import (
 var talismanRC = &talismanrc.TalismanRC{}
 var defaultChecksumCompareUtility = *helpers.BuildCC("default", talismanRC, gitrepo.RepoLocatedAt("."))
 
+func checksumCompareWithTalismanRC(tRC *talismanrc.TalismanRC) *helpers.ChecksumCompare {
+	return helpers.BuildCC("default", tRC, gitrepo.RepoLocatedAt("."))
+}
+
 func TestShouldFlagLargeFiles(t *testing.T) {
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	content := []byte("more than one byte")
@@ -45,15 +49,15 @@ func TestShouldNotFlagIgnoredLargeFiles(t *testing.T) {
 	content := []byte("more than one byte")
 
 	filename := "filename"
-	fileIgnoreConfig := &talismanrc.FileIgnoreConfig{}
-	fileIgnoreConfig.FileName = filename
-	fileIgnoreConfig.IgnoreDetectors = make([]string, 1)
-	fileIgnoreConfig.IgnoreDetectors[0] = "filesize"
-	talismanRC := &talismanrc.TalismanRC{}
-	talismanRC.IgnoreConfigs = make([]talismanrc.IgnoreConfig, 1)
-	talismanRC.IgnoreConfigs[0] = fileIgnoreConfig
+	fileIgnoreConfig := &talismanrc.FileIgnoreConfig{
+		FileName:        filename,
+		IgnoreDetectors: []string{"filesize"},
+	}
+	talismanRC := &talismanrc.TalismanRC{
+		IgnoreConfigs: []talismanrc.IgnoreConfig{fileIgnoreConfig},
+	}
 
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
-	NewFileSizeDetector(2).Test(defaultChecksumCompareUtility, additions, talismanRC, results, func() {})
+	NewFileSizeDetector(2).Test(*checksumCompareWithTalismanRC(talismanRC), additions, talismanRC, results, func() {})
 	assert.True(t, results.Successful(), "expected file %s to be ignored by file size detector", filename)
 }

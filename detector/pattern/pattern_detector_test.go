@@ -20,6 +20,10 @@ var (
 	customPatterns []talismanrc.PatternString
 )
 
+func checksumCompareWithTalismanRC(tRC *talismanrc.TalismanRC) *helpers.ChecksumCompare {
+	return helpers.BuildCC("default", tRC, gitrepo.RepoLocatedAt("."))
+}
+
 func TestShouldDetectPasswordPatterns(t *testing.T) {
 	filename := "secret.txt"
 	values := [7]string{"password", "secret", "key", "pwd", "pass", "pword", "passphrase"}
@@ -61,7 +65,7 @@ func TestShouldDetectPasswordPatterns(t *testing.T) {
 	shouldFailDetectionOfSecretPattern(filename, []byte(`random=12345678)`), t)
 }
 
-func TestShouldIgnorePasswordPatterns(t *testing.T) {
+func TestShouldIgnorePasswordPatternsIfChecksumMatches(t *testing.T) {
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	content := []byte("\"password\" : UnsafePassword")
 	filename := "secret.txt"
@@ -73,9 +77,9 @@ func TestShouldIgnorePasswordPatterns(t *testing.T) {
 		AllowedPatterns: []string{}}
 	ignores := &talismanrc.TalismanRC{IgnoreConfigs: []talismanrc.IgnoreConfig{fileIgnoreConfig}}
 
-	NewPatternDetector(customPatterns).Test(defaultChecksumCompare, additions, ignores, results, dummyCallback)
+	NewPatternDetector(customPatterns).Test(*checksumCompareWithTalismanRC(ignores), additions, ignores, results, dummyCallback)
 
-	assert.True(t, results.Successful(), "Expected file %s to be ignored by pattern", filename)
+	assert.True(t, results.Successful(), "Expected file %s to be ignored because checksum matches", filename)
 }
 
 func TestShouldIgnoreAllowedPattern(t *testing.T) {
