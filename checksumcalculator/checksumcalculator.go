@@ -15,17 +15,16 @@ type ChecksumCalculator interface {
 }
 
 type checksumCalculator struct {
-	gitAdditions []gitrepo.Addition
-	hasher       utility.SHA256Hasher
+	allTrackedFiles []gitrepo.Addition
+	hasher          utility.SHA256Hasher
 }
 
-//NewChecksumCalculator returns new instance of the CheckSumDetector
+// NewChecksumCalculator returns new instance of the CheckSumDetector
 func NewChecksumCalculator(hasher utility.SHA256Hasher, gitAdditions []gitrepo.Addition) ChecksumCalculator {
-	cc := checksumCalculator{hasher: hasher, gitAdditions: gitAdditions}
-	return &cc
+	return &checksumCalculator{hasher: hasher, allTrackedFiles: gitAdditions}
 }
 
-//SuggestTalismanRC returns the suggestion for .talismanrc format
+// SuggestTalismanRC returns the suggestion for .talismanrc format
 func (cc *checksumCalculator) SuggestTalismanRC(fileNamePatterns []string) string {
 	var fileIgnoreConfigs []talismanrc.FileIgnoreConfig
 	result := strings.Builder{}
@@ -45,13 +44,13 @@ func (cc *checksumCalculator) SuggestTalismanRC(fileNamePatterns []string) strin
 	return result.String()
 }
 
-//CalculateCollectiveChecksumForPattern calculates and returns the checksum for files matching the input pattern
+// CalculateCollectiveChecksumForPattern calculates and returns the checksum for files matching the input pattern
 func (cc *checksumCalculator) CalculateCollectiveChecksumForPattern(fileNamePattern string) string {
 	var patternPaths []string
 	currentCollectiveChecksum := ""
-	for _, addition := range cc.gitAdditions {
-		if addition.Matches(fileNamePattern) {
-			patternPaths = append(patternPaths, string(addition.Path))
+	for _, file := range cc.allTrackedFiles {
+		if file.Matches(fileNamePattern) {
+			patternPaths = append(patternPaths, string(file.Path))
 		}
 	}
 	// Calculate current collective checksum
