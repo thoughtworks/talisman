@@ -76,7 +76,7 @@ type content struct {
 	severity    severity.Severity
 }
 
-func (fc *FileContentDetector) Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, talismanRC *talismanrc.TalismanRC, result *helpers.DetectionResults, additionCompletionCallback func()) {
+func (fc *FileContentDetector) Test(comparator helpers.IgnoreEvaluator, currentAdditions []gitrepo.Addition, talismanRC *talismanrc.TalismanRC, result *helpers.DetectionResults, additionCompletionCallback func()) {
 	contentTypes := []struct {
 		contentType
 		fn

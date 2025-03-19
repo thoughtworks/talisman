@@ -8,24 +8,24 @@ import (
 	"talisman/utility"
 )
 
-type ChecksumCompare struct {
+type IgnoreEvaluator struct {
 	calculator checksumcalculator.ChecksumCalculator
 	talismanRC *talismanrc.TalismanRC
 }
 
-func BuildCC(hasherMode string, talismanRC *talismanrc.TalismanRC, repo gitrepo.GitRepo) *ChecksumCompare {
+func BuildIgnoreEvaluator(hasherMode string, talismanRC *talismanrc.TalismanRC, repo gitrepo.GitRepo) *IgnoreEvaluator {
 	wd, _ := os.Getwd()
 	hasher := utility.MakeHasher(hasherMode, wd)
 	allTrackedFiles := append(repo.TrackedFilesAsAdditions(), repo.StagedAdditions()...)
 	calculator := checksumcalculator.NewChecksumCalculator(hasher, allTrackedFiles)
-	return &ChecksumCompare{calculator: calculator, talismanRC: talismanRC}
+	return &IgnoreEvaluator{calculator: calculator, talismanRC: talismanRC}
 }
 
 // isScanNotRequired returns true if an Addition's checksum matches one ignored by the .talismanrc file
-func (cc *ChecksumCompare) isScanNotRequired(addition gitrepo.Addition) bool {
-	for _, ignore := range cc.talismanRC.IgnoreConfigs {
+func (ie *IgnoreEvaluator) isScanNotRequired(addition gitrepo.Addition) bool {
+	for _, ignore := range ie.talismanRC.IgnoreConfigs {
 		if addition.Matches(ignore.GetFileName()) {
-			currentCollectiveChecksum := cc.calculator.CalculateCollectiveChecksumForPattern(ignore.GetFileName())
+			currentCollectiveChecksum := ie.calculator.CalculateCollectiveChecksumForPattern(ignore.GetFileName())
 			return ignore.ChecksumMatches(currentCollectiveChecksum)
 		}
 	}
@@ -33,6 +33,6 @@ func (cc *ChecksumCompare) isScanNotRequired(addition gitrepo.Addition) bool {
 }
 
 // ShouldIgnore returns true if the talismanRC indicates that a Detector should ignore an Addition
-func (cc *ChecksumCompare) ShouldIgnore(addition gitrepo.Addition, detectorType string) bool {
-	return cc.talismanRC.Deny(addition, detectorType) || cc.isScanNotRequired(addition)
+func (ie *IgnoreEvaluator) ShouldIgnore(addition gitrepo.Addition, detectorType string) bool {
+	return ie.talismanRC.Deny(addition, detectorType) || ie.isScanNotRequired(addition)
 }

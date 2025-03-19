@@ -13,15 +13,15 @@ import (
 )
 
 var talismanRC = &talismanrc.TalismanRC{}
-var defaultChecksumCompare = *helpers.BuildCC("default", talismanRC, gitrepo.RepoLocatedAt("."))
+var defaultIgnoreEvaluator = *helpers.BuildIgnoreEvaluator("default", talismanRC, gitrepo.RepoLocatedAt("."))
 var dummyCallback = func() {}
 
 var (
 	customPatterns []talismanrc.PatternString
 )
 
-func checksumCompareWithTalismanRC(tRC *talismanrc.TalismanRC) *helpers.ChecksumCompare {
-	return helpers.BuildCC("default", tRC, gitrepo.RepoLocatedAt("."))
+func ignoreEvaluatorWithTalismanRC(tRC *talismanrc.TalismanRC) *helpers.IgnoreEvaluator {
+	return helpers.BuildIgnoreEvaluator("default", tRC, gitrepo.RepoLocatedAt("."))
 }
 
 func TestShouldDetectPasswordPatterns(t *testing.T) {
@@ -77,7 +77,7 @@ func TestShouldIgnorePasswordPatternsIfChecksumMatches(t *testing.T) {
 		AllowedPatterns: []string{}}
 	ignores := &talismanrc.TalismanRC{IgnoreConfigs: []talismanrc.IgnoreConfig{fileIgnoreConfig}}
 
-	NewPatternDetector(customPatterns).Test(*checksumCompareWithTalismanRC(ignores), additions, ignores, results, dummyCallback)
+	NewPatternDetector(customPatterns).Test(*ignoreEvaluatorWithTalismanRC(ignores), additions, ignores, results, dummyCallback)
 
 	assert.True(t, results.Successful(), "Expected file %s to be ignored because checksum matches", filename)
 }
@@ -95,7 +95,7 @@ func TestShouldIgnoreAllowedPattern(t *testing.T) {
 		IgnoreConfigs:   []talismanrc.IgnoreConfig{fileIgnoreConfig},
 		AllowedPatterns: []*regexp.Regexp{regexp.MustCompile("password")}}
 
-	NewPatternDetector(customPatterns).Test(defaultChecksumCompare, additions, ignores, results, dummyCallback)
+	NewPatternDetector(customPatterns).Test(defaultIgnoreEvaluator, additions, ignores, results, dummyCallback)
 
 	assert.True(t,
 		results.Successful(),
@@ -107,9 +107,8 @@ func TestShouldOnlyWarnSecretPatternIfBelowThreshold(t *testing.T) {
 	filename := "secret.txt"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 	talismanRCWithThreshold := &talismanrc.TalismanRC{Threshold: severity.High}
-	checksumCompare := *helpers.BuildCC("default", talismanRCWithThreshold, gitrepo.RepoLocatedAt("."))
 
-	NewPatternDetector(customPatterns).Test(checksumCompare, additions, talismanRCWithThreshold, results, dummyCallback)
+	NewPatternDetector(customPatterns).Test(*ignoreEvaluatorWithTalismanRC(talismanRCWithThreshold), additions, talismanRCWithThreshold, results, dummyCallback)
 
 	assert.False(t, results.HasFailures(), "Expected file %s to not have failures", filename)
 	assert.True(t, results.HasWarnings(), "Expected file %s to have warnings", filename)
@@ -118,7 +117,7 @@ func TestShouldOnlyWarnSecretPatternIfBelowThreshold(t *testing.T) {
 func DetectionOfSecretPattern(filename string, content []byte) (*helpers.DetectionResults, []gitrepo.Addition, string) {
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
-	NewPatternDetector(customPatterns).Test(defaultChecksumCompare, additions, talismanRC, results, dummyCallback)
+	NewPatternDetector(customPatterns).Test(defaultIgnoreEvaluator, additions, talismanRC, results, dummyCallback)
 	expected := "Potential secret pattern : " + string(content)
 	return results, additions, expected
 }

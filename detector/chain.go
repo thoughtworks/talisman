@@ -17,20 +17,20 @@ import (
 // Chain represents a chain of Detectors.
 // It is itself a detector.
 type Chain struct {
-	detectors     []detector.Detector
-	ignoreChecker *helpers.ChecksumCompare
+	detectors       []detector.Detector
+	ignoreEvaluator *helpers.IgnoreEvaluator
 }
 
 // NewChain returns an empty DetectorChain
 // It is itself a detector, but it tests nothing.
-func NewChain(ignoreChecker *helpers.ChecksumCompare) *Chain {
-	result := Chain{[]detector.Detector{}, ignoreChecker}
+func NewChain(ignoreEvaluator *helpers.IgnoreEvaluator) *Chain {
+	result := Chain{[]detector.Detector{}, ignoreEvaluator}
 	return &result
 }
 
 // DefaultChain returns a DetectorChain with pre-configured detectors
-func DefaultChain(tRC *talismanrc.TalismanRC, ignoreChecker *helpers.ChecksumCompare) *Chain {
-	chain := NewChain(ignoreChecker)
+func DefaultChain(tRC *talismanrc.TalismanRC, ignoreEvaluator *helpers.IgnoreEvaluator) *Chain {
+	chain := NewChain(ignoreEvaluator)
 	chain.AddDetector(filename.DefaultFileNameDetector(tRC.Threshold))
 	chain.AddDetector(filecontent.NewFileContentDetector(tRC))
 	chain.AddDetector(pattern.NewPatternDetector(tRC.CustomPatterns))
@@ -52,7 +52,7 @@ func (dc *Chain) Test(additions []gitrepo.Addition, talismanRC *talismanrc.Talis
 	progressBar := utility.GetProgressBar(os.Stdout, "Talisman Scan")
 	progressBar.Start(total)
 	for _, v := range dc.detectors {
-		v.Test(*dc.ignoreChecker, additions, talismanRC, result, func() {
+		v.Test(*dc.ignoreEvaluator, additions, talismanRC, result, func() {
 			progressBar.Increment()
 		})
 	}

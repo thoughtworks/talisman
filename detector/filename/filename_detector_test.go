@@ -16,10 +16,10 @@ import (
 )
 
 var talismanRC = &talismanrc.TalismanRC{}
-var defaultChecksumCompareUtility = *helpers.BuildCC("default", talismanRC, gitrepo.RepoLocatedAt("."))
+var defaultIgnoreEvaluator = *helpers.BuildIgnoreEvaluator("default", talismanRC, gitrepo.RepoLocatedAt("."))
 
-func checksumCompareWithTalismanRC(tRC *talismanrc.TalismanRC) *helpers.ChecksumCompare {
-	return helpers.BuildCC("default", tRC, gitrepo.RepoLocatedAt("."))
+func ignoreEvaluatorWithTalismanRC(tRC *talismanrc.TalismanRC) *helpers.IgnoreEvaluator {
+	return helpers.BuildIgnoreEvaluator("default", tRC, gitrepo.RepoLocatedAt("."))
 }
 
 func TestShouldFlagPotentialSSHPrivateKeys(t *testing.T) {
@@ -148,7 +148,7 @@ func TestShouldIgnoreIfErrorIsBelowThreshold(t *testing.T) {
 	fileName := ".bash_aliases"
 
 	DefaultFileNameDetector(severity.High).
-		Test(defaultChecksumCompareUtility, additionsNamed(fileName), talismanRC, results, func() {})
+		Test(defaultIgnoreEvaluator, additionsNamed(fileName), talismanRC, results, func() {})
 
 	assert.False(t, results.HasFailures(), "Expected file %s to not fail", fileName)
 	assert.True(t, results.HasWarnings(), "Expected file %s to having warnings", fileName)
@@ -177,7 +177,7 @@ func shouldNotFailWithDefaultDetectorAndIgnores(fileName, ignore string, thresho
 	talismanRC.IgnoreConfigs = []talismanrc.IgnoreConfig{fileIgnoreConfig}
 
 	DefaultFileNameDetector(threshold).
-		Test(*checksumCompareWithTalismanRC(talismanRC), additionsNamed(fileName), talismanRC, results, func() {})
+		Test(*ignoreEvaluatorWithTalismanRC(talismanRC), additionsNamed(fileName), talismanRC, results, func() {})
 
 	assert.True(t,
 		results.Successful(),
@@ -189,7 +189,7 @@ func shouldFailWithSpecificPattern(fileName, pattern string, threshold severity.
 	pt := []*severity.PatternSeverity{{Pattern: regexp.MustCompile(pattern), Severity: severity.Low}}
 
 	NewFileNameDetector(pt, threshold).
-		Test(defaultChecksumCompareUtility, additionsNamed(fileName), talismanRC, results, func() {})
+		Test(defaultIgnoreEvaluator, additionsNamed(fileName), talismanRC, results, func() {})
 
 	assert.True(t,
 		results.HasFailures(),
@@ -199,7 +199,7 @@ func shouldFailWithSpecificPattern(fileName, pattern string, threshold severity.
 func shouldFailWithDefaultDetector(fileName, pattern string, severity severity.Severity, t *testing.T) {
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	DefaultFileNameDetector(severity).
-		Test(defaultChecksumCompareUtility, additionsNamed(fileName), talismanRC, results, func() {})
+		Test(defaultIgnoreEvaluator, additionsNamed(fileName), talismanRC, results, func() {})
 	assert.True(t,
 		results.HasFailures(),
 		"Expected file %s to fail the check against default detector. Missing pattern %s?", fileName, pattern)
