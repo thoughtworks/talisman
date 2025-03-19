@@ -31,11 +31,11 @@ func (s *ScannerCmd) Run(tRC *talismanrc.TalismanRC) int {
 
 	wd, _ := os.Getwd()
 	repo := gitrepo.RepoLocatedAt(wd)
-	cc := helpers.BuildCC("default", tRC, repo)
+	ie := helpers.BuildIgnoreEvaluator("default", tRC, repo)
 
 	additionsToScan := tRC.FilterAdditions(s.additions)
 
-	detector.DefaultChain(tRC, cc).Test(additionsToScan, tRC, s.results)
+	detector.DefaultChain(tRC, ie).Test(additionsToScan, tRC, s.results)
 	reportsPath, err := report.GenerateReport(s.results, s.reportDirectory)
 	if err != nil {
 		logr.Errorf("error while generating report: %v", err)

@@ -31,12 +31,12 @@ func NewRunner(additions []gitrepo.Addition, mode string) *runner {
 func (r *runner) Run(tRC *talismanrc.TalismanRC, promptContext prompt.PromptContext) int {
 	wd, _ := os.Getwd()
 	repo := gitrepo.RepoLocatedAt(wd)
-	cc := helpers.BuildCC(r.mode, tRC, repo)
+	ie := helpers.BuildIgnoreEvaluator(r.mode, tRC, repo)
 
 	setCustomSeverities(tRC)
 	additionsToScan := tRC.FilterAdditions(r.additions)
 
-	detector.DefaultChain(tRC, cc).Test(additionsToScan, tRC, r.results)
+	detector.DefaultChain(tRC, ie).Test(additionsToScan, tRC, r.results)
 	r.printReport(promptContext)
 	exitStatus := r.exitStatus()
 	return exitStatus

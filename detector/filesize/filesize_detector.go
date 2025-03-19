@@ -19,7 +19,7 @@ func NewFileSizeDetector(size int) detector.Detector {
 	return FileSizeDetector{size}
 }
 
-func (fd FileSizeDetector) Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *helpers.DetectionResults, additionCompletionCallback func()) {
+func (fd FileSizeDetector) Test(comparator helpers.IgnoreEvaluator, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *helpers.DetectionResults, additionCompletionCallback func()) {
 	largeFileSizeSeverity := severity.SeverityConfiguration["LargeFileSize"]
 	for _, addition := range currentAdditions {
 		if comparator.ShouldIgnore(addition, "filesize") {

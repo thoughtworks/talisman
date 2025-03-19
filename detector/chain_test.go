@@ -21,26 +21,26 @@ func init() {
 
 type FailingDetection struct{}
 
-func (v FailingDetection) Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *helpers.DetectionResults, additionCompletionCallback func()) {
+func (v FailingDetection) Test(comparator helpers.IgnoreEvaluator, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *helpers.DetectionResults, additionCompletionCallback func()) {
 	result.Fail("some_file", "filecontent", "FAILED BY DESIGN", []string{}, severity.Low)
 }
 
 type PassingDetection struct{}
 
-func (p PassingDetection) Test(comparator helpers.ChecksumCompare, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *helpers.DetectionResults, additionCompletionCallback func()) {
+func (p PassingDetection) Test(comparator helpers.IgnoreEvaluator, currentAdditions []gitrepo.Addition, ignoreConfig *talismanrc.TalismanRC, result *helpers.DetectionResults, additionCompletionCallback func()) {
 }
 
 func TestEmptyValidationChainPassesAllValidations(t *testing.T) {
-	cc := helpers.BuildCC("pre-push", nil, gitrepo.RepoLocatedAt("."))
-	v := NewChain(cc)
+	ie := helpers.BuildIgnoreEvaluator("pre-push", nil, gitrepo.RepoLocatedAt("."))
+	v := NewChain(ie)
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	v.Test(nil, &talismanrc.TalismanRC{}, results)
 	assert.False(t, results.HasFailures(), "Empty validation chain is expected to always pass")
 }
 
 func TestValidationChainWithFailingValidationAlwaysFails(t *testing.T) {
-	cc := helpers.BuildCC("pre-push", nil, gitrepo.RepoLocatedAt("."))
-	v := NewChain(cc)
+	ie := helpers.BuildIgnoreEvaluator("pre-push", nil, gitrepo.RepoLocatedAt("."))
+	v := NewChain(ie)
 	v.AddDetector(PassingDetection{})
 	v.AddDetector(FailingDetection{})
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
@@ -54,8 +54,8 @@ func TestDefaultChainShouldCreateChainSpecifiedModeAndPresetDetectors(t *testing
 		Threshold:      severity.Medium,
 		CustomPatterns: []talismanrc.PatternString{"AKIA*"},
 	}
-	cc := helpers.BuildCC("pre-push", talismanRC, gitrepo.RepoLocatedAt("."))
-	v := DefaultChain(talismanRC, cc)
+	ie := helpers.BuildIgnoreEvaluator("pre-push", talismanRC, gitrepo.RepoLocatedAt("."))
+	v := DefaultChain(talismanRC, ie)
 	assert.Equal(t, 3, len(v.detectors))
 
 	defaultFileNameDetector := filename.DefaultFileNameDetector(talismanRC.Threshold)

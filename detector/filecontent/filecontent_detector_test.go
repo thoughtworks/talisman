@@ -14,7 +14,7 @@ import (
 )
 
 var emptyTalismanRC = &talismanrc.TalismanRC{IgnoreConfigs: []talismanrc.IgnoreConfig{}}
-var defaultChecksumCompareUtility = *helpers.BuildCC("default", emptyTalismanRC, gitrepo.RepoLocatedAt("."))
+var defaultIgnoreEvaluator = *helpers.BuildIgnoreEvaluator("default", emptyTalismanRC, gitrepo.RepoLocatedAt("."))
 var dummyCallback = func() {}
 var filename = "filename"
 
@@ -23,7 +23,7 @@ func TestShouldNotFlagSafeText(t *testing.T) {
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte("prettySafe"))}
 
 	NewFileContentDetector(emptyTalismanRC).
-		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
+		Test(defaultIgnoreEvaluator, additions, emptyTalismanRC, results, dummyCallback)
 	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
 }
 
@@ -35,10 +35,9 @@ func TestShouldIgnoreFileIfNeeded(t *testing.T) {
 			&talismanrc.FileIgnoreConfig{FileName: filename},
 		},
 	}
-	checksumCompare := defaultChecksumCompareUtility
 
 	NewFileContentDetector(talismanRCIWithFilenameIgnore).
-		Test(checksumCompare, additions, talismanRCIWithFilenameIgnore, results, dummyCallback)
+		Test(defaultIgnoreEvaluator, additions, talismanRCIWithFilenameIgnore, results, dummyCallback)
 
 	assert.True(t, results.Successful(), "Expected file %s to be ignored by pattern", filename)
 }
@@ -52,7 +51,7 @@ func TestShouldNotFlag4CharSafeText(t *testing.T) {
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte("abcd"))}
 
 	NewFileContentDetector(emptyTalismanRC).
-		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
+		Test(defaultIgnoreEvaluator, additions, emptyTalismanRC, results, dummyCallback)
 	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
 }
 
@@ -63,7 +62,7 @@ func TestShouldNotFlagLowEntropyBase64Text(t *testing.T) {
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
 
 	NewFileContentDetector(emptyTalismanRC).
-		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
+		Test(defaultIgnoreEvaluator, additions, emptyTalismanRC, results, dummyCallback)
 	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
 }
 
@@ -74,7 +73,7 @@ func TestShouldFlagPotentialAWSSecretKeys(t *testing.T) {
 	filePath := additions[0].Path
 
 	NewFileContentDetector(emptyTalismanRC).
-		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
+		Test(defaultIgnoreEvaluator, additions, emptyTalismanRC, results, dummyCallback)
 
 	expectedMessage := fmt.
 		Sprintf("Expected file to not contain base64 encoded texts such as: %s", awsSecretAccessKey)
@@ -90,7 +89,7 @@ func TestShouldFlagPotentialSecretWithoutTrimmingWhenLengthLessThan50Characters(
 	filePath := additions[0].Path
 
 	NewFileContentDetector(emptyTalismanRC).
-		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
+		Test(defaultIgnoreEvaluator, additions, emptyTalismanRC, results, dummyCallback)
 
 	expectedMessage := fmt.Sprintf("Expected file to not contain base64 encoded texts such as: %s", secret)
 	assert.True(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
@@ -107,7 +106,7 @@ func TestShouldFlagPotentialJWT(t *testing.T) {
 	filePath := additions[0].Path
 
 	NewFileContentDetector(emptyTalismanRC).
-		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
+		Test(defaultIgnoreEvaluator, additions, emptyTalismanRC, results, dummyCallback)
 
 	expectedMessage := fmt.
 		Sprintf("Expected file to not contain base64 encoded texts such as: %s", jwt[:47]+"...")
@@ -130,7 +129,7 @@ func TestShouldFlagPotentialSecretsWithinJavaCode(t *testing.T) {
 	filePath := additions[0].Path
 
 	NewFileContentDetector(emptyTalismanRC).
-		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
+		Test(defaultIgnoreEvaluator, additions, emptyTalismanRC, results, dummyCallback)
 	expectedMessage := "Expected file to not contain base64 encoded texts such as: " +
 		"accessKey=\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPL..."
 	assert.True(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
@@ -149,7 +148,7 @@ func TestShouldNotFlagPotentialSecretsWithinSafeJavaCode(t *testing.T) {
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(safeJavaCode))}
 
 	NewFileContentDetector(emptyTalismanRC).
-		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
+		Test(defaultIgnoreEvaluator, additions, emptyTalismanRC, results, dummyCallback)
 	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
 }
 
@@ -159,7 +158,7 @@ func TestShouldNotFlagPotentialSecretsWithinSafeLongMethodName(t *testing.T) {
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(safeLongMethodName))}
 
 	NewFileContentDetector(emptyTalismanRC).
-		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
+		Test(defaultIgnoreEvaluator, additions, emptyTalismanRC, results, dummyCallback)
 	assert.False(t, results.HasFailures(), "Expected file to not contain base64 encoded texts.")
 }
 
@@ -170,7 +169,7 @@ func TestShouldFlagPotentialSecretsEncodedInHex(t *testing.T) {
 	filePath := additions[0].Path
 
 	NewFileContentDetector(emptyTalismanRC).
-		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
+		Test(defaultIgnoreEvaluator, additions, emptyTalismanRC, results, dummyCallback)
 	expectedMessage := "Expected file to not contain hex encoded texts such as: " + hex
 	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])
 	assert.Len(t, results.Results, 1)
@@ -181,10 +180,10 @@ func TestShouldNotFlagPotentialCreditCardNumberIfAboveThreshold(t *testing.T) {
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(creditCardNumber))}
 	talismanRCWithThreshold := &talismanrc.TalismanRC{Threshold: severity.High}
-	checksumCompareWithThreshold := *helpers.BuildCC("default", talismanRCWithThreshold, gitrepo.RepoLocatedAt("."))
+	ignoreEvaluatorWithThreshold := *helpers.BuildIgnoreEvaluator("default", talismanRCWithThreshold, gitrepo.RepoLocatedAt("."))
 
 	NewFileContentDetector(emptyTalismanRC).
-		Test(checksumCompareWithThreshold, additions, talismanRCWithThreshold, results, dummyCallback)
+		Test(ignoreEvaluatorWithThreshold, additions, talismanRCWithThreshold, results, dummyCallback)
 
 	assert.False(t, results.HasFailures(), "Expected no base64 detection when threshold is higher")
 }
@@ -197,7 +196,7 @@ func TestShouldNotFlagPotentialSecretsIfIgnored(t *testing.T) {
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(hex))}
 
 	NewFileContentDetector(emptyTalismanRC).
-		Test(defaultChecksumCompareUtility, additions, talismanRCWithIgnores, results, dummyCallback)
+		Test(defaultIgnoreEvaluator, additions, talismanRCWithIgnores, results, dummyCallback)
 
 	assert.False(t, results.HasFailures(), "Expected file ignore allowed pattern for hex text")
 }
@@ -215,7 +214,7 @@ func TestResultsShouldNotFlagCreditCardNumberIfSpecifiedInFileIgnores(t *testing
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(creditCardNumber))}
 
 	NewFileContentDetector(emptyTalismanRC).
-		Test(defaultChecksumCompareUtility, additions, talismanRCWithFileIgnore, results, dummyCallback)
+		Test(defaultIgnoreEvaluator, additions, talismanRCWithFileIgnore, results, dummyCallback)
 
 	assert.False(t, results.HasFailures(), "Expected the creditcard number to be ignored based on talisman RC")
 
@@ -230,7 +229,7 @@ func TestResultsShouldContainHexTextsIfHexAndBase64ExistInFile(t *testing.T) {
 	filePath := additions[0].Path
 
 	NewFileContentDetector(emptyTalismanRC).
-		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
+		Test(defaultIgnoreEvaluator, additions, emptyTalismanRC, results, dummyCallback)
 	expectedMessage := "Expected file to not contain hex encoded texts such as: " + hex
 	messageReceived := strings.Join(getFailureMessages(results, filePath), " ")
 	assert.Regexp(t, expectedMessage, messageReceived, "Should contain hex detection message")
@@ -246,7 +245,7 @@ func TestResultsShouldContainBase64TextsIfHexAndBase64ExistInFile(t *testing.T) 
 	filePath := additions[0].Path
 
 	NewFileContentDetector(emptyTalismanRC).
-		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
+		Test(defaultIgnoreEvaluator, additions, emptyTalismanRC, results, dummyCallback)
 
 	expectedMessage := "Expected file to not contain base64 encoded texts such as: " + base64
 	messageReceived := strings.Join(getFailureMessages(results, filePath), " ")
@@ -261,7 +260,7 @@ func TestResultsShouldContainCreditCardNumberIfCreditCardNumberExistInFile(t *te
 	filePath := additions[0].Path
 
 	NewFileContentDetector(emptyTalismanRC).
-		Test(defaultChecksumCompareUtility, additions, emptyTalismanRC, results, dummyCallback)
+		Test(defaultIgnoreEvaluator, additions, emptyTalismanRC, results, dummyCallback)
 
 	expectedMessage := "Expected file to not contain credit card numbers such as: " + creditCardNumber
 	assert.Equal(t, expectedMessage, getFailureMessages(results, filePath)[0])

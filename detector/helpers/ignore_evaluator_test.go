@@ -16,16 +16,16 @@ import (
 func init() {
 	logr.SetOutput(io.Discard)
 }
-func TestChecksumCompare_IsScanNotRequired(t *testing.T) {
+func TestIsScanNotRequired(t *testing.T) {
 
 	t.Run("should return false if talismanrc is empty", func(t *testing.T) {
 		ignoreConfig := &talismanrc.TalismanRC{
 			IgnoreConfigs: []talismanrc.IgnoreConfig{},
 		}
-		cc := ChecksumCompare{nil, ignoreConfig}
+		ie := IgnoreEvaluator{nil, ignoreConfig}
 		addition := gitrepo.Addition{Path: "some.txt"}
 
-		required := cc.isScanNotRequired(addition)
+		required := ie.isScanNotRequired(addition)
 
 		assert.False(t, required)
 	})
@@ -42,11 +42,11 @@ func TestChecksumCompare_IsScanNotRequired(t *testing.T) {
 				},
 			},
 		}
-		cc := ChecksumCompare{calculator: checksumCalculator, talismanRC: &ignoreConfig}
+		ie := IgnoreEvaluator{calculator: checksumCalculator, talismanRC: &ignoreConfig}
 		addition := gitrepo.Addition{Name: "some.txt", Path: "some.txt"}
 		checksumCalculator.EXPECT().CalculateCollectiveChecksumForPattern("some.txt").Return("sha1")
 
-		required := cc.isScanNotRequired(addition)
+		required := ie.isScanNotRequired(addition)
 
 		assert.True(t, required)
 	})
@@ -79,21 +79,21 @@ func TestDeterminingFilesToIgnore(t *testing.T) {
 			},
 		},
 	}
-	cc := ChecksumCompare{&sillyChecksumCalculator{}, &tRC}
+	ie := IgnoreEvaluator{&sillyChecksumCalculator{}, &tRC}
 
 	t.Run("Should ignore file based on checksum", func(t *testing.T) {
-		assert.True(t, cc.ShouldIgnore(gitrepo.Addition{Path: "some.txt"}, ""))
+		assert.True(t, ie.ShouldIgnore(gitrepo.Addition{Path: "some.txt"}, ""))
 	})
 
 	t.Run("Should not ignore file if checksum doesn't match", func(t *testing.T) {
-		assert.False(t, cc.ShouldIgnore(gitrepo.Addition{Path: "other.txt"}, ""))
+		assert.False(t, ie.ShouldIgnore(gitrepo.Addition{Path: "other.txt"}, ""))
 	})
 
 	t.Run("Should ignore if detector is disabled for file", func(t *testing.T) {
-		assert.True(t, cc.ShouldIgnore(gitrepo.Addition{Path: "ignore-contents"}, "filecontent"))
+		assert.True(t, ie.ShouldIgnore(gitrepo.Addition{Path: "ignore-contents"}, "filecontent"))
 	})
 
 	t.Run("Should not ignore if a different detector is disabled for file", func(t *testing.T) {
-		assert.False(t, cc.ShouldIgnore(gitrepo.Addition{Path: "ignore-contents"}, "filename"))
+		assert.False(t, ie.ShouldIgnore(gitrepo.Addition{Path: "ignore-contents"}, "filename"))
 	})
 }
