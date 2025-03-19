@@ -120,7 +120,7 @@ If you choose to set the `$PATH` later, please export TALISMAN\_HOME=$HOME/.tali
 
 3. Choose a base directory where Talisman should scan for all git repositories, and set up a git hook (pre-commit or pre-push, as chosen in step 1) as a symlink.
   This script will not clobber pre-existing hooks. If you have existing hooks you can add talisman through a [hook framework](#using-with-hook-frameworks)
-  
+
   - you can set SEARCH_ROOT environment variable with the path of the base directory before executing the installation so you don't need to input it manually during the installation
 
 # Configuring a project
@@ -141,7 +141,7 @@ Talisman. Reference our [pre-commit-hooks](.pre-commit-hooks.yaml) in your
 
 ```yaml
 -   repo: https://github.com/thoughtworks/talisman
-    rev: 'v1.32.1'  # Update me!
+    rev: 'v1.32.2'  # Update me!
     hooks:
       # both pre-commit and pre-push supported
       # -   id: talisman-push
@@ -249,14 +249,14 @@ Entering this in the `.talismanrc` file will ensure that Talisman will ignore th
 
 **Available only for non-Windows users**
 
-If it is too much of a hassle to keep copying content to .talismanrc everytime you encounter an error from Talisman, you could enable the interactive mode and let Talisman assist you in prompting the additions of the files to ignore. 
+If it is too much of a hassle to keep copying content to .talismanrc everytime you encounter an error from Talisman, you could enable the interactive mode and let Talisman assist you in prompting the additions of the files to ignore.
 Just follow the simple steps:
 1. Open your bash profile where your environment variables are set (.bashrc, .bash_profile, .profile or any other location)
 2. You will see `TALISMAN_INTERACTIVE` variable under `# >>> talisman >>>`
 3. If not already set to true, add `export TALISMAN_INTERACTIVE=true`
 4. Don't forget to save and source the file
 
-That's it! Every time Talisman hook finds an error during pre-push/pre-commit, just follow the instructions as Talisman suggests. 
+That's it! Every time Talisman hook finds an error during pre-push/pre-commit, just follow the instructions as Talisman suggests.
 Be careful to not ignore a file without verifying the content. You must be confident that no secret is getting leaked out.
 
 ### Ignoring specific detectors
@@ -302,7 +302,7 @@ allowed_patterns:
 
 In the previous example, `key` is allowed in the `test` file, `keyword` and `pass` are allowed at the repository level.
 
-The `allowed_patterns` field also supports Golang regular expressions. Here is a simple code example where Golang RegExp can be useful: 
+The `allowed_patterns` field also supports Golang regular expressions. Here is a simple code example where Golang RegExp can be useful:
 
 ```sh
 export AWS_ACCESS_KEY_ID = AKIAIO5FODNN7EXAMPLE
@@ -366,12 +366,12 @@ custom_patterns:
 
 ## Configuring severity threshold
 
-Each validation is associated with a severity 
+Each validation is associated with a severity
 1. Low
 2. Medium
 3. High
 
-You can specify a threshold in your .talismanrc: 
+You can specify a threshold in your .talismanrc:
 
 ```yaml
 threshold: medium
@@ -415,16 +415,16 @@ If you execute `talisman` on the command line, you will be able to view all the 
 
 ### Interactive mode
 
-When you regularly have too many files that get are flagged by talisman hook, which you know should be fine to check in, you can use this feature to let talisman ease the process for you. The interactive mode will allow Talisman to prompt you to directly add files you want to ignore to .talismanrc from command prompt directly. 
+When you regularly have too many files that get are flagged by talisman hook, which you know should be fine to check in, you can use this feature to let talisman ease the process for you. The interactive mode will allow Talisman to prompt you to directly add files you want to ignore to .talismanrc from command prompt directly.
 To enable this feature, you need TALISMAN_INTERACTIVE variable to be set as true in your bash file.
 
 You can invoke talisman in interactive mode by either of the 2 ways:
-1.  Open your bash file, and add   
-```export TALISMAN_INTERACTIVE=true```  
+1.  Open your bash file, and add
+```export TALISMAN_INTERACTIVE=true```
 Don't forget to source the bash file for the variable to take effect!
 
-2.  Alternatively, you can also invoke the interactive mode by using the CLI utility  
-(for using pre-commit hook)  
+2.  Alternatively, you can also invoke the interactive mode by using the CLI utility
+(for using pre-commit hook)
 ```talisman -i -g pre-commit```
 
 *Note*: If you use an IDE's Version Control integration for git operations, this feature will not work. You can still use the suggested filename and checksum to be entered in .talismanrc  file manually.
