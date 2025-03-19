@@ -7,17 +7,14 @@ import (
 	"talisman/detector/helpers"
 	"talisman/detector/severity"
 	"talisman/gitrepo"
-	mock "talisman/internal/mock/checksumcalculator"
 	"talisman/talismanrc"
 	"testing"
-
-	"github.com/golang/mock/gomock"
 
 	"github.com/stretchr/testify/assert"
 )
 
 var emptyTalismanRC = &talismanrc.TalismanRC{IgnoreConfigs: []talismanrc.IgnoreConfig{}}
-var defaultChecksumCompareUtility = helpers.NewChecksumCompare(nil, emptyTalismanRC)
+var defaultChecksumCompareUtility = *helpers.BuildCC("default", emptyTalismanRC, gitrepo.RepoLocatedAt("."))
 var dummyCallback = func() {}
 var filename = "filename"
 
@@ -38,11 +35,7 @@ func TestShouldIgnoreFileIfNeeded(t *testing.T) {
 			&talismanrc.FileIgnoreConfig{FileName: filename},
 		},
 	}
-	mockChecksumCalculator := mock.NewMockChecksumCalculator(gomock.NewController(t))
-	mockChecksumCalculator.EXPECT().
-		CalculateCollectiveChecksumForPattern("filename").
-		Return("mock-checksum-for-filename")
-	checksumCompare := helpers.NewChecksumCompare(mockChecksumCalculator, talismanRCIWithFilenameIgnore)
+	checksumCompare := defaultChecksumCompareUtility
 
 	NewFileContentDetector(talismanRCIWithFilenameIgnore).
 		Test(checksumCompare, additions, talismanRCIWithFilenameIgnore, results, dummyCallback)
@@ -188,7 +181,7 @@ func TestShouldNotFlagPotentialCreditCardNumberIfAboveThreshold(t *testing.T) {
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(creditCardNumber))}
 	talismanRCWithThreshold := &talismanrc.TalismanRC{Threshold: severity.High}
-	checksumCompareWithThreshold := helpers.NewChecksumCompare(nil, talismanRCWithThreshold)
+	checksumCompareWithThreshold := *helpers.BuildCC("default", talismanRCWithThreshold, gitrepo.RepoLocatedAt("."))
 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(checksumCompareWithThreshold, additions, talismanRCWithThreshold, results, dummyCallback)

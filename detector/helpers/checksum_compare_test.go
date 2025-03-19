@@ -22,7 +22,7 @@ func TestChecksumCompare_IsScanNotRequired(t *testing.T) {
 		ignoreConfig := &talismanrc.TalismanRC{
 			IgnoreConfigs: []talismanrc.IgnoreConfig{},
 		}
-		cc := NewChecksumCompare(nil, ignoreConfig)
+		cc := ChecksumCompare{nil, ignoreConfig}
 		addition := gitrepo.Addition{Path: "some.txt"}
 
 		required := cc.IsScanNotRequired(addition)
@@ -42,8 +42,8 @@ func TestChecksumCompare_IsScanNotRequired(t *testing.T) {
 				},
 			},
 		}
+		cc := ChecksumCompare{calculator: checksumCalculator, talismanRC: &ignoreConfig}
 		addition := gitrepo.Addition{Name: "some.txt", Path: "some.txt"}
-		cc := NewChecksumCompare(checksumCalculator, &ignoreConfig)
 		checksumCalculator.EXPECT().CalculateCollectiveChecksumForPattern("some.txt").Return("sha1")
 
 		required := cc.IsScanNotRequired(addition)

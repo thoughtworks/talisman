@@ -1,9 +1,11 @@
 package helpers
 
 import (
+	"os"
 	"talisman/checksumcalculator"
 	"talisman/gitrepo"
 	"talisman/talismanrc"
+	"talisman/utility"
 )
 
 type ChecksumCompare struct {
@@ -11,11 +13,15 @@ type ChecksumCompare struct {
 	talismanRC *talismanrc.TalismanRC
 }
 
-// NewChecksumCompare returns new instance of the ChecksumCompare
-func NewChecksumCompare(calculator checksumcalculator.ChecksumCalculator, talismanRCConfig *talismanrc.TalismanRC) ChecksumCompare {
-	return ChecksumCompare{calculator: calculator, talismanRC: talismanRCConfig}
+func BuildCC(hasherMode string, talismanRC *talismanrc.TalismanRC, repo gitrepo.GitRepo) *ChecksumCompare {
+	wd, _ := os.Getwd()
+	hasher := utility.MakeHasher(hasherMode, wd)
+	allTrackedFiles := append(repo.TrackedFilesAsAdditions(), repo.StagedAdditions()...)
+	calculator := checksumcalculator.NewChecksumCalculator(hasher, allTrackedFiles)
+	return &ChecksumCompare{calculator: calculator, talismanRC: talismanRC}
 }
 
+// IsScanNotRequired returns true if an Addition's checksum matches one ignored by the .talismanrc file
 func (cc *ChecksumCompare) IsScanNotRequired(addition gitrepo.Addition) bool {
 	for _, ignore := range cc.talismanRC.IgnoreConfigs {
 		if addition.Matches(ignore.GetFileName()) {
@@ -24,4 +30,8 @@ func (cc *ChecksumCompare) IsScanNotRequired(addition gitrepo.Addition) bool {
 		}
 	}
 	return false
+}
+
+func (cc *ChecksumCompare) ShouldIgnore(addition gitrepo.Addition, detectorType string) bool {
+	return cc.talismanRC.Deny(addition, detectorType) || cc.IsScanNotRequired(addition)
 }
