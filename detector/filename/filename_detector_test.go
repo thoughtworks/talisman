@@ -173,7 +173,7 @@ func shouldNotFailWithDefaultDetectorAndIgnores(fileName, ignore string, thresho
 		FileName:        ignore,
 		IgnoreDetectors: []string{"filename"},
 	}
-	talismanRC, _ := talismanrc.For(talismanrc.HookMode)
+	talismanRC, _ := talismanrc.Load()
 	talismanRC.IgnoreConfigs = []talismanrc.IgnoreConfig{fileIgnoreConfig}
 
 	DefaultFileNameDetector(threshold).

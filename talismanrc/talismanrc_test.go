@@ -50,7 +50,7 @@ custom_severities:
   severity: low
 `)
 	persistedRC, _ := newPersistedRC(talismanRCContents)
-	talismanRC := fromPersistedRC(persistedRC, ScanMode)
+	talismanRC := fromPersistedRC(persistedRC)
 	assert.Equal(t, persistedRC.Threshold, severity.High)
 	assert.Equal(t, len(persistedRC.CustomSeverities), 1)
 	assert.Equal(t, persistedRC.CustomSeverities, talismanRC.CustomSeverities)

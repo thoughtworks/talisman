@@ -193,7 +193,7 @@ func (tRC *TalismanRC) effectiveRules(detectorName string) []string {
 	return result
 }
 
-func fromPersistedRC(configFromTalismanRCFile *persistedRC, mode Mode) *TalismanRC {
+func fromPersistedRC(configFromTalismanRCFile *persistedRC) *TalismanRC {
 	tRC := TalismanRC{}
 
 	tRC.Threshold = configFromTalismanRCFile.Threshold
@@ -206,32 +206,23 @@ func fromPersistedRC(configFromTalismanRCFile *persistedRC, mode Mode) *Talisman
 		tRC.AllowedPatterns[i] = regexp.MustCompile(p)
 	}
 
-	if mode == HookMode {
-		tRC.IgnoreConfigs = make(
-			[]IgnoreConfig,
-			len(configFromTalismanRCFile.FileIgnoreConfig),
-		)
+	tRC.IgnoreConfigs = make(
+		[]IgnoreConfig,
+		len(configFromTalismanRCFile.FileIgnoreConfig),
+	)
 
-		for i := range configFromTalismanRCFile.FileIgnoreConfig {
-			tRC.IgnoreConfigs[i] = &configFromTalismanRCFile.FileIgnoreConfig[i]
-		}
+	for i := range configFromTalismanRCFile.FileIgnoreConfig {
+		tRC.IgnoreConfigs[i] = &configFromTalismanRCFile.FileIgnoreConfig[i]
 	}
 	tRC.base = configFromTalismanRCFile
 
 	return &tRC
 }
 
-func For(mode Mode) (*TalismanRC, error) {
+func Load() (*TalismanRC, error) {
 	configFromTalismanRCFile, err := ConfigFromFile()
-	talismanRC := fromPersistedRC(configFromTalismanRCFile, mode)
+	talismanRC := fromPersistedRC(configFromTalismanRCFile)
 	return talismanRC, err
-}
-
-func ForScan(ignoreHistory bool) (*TalismanRC, error) {
-	if ignoreHistory {
-		return For(HookMode)
-	}
-	return For(ScanMode)
 }
 
 func ConfigFromFile() (*persistedRC, error) {

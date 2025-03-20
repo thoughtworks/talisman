@@ -22,7 +22,7 @@ custom_patterns:
 	}
 	t.Run("talismanrc should not fail as long as the yaml structure is correct", func(t *testing.T) {
 		setRepoFileReader(repoFileReader)
-		rc, _ := For(HookMode)
+		rc, _ := Load()
 		assert.Equal(t, 1, len(rc.IgnoreConfigs))
 		assert.Equal(t, 1, len(rc.CustomPatterns))
 	})
@@ -35,9 +35,7 @@ func TestShouldIgnoreUnformattedFiles(t *testing.T) {
 			return []byte(s), nil
 		})
 
-		talismanRC, _ := For(HookMode)
-		assert.True(t, talismanRC.AcceptsAll(), "Expected commented line '%s' to result in no ignore patterns", s)
-		talismanRC, _ = For(ScanMode)
+		talismanRC, _ := Load()
 		assert.True(t, talismanRC.AcceptsAll(), "Expected commented line '%s' to result in no ignore patterns", s)
 	}
 	setRepoFileReader(defaultRepoFileReader)
@@ -61,7 +59,7 @@ func TestFor(t *testing.T) {
 	}
 	t.Run("talismanrc.For(mode) should read multiple entries in rc file correctly", func(t *testing.T) {
 		setRepoFileReader(repoFileReader)
-		rc, _ := For(HookMode)
+		rc, _ := Load()
 		assert.Equal(t, 3, len(rc.IgnoreConfigs))
 
 		assert.Equal(t, rc.IgnoreConfigs[0].GetFileName(), "testfile_1.yml")
@@ -72,23 +70,5 @@ func TestFor(t *testing.T) {
 		assert.True(t, rc.IgnoreConfigs[2].ChecksumMatches("file3_checksum"))
 
 		setRepoFileReader(defaultRepoFileReader)
-	})
-
-	t.Run("talismanrc.ForScan(ignoreHistory) should populate talismanrc for scan mode with ignore history", func(t *testing.T) {
-		setRepoFileReader(repoFileReader)
-		rc, _ := ForScan(true)
-
-		assert.Equal(t, 3, len(rc.IgnoreConfigs))
-		setRepoFileReader(defaultRepoFileReader)
-
-	})
-
-	t.Run("talismanrc.ForScan(ignoreHistory) should populate talismanrc for scan mode without ignore history", func(t *testing.T) {
-		setRepoFileReader(repoFileReader)
-		rc, _ := ForScan(false)
-
-		assert.Equal(t, 0, len(rc.IgnoreConfigs))
-		setRepoFileReader(defaultRepoFileReader)
-
 	})
 }

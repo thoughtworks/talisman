@@ -149,39 +149,39 @@ func run(promptContext prompt.PromptContext) (returnCode int) {
 		return NewChecksumCmd(strings.Fields(options.Checksum)).Run()
 	} else if options.Scan {
 		log.Infof("Running scanner")
-		talismanrcForScan, err := talismanrc.ForScan(options.IgnoreHistory)
+		talismanrc, err := talismanrc.Load()
 		if err != nil {
 			return EXIT_FAILURE
 		}
-		return NewScannerCmd(options.IgnoreHistory, talismanrcForScan, options.ReportDirectory).Run()
+		return NewScannerCmd(options.IgnoreHistory, talismanrc, options.ReportDirectory).Run()
 	} else if options.ScanWithHtml {
 		log.Infof("Running scanner with html report")
-		talismanrcForScan, err := talismanrc.ForScan(options.IgnoreHistory)
+		talismanrc, err := talismanrc.Load()
 		if err != nil {
 			return EXIT_FAILURE
 		}
-		return NewScannerCmd(options.IgnoreHistory, talismanrcForScan, "talisman_html_report").Run()
+		return NewScannerCmd(options.IgnoreHistory, talismanrc, "talisman_html_report").Run()
 	} else if options.Pattern != "" {
 		log.Infof("Running scan for %s", options.Pattern)
-		talismanrcForScan, err := talismanrc.For(talismanrc.HookMode)
+		talismanrc, err := talismanrc.Load()
 		if err != nil {
 			return EXIT_FAILURE
 		}
-		return NewPatternCmd(options.Pattern).Run(talismanrcForScan, promptContext)
+		return NewPatternCmd(options.Pattern).Run(talismanrc, promptContext)
 	} else if options.GitHook == PreCommit {
 		log.Infof("Running %s hook", options.GitHook)
-		talismanrcForScan, err := talismanrc.For(talismanrc.HookMode)
+		talismanrc, err := talismanrc.Load()
 		if err != nil {
 			return EXIT_FAILURE
 		}
-		return NewPreCommitHook().Run(talismanrcForScan, promptContext)
+		return NewPreCommitHook().Run(talismanrc, promptContext)
 	} else {
 		log.Infof("Running %s hook", options.GitHook)
-		talismanrcForScan, err := talismanrc.For(talismanrc.HookMode)
+		talismanrc, err := talismanrc.Load()
 		if err != nil {
 			return EXIT_FAILURE
 		}
-		return NewPrePushHook(talismanInput).Run(talismanrcForScan, promptContext)
+		return NewPrePushHook(talismanInput).Run(talismanrc, promptContext)
 	}
 }
 
