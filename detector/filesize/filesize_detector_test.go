@@ -12,9 +12,9 @@ import (
 )
 
 var talismanRC = &talismanrc.TalismanRC{}
-var defaultIgnoreEvaluator = *helpers.BuildIgnoreEvaluator("default", talismanRC, gitrepo.RepoLocatedAt("."))
+var defaultIgnoreEvaluator = helpers.BuildIgnoreEvaluator("default", talismanRC, gitrepo.RepoLocatedAt("."))
 
-func ignoreEvaluatorWithTalismanRC(tRC *talismanrc.TalismanRC) *helpers.IgnoreEvaluator {
+func ignoreEvaluatorWithTalismanRC(tRC *talismanrc.TalismanRC) helpers.IgnoreEvaluator {
 	return helpers.BuildIgnoreEvaluator("default", tRC, gitrepo.RepoLocatedAt("."))
 }
 
@@ -58,6 +58,6 @@ func TestShouldNotFlagIgnoredLargeFiles(t *testing.T) {
 	}
 
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
-	NewFileSizeDetector(2).Test(*ignoreEvaluatorWithTalismanRC(talismanRC), additions, talismanRC, results, func() {})
+	NewFileSizeDetector(2).Test(ignoreEvaluatorWithTalismanRC(talismanRC), additions, talismanRC, results, func() {})
 	assert.True(t, results.Successful(), "expected file %s to be ignored by file size detector", filename)
 }

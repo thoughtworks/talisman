@@ -22,7 +22,7 @@ func TestIsScanNotRequired(t *testing.T) {
 		ignoreConfig := &talismanrc.TalismanRC{
 			IgnoreConfigs: []talismanrc.IgnoreConfig{},
 		}
-		ie := IgnoreEvaluator{nil, ignoreConfig}
+		ie := ignoreEvaluator{nil, ignoreConfig}
 		addition := gitrepo.Addition{Path: "some.txt"}
 
 		required := ie.isScanNotRequired(addition)
@@ -42,7 +42,7 @@ func TestIsScanNotRequired(t *testing.T) {
 				},
 			},
 		}
-		ie := IgnoreEvaluator{calculator: checksumCalculator, talismanRC: &ignoreConfig}
+		ie := ignoreEvaluator{calculator: checksumCalculator, talismanRC: &ignoreConfig}
 		addition := gitrepo.Addition{Name: "some.txt", Path: "some.txt"}
 		checksumCalculator.EXPECT().CalculateCollectiveChecksumForPattern("some.txt").Return("sha1")
 
@@ -79,7 +79,7 @@ func TestDeterminingFilesToIgnore(t *testing.T) {
 			},
 		},
 	}
-	ie := IgnoreEvaluator{&sillyChecksumCalculator{}, &tRC}
+	ie := ignoreEvaluator{&sillyChecksumCalculator{}, &tRC}
 
 	t.Run("Should ignore file based on checksum", func(t *testing.T) {
 		assert.True(t, ie.ShouldIgnore(gitrepo.Addition{Path: "some.txt"}, ""))

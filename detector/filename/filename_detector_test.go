@@ -16,9 +16,9 @@ import (
 )
 
 var talismanRC = &talismanrc.TalismanRC{}
-var defaultIgnoreEvaluator = *helpers.BuildIgnoreEvaluator("default", talismanRC, gitrepo.RepoLocatedAt("."))
+var defaultIgnoreEvaluator = helpers.BuildIgnoreEvaluator("default", talismanRC, gitrepo.RepoLocatedAt("."))
 
-func ignoreEvaluatorWithTalismanRC(tRC *talismanrc.TalismanRC) *helpers.IgnoreEvaluator {
+func ignoreEvaluatorWithTalismanRC(tRC *talismanrc.TalismanRC) helpers.IgnoreEvaluator {
 	return helpers.BuildIgnoreEvaluator("default", tRC, gitrepo.RepoLocatedAt("."))
 }
 
@@ -177,7 +177,7 @@ func shouldNotFailWithDefaultDetectorAndIgnores(fileName, ignore string, thresho
 	talismanRC.IgnoreConfigs = []talismanrc.IgnoreConfig{fileIgnoreConfig}
 
 	DefaultFileNameDetector(threshold).
-		Test(*ignoreEvaluatorWithTalismanRC(talismanRC), additionsNamed(fileName), talismanRC, results, func() {})
+		Test(ignoreEvaluatorWithTalismanRC(talismanRC), additionsNamed(fileName), talismanRC, results, func() {})
 
 	assert.True(t,
 		results.Successful(),

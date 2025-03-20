@@ -14,7 +14,7 @@ import (
 )
 
 var emptyTalismanRC = &talismanrc.TalismanRC{IgnoreConfigs: []talismanrc.IgnoreConfig{}}
-var defaultIgnoreEvaluator = *helpers.BuildIgnoreEvaluator("default", emptyTalismanRC, gitrepo.RepoLocatedAt("."))
+var defaultIgnoreEvaluator = helpers.BuildIgnoreEvaluator("default", emptyTalismanRC, gitrepo.RepoLocatedAt("."))
 var dummyCallback = func() {}
 var filename = "filename"
 
@@ -180,7 +180,7 @@ func TestShouldNotFlagPotentialCreditCardNumberIfAboveThreshold(t *testing.T) {
 	results := helpers.NewDetectionResults(talismanrc.HookMode)
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(creditCardNumber))}
 	talismanRCWithThreshold := &talismanrc.TalismanRC{Threshold: severity.High}
-	ignoreEvaluatorWithThreshold := *helpers.BuildIgnoreEvaluator("default", talismanRCWithThreshold, gitrepo.RepoLocatedAt("."))
+	ignoreEvaluatorWithThreshold := helpers.BuildIgnoreEvaluator("default", talismanRCWithThreshold, gitrepo.RepoLocatedAt("."))
 
 	NewFileContentDetector(emptyTalismanRC).
 		Test(ignoreEvaluatorWithThreshold, additions, talismanRCWithThreshold, results, dummyCallback)

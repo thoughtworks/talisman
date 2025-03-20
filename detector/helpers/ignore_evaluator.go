@@ -8,21 +8,25 @@ import (
 	"talisman/utility"
 )
 
-type IgnoreEvaluator struct {
+type IgnoreEvaluator interface {
+	ShouldIgnore(addition gitrepo.Addition, detectorType string) bool
+}
+
+type ignoreEvaluator struct {
 	calculator checksumcalculator.ChecksumCalculator
 	talismanRC *talismanrc.TalismanRC
 }
 
-func BuildIgnoreEvaluator(hasherMode string, talismanRC *talismanrc.TalismanRC, repo gitrepo.GitRepo) *IgnoreEvaluator {
+func BuildIgnoreEvaluator(hasherMode string, talismanRC *talismanrc.TalismanRC, repo gitrepo.GitRepo) IgnoreEvaluator {
 	wd, _ := os.Getwd()
 	hasher := utility.MakeHasher(hasherMode, wd)
 	allTrackedFiles := append(repo.TrackedFilesAsAdditions(), repo.StagedAdditions()...)
 	calculator := checksumcalculator.NewChecksumCalculator(hasher, allTrackedFiles)
-	return &IgnoreEvaluator{calculator: calculator, talismanRC: talismanRC}
+	return &ignoreEvaluator{calculator: calculator, talismanRC: talismanRC}
 }
 
 // isScanNotRequired returns true if an Addition's checksum matches one ignored by the .talismanrc file
-func (ie *IgnoreEvaluator) isScanNotRequired(addition gitrepo.Addition) bool {
+func (ie *ignoreEvaluator) isScanNotRequired(addition gitrepo.Addition) bool {
 	for _, ignore := range ie.talismanRC.IgnoreConfigs {
 		if addition.Matches(ignore.GetFileName()) {
 			currentCollectiveChecksum := ie.calculator.CalculateCollectiveChecksumForPattern(ignore.GetFileName())
@@ -33,6 +37,6 @@ func (ie *IgnoreEvaluator) isScanNotRequired(addition gitrepo.Addition) bool {
 }
 
 // ShouldIgnore returns true if the talismanRC indicates that a Detector should ignore an Addition
-func (ie *IgnoreEvaluator) ShouldIgnore(addition gitrepo.Addition, detectorType string) bool {
+func (ie *ignoreEvaluator) ShouldIgnore(addition gitrepo.Addition, detectorType string) bool {
 	return ie.talismanRC.Deny(addition, detectorType) || ie.isScanNotRequired(addition)
 }
