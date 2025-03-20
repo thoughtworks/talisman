@@ -146,7 +146,6 @@ Talisman. Reference our [pre-commit-hooks](.pre-commit-hooks.yaml) in your
       # both pre-commit and pre-push supported
       # -   id: talisman-push
       - id: talisman-commit
-        entry: cmd --githook pre-commit
 ```
 
 ### Husky
