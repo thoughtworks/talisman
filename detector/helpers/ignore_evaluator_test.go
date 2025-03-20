@@ -97,3 +97,8 @@ func TestDeterminingFilesToIgnore(t *testing.T) {
 		assert.False(t, ie.ShouldIgnore(gitrepo.Addition{Path: "ignore-contents"}, "filename"))
 	})
 }
+
+func TestNeverIgnoreFilesForHistory(t *testing.T) {
+	scanAllEvaluator := ScanHistoryEvaluator()
+	assert.False(t, scanAllEvaluator.ShouldIgnore(gitrepo.Addition{Name: "any-file"}, "any_detector"))
+}

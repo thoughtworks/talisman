@@ -22,20 +22,18 @@ type ScannerCmd struct {
 	additions       []gitrepo.Addition
 	results         *helpers.DetectionResults
 	reportDirectory string
+	ignoreEvaluator helpers.IgnoreEvaluator
+	tRC             *talismanrc.TalismanRC
 }
 
 // Run scans git commit history for potential secrets and returns 0 or 1 as exit code
-func (s *ScannerCmd) Run(tRC *talismanrc.TalismanRC) int {
+func (s *ScannerCmd) Run() int {
 	fmt.Printf("\n\n")
 	utility.CreateArt("Running Scan..")
 
-	wd, _ := os.Getwd()
-	repo := gitrepo.RepoLocatedAt(wd)
-	ie := helpers.BuildIgnoreEvaluator("default", tRC, repo)
+	additionsToScan := s.tRC.FilterAdditions(s.additions)
 
-	additionsToScan := tRC.FilterAdditions(s.additions)
-
-	detector.DefaultChain(tRC, ie).Test(additionsToScan, tRC, s.results)
+	detector.DefaultChain(s.tRC, s.ignoreEvaluator).Test(additionsToScan, s.tRC, s.results)
 	reportsPath, err := report.GenerateReport(s.results, s.reportDirectory)
 	if err != nil {
 		logr.Errorf("error while generating report: %v", err)
@@ -54,13 +52,19 @@ func (s *ScannerCmd) exitStatus() int {
 }
 
 // NewScannerCmd Returns a new scanner command
-func NewScannerCmd(ignoreHistory bool, reportDirectory string) *ScannerCmd {
+func NewScannerCmd(ignoreHistory bool, tRC *talismanrc.TalismanRC, reportDirectory string) *ScannerCmd {
 	repoRoot, _ := os.Getwd()
 	reader := gitrepo.NewBatchGitObjectHashReader(repoRoot)
 	additions := scanner.GetAdditions(ignoreHistory, reader)
+	ignoreEvaluator := helpers.ScanHistoryEvaluator()
+	if ignoreHistory {
+		ignoreEvaluator = helpers.BuildIgnoreEvaluator("default", tRC, gitrepo.RepoLocatedAt(repoRoot))
+	}
 	return &ScannerCmd{
 		additions:       additions,
 		results:         helpers.NewDetectionResults(talismanrc.ScanMode),
 		reportDirectory: reportDirectory,
+		ignoreEvaluator: ignoreEvaluator,
+		tRC:             tRC,
 	}
 }

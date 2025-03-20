@@ -153,14 +153,14 @@ func run(promptContext prompt.PromptContext) (returnCode int) {
 		if err != nil {
 			return EXIT_FAILURE
 		}
-		return NewScannerCmd(options.IgnoreHistory, options.ReportDirectory).Run(talismanrcForScan)
+		return NewScannerCmd(options.IgnoreHistory, talismanrcForScan, options.ReportDirectory).Run()
 	} else if options.ScanWithHtml {
 		log.Infof("Running scanner with html report")
 		talismanrcForScan, err := talismanrc.ForScan(options.IgnoreHistory)
 		if err != nil {
 			return EXIT_FAILURE
 		}
-		return NewScannerCmd(options.IgnoreHistory, "talisman_html_report").Run(talismanrcForScan)
+		return NewScannerCmd(options.IgnoreHistory, talismanrcForScan, "talisman_html_report").Run()
 	} else if options.Pattern != "" {
 		log.Infof("Running scan for %s", options.Pattern)
 		talismanrcForScan, err := talismanrc.For(talismanrc.HookMode)
