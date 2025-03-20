@@ -21,20 +21,20 @@ func init() {
 }
 
 func TestNewDetectionResultsAreSuccessful(t *testing.T) {
-	results := NewDetectionResults(talismanrc.HookMode)
+	results := NewDetectionResults()
 	assert.True(t, results.Successful(), "New detection result is always expected to succeed")
 	assert.False(t, results.HasFailures(), "New detection result is not expected to fail")
 }
 
 func TestCallingFailOnDetectionResultsFails(t *testing.T) {
-	results := NewDetectionResults(talismanrc.HookMode)
+	results := NewDetectionResults()
 	results.Fail("some_filename", "filename", "Bomb", []string{}, severity.Low)
 	assert.False(t, results.Successful(), "Calling fail on a result should not make it succeed")
 	assert.True(t, results.HasFailures(), "Calling fail on a result should make it fail")
 }
 
 func TestCanRecordMultipleErrorsAgainstASingleFile(t *testing.T) {
-	results := NewDetectionResults(talismanrc.HookMode)
+	results := NewDetectionResults()
 	results.Fail("some_filename", "filename", "Bomb", []string{}, severity.Low)
 	results.Fail("some_filename", "filename", "Complete & utter failure", []string{}, severity.Low)
 	results.Fail("another_filename", "filename", "Complete & utter failure", []string{}, severity.Low)
@@ -43,7 +43,7 @@ func TestCanRecordMultipleErrorsAgainstASingleFile(t *testing.T) {
 }
 
 func TestResultsReportsFailures(t *testing.T) {
-	results := NewDetectionResults(talismanrc.HookMode)
+	results := NewDetectionResults()
 	results.Fail("some_filename", "", "Bomb", []string{}, severity.Low)
 	results.Fail("some_filename", "", "Complete & utter failure", []string{}, severity.Low)
 	results.Fail("another_filename", "", "Complete & utter failure", []string{}, severity.Low)
@@ -59,7 +59,7 @@ func TestResultsReportsFailures(t *testing.T) {
 }
 
 func TestUpdateResultsSummary(t *testing.T) {
-	results := NewDetectionResults(talismanrc.HookMode)
+	results := NewDetectionResults()
 	categories := []string{"filecontent", "filename", "filesize"}
 
 	for _, category := range categories {
@@ -82,7 +82,7 @@ func TestErrorExitCodeInInteractive(t *testing.T) {
 	defer ctrl.Finish()
 
 	prompter := mock.NewMockPrompt(ctrl)
-	results := NewDetectionResults(talismanrc.HookMode)
+	results := NewDetectionResults()
 
 	promptContext := prompt.NewPromptContext(true, prompter)
 	prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(2)
@@ -97,7 +97,7 @@ func TestSuccessExitCodeInInteractive(t *testing.T) {
 	defer ctrl.Finish()
 
 	prompter := mock.NewMockPrompt(ctrl)
-	results := NewDetectionResults(talismanrc.HookMode)
+	results := NewDetectionResults()
 
 	promptContext := prompt.NewPromptContext(true, prompter)
 	prompter.EXPECT().Confirm(gomock.Any()).Return(true).Times(2)
@@ -107,28 +107,12 @@ func TestSuccessExitCodeInInteractive(t *testing.T) {
 	assert.False(t, results.HasFailures())
 }
 
-// Presently not showing the ignored files in the log
-// func TestLoggingIgnoredFilesDoesNotCauseFailure(t *testing.T) {
-// 	results := NewDetectionResults(talismanrc.HookMode)
-// 	results.Ignore("some_file", "some-detector")
-// 	results.Ignore("some/other_file", "some-other-detector")
-// 	results.Ignore("some_file_ignored_for_multiple_things", "some-detector")
-// 	results.Ignore("some_file_ignored_for_multiple_things", "some-other-detector")
-// 	assert.True(t, results.Successful(), "Calling ignore should keep the result successful.")
-// 	assert.True(t, results.HasIgnores(), "Calling ignore should be logged.")
-// 	assert.False(t, results.HasFailures(), "Calling ignore should not cause a result to fail.")
-
-// 	assert.Regexp(t, "some_file was ignored by .talismanrc for the following detectors: some-detector", results.Report(), "foo")
-// 	assert.Regexp(t, "some/other_file was ignored by .talismanrc for the following detectors: some-other-detector", results.Report(), "foo")
-// 	assert.Regexp(t, "some_file_ignored_for_multiple_things was ignored by .talismanrc for the following detectors: some-detector, some-other-detector", results.Report(), "foo")
-// }
-
 func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	prompter := mock.NewMockPrompt(ctrl)
-	results := NewDetectionResults(talismanrc.HookMode)
+	results := NewDetectionResults()
 
 	// Creating temp file with some content
 	fs := afero.NewMemMapFs()
@@ -208,7 +192,7 @@ version: "1.0"
 	t.Run("when user confirms, entry for existing file should updated", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add existing.pem with above checksum in talismanrc ?").Return(true)
-		results := NewDetectionResults(talismanrc.HookMode)
+		results := NewDetectionResults()
 		results.Fail("existing.pem", "filecontent", "This will bomb!", []string{}, severity.Low)
 
 		expectedFileContent := `fileignoreconfig:

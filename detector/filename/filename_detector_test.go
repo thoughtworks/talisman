@@ -144,7 +144,7 @@ func TestShouldIgnoreFilesWhenAskedToDoSoByIgnores(t *testing.T) {
 }
 
 func TestShouldIgnoreIfErrorIsBelowThreshold(t *testing.T) {
-	results := helpers.NewDetectionResults(talismanrc.HookMode)
+	results := helpers.NewDetectionResults()
 	fileName := ".bash_aliases"
 
 	DefaultFileNameDetector(severity.High).
@@ -168,7 +168,7 @@ func shouldIgnoreFilesWhichWouldOtherwiseTriggerErrors(
 }
 
 func shouldNotFailWithDefaultDetectorAndIgnores(fileName, ignore string, threshold severity.Severity, t *testing.T) {
-	results := helpers.NewDetectionResults(talismanrc.HookMode)
+	results := helpers.NewDetectionResults()
 	fileIgnoreConfig := &talismanrc.FileIgnoreConfig{
 		FileName:        ignore,
 		IgnoreDetectors: []string{"filename"},
@@ -185,7 +185,7 @@ func shouldNotFailWithDefaultDetectorAndIgnores(fileName, ignore string, thresho
 }
 
 func shouldFailWithSpecificPattern(fileName, pattern string, threshold severity.Severity, t *testing.T) {
-	results := helpers.NewDetectionResults(talismanrc.HookMode)
+	results := helpers.NewDetectionResults()
 	pt := []*severity.PatternSeverity{{Pattern: regexp.MustCompile(pattern), Severity: severity.Low}}
 
 	NewFileNameDetector(pt, threshold).
@@ -197,7 +197,7 @@ func shouldFailWithSpecificPattern(fileName, pattern string, threshold severity.
 }
 
 func shouldFailWithDefaultDetector(fileName, pattern string, severity severity.Severity, t *testing.T) {
-	results := helpers.NewDetectionResults(talismanrc.HookMode)
+	results := helpers.NewDetectionResults()
 	DefaultFileNameDetector(severity).
 		Test(defaultIgnoreEvaluator, additionsNamed(fileName), talismanRC, results, func() {})
 	assert.True(t,

@@ -22,7 +22,7 @@ type runner struct {
 func NewRunner(additions []gitrepo.Addition, mode string) *runner {
 	return &runner{
 		additions: additions,
-		results:   helpers.NewDetectionResults(talismanrc.HookMode),
+		results:   helpers.NewDetectionResults(),
 		mode:      mode,
 	}
 }

@@ -137,7 +137,7 @@ func TestAddIgnoreFilesInHookMode(t *testing.T) {
 		AllowedPatterns: []string{}}
 	os.Remove(DefaultRCFileName)
 	talismanRCConfig := createTalismanRCWithScopeIgnores([]string{})
-	talismanRCConfig.base.AddIgnores(HookMode, []IgnoreConfig{ignoreConfig})
+	talismanRCConfig.base.AddIgnores([]IgnoreConfig{ignoreConfig})
 	talismanRCConfigFromFile, _ := ConfigFromFile()
 	assert.Equal(t, 1, len(talismanRCConfigFromFile.FileIgnoreConfig))
 	os.Remove(DefaultRCFileName)

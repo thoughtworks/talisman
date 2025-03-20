@@ -13,14 +13,6 @@ import (
 	"talisman/gitrepo"
 )
 
-type Mode int
-type CommitID string
-
-const (
-	HookMode = Mode(iota + 1)
-	ScanMode
-)
-
 type TalismanRC struct {
 	IgnoreConfigs    []IgnoreConfig         `yaml:"-"`
 	ScopeConfig      []ScopeConfig          `yaml:"-"`
@@ -96,18 +88,18 @@ func (tRC *TalismanRC) FilterAdditions(additions []gitrepo.Addition) []gitrepo.A
 	return result
 }
 
-func (tRC *persistedRC) AddIgnores(mode Mode, entriesToAdd []IgnoreConfig) {
+func (tRC *persistedRC) AddIgnores(entriesToAdd []IgnoreConfig) {
 	if len(entriesToAdd) > 0 {
 		logr.Debugf("Adding entries: %v", entriesToAdd)
 		talismanRCConfig, _ := ConfigFromFile()
-		if mode == HookMode {
-			fileIgnoreEntries := make([]FileIgnoreConfig, len(entriesToAdd))
-			for idx, entry := range entriesToAdd {
-				newVal, _ := entry.(*FileIgnoreConfig)
-				fileIgnoreEntries[idx] = *newVal
-			}
-			talismanRCConfig.FileIgnoreConfig = combineFileIgnores(talismanRCConfig.FileIgnoreConfig, fileIgnoreEntries)
+
+		fileIgnoreEntries := make([]FileIgnoreConfig, len(entriesToAdd))
+		for idx, entry := range entriesToAdd {
+			newVal, _ := entry.(*FileIgnoreConfig)
+			fileIgnoreEntries[idx] = *newVal
 		}
+		talismanRCConfig.FileIgnoreConfig = combineFileIgnores(talismanRCConfig.FileIgnoreConfig, fileIgnoreEntries)
+
 		ignoreEntries, _ := yaml.Marshal(&talismanRCConfig)
 		file, err := fs.OpenFile(currentRCFileName, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {

@@ -16,7 +16,7 @@ var aggressiveModeFileContentDetector = NewFileContentDetector(_blankTalismanRC)
 
 func TestShouldFlagPotentialAWSAccessKeysInAggressiveMode(t *testing.T) {
 	const awsAccessKeyIDExample string = "AKIAIOSFODNN7EXAMPLE\n"
-	results := helpers.NewDetectionResults(talismanrc.HookMode)
+	results := helpers.NewDetectionResults()
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(awsAccessKeyIDExample))}
 
@@ -33,7 +33,7 @@ func TestShouldFlagPotentialAWSAccessKeysInAggressiveMode(t *testing.T) {
 
 func TestShouldFlagPotentialAWSAccessKeysAtPropertyDefinitionInAggressiveMode(t *testing.T) {
 	const awsAccessKeyIDExample string = "accessKey=AKIAIOSFODNN7EXAMPLE"
-	results := helpers.NewDetectionResults(talismanrc.HookMode)
+	results := helpers.NewDetectionResults()
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(awsAccessKeyIDExample))}
 
@@ -55,7 +55,7 @@ func TestShouldNotFlagPotentialSecretsWithinSafeJavaCodeEvenInAggressiveMode(t *
 		"		System.out.println(\"Hello, World\");\r\n    " +
 		"	}\r\n\r\n" +
 		"}"
-	results := helpers.NewDetectionResults(talismanrc.HookMode)
+	results := helpers.NewDetectionResults()
 	filename := "filename"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(awsAccessKeyIDExample))}
 

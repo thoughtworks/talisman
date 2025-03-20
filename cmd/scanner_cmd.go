@@ -62,7 +62,7 @@ func NewScannerCmd(ignoreHistory bool, tRC *talismanrc.TalismanRC, reportDirecto
 	}
 	return &ScannerCmd{
 		additions:       additions,
-		results:         helpers.NewDetectionResults(talismanrc.ScanMode),
+		results:         helpers.NewDetectionResults(),
 		reportDirectory: reportDirectory,
 		ignoreEvaluator: ignoreEvaluator,
 		tRC:             tRC,

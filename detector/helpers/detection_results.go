@@ -50,7 +50,6 @@ type ResultsSummary struct {
 // Currently, it keeps track of failures and ignored files.
 // The results are grouped by FilePath for easy reporting of all detected problems with individual files.
 type DetectionResults struct {
-	mode    talismanrc.Mode
 	Summary ResultsSummary   `json:"summary"`
 	Results []ResultsDetails `json:"results"`
 }
@@ -65,15 +64,13 @@ func (r *DetectionResults) getResultDetailsForFilePath(fileName gitrepo.FilePath
 }
 
 // NewDetectionResults is a new DetectionResults struct. It represents the pre-run state of a Detection run.
-func NewDetectionResults(mode talismanrc.Mode) *DetectionResults {
+func NewDetectionResults() *DetectionResults {
 	return &DetectionResults{
-		mode,
 		ResultsSummary{
 			FailureTypes{0, 0, 0, 0, 0},
 		},
 		make([]ResultsDetails, 0),
 	}
-
 }
 
 // Fail is used to mark the supplied FilePath as failing a detection for a supplied reason.
@@ -274,7 +271,7 @@ func (r *DetectionResults) suggestTalismanRC(filePaths []string, promptContext p
 	if promptContext.Interactive && runtime.GOOS != "windows" {
 		confirmedEntries := getUserConfirmation(entriesToAdd, promptContext)
 		talismanrcConfig, _ := talismanrc.ConfigFromFile()
-		talismanrcConfig.AddIgnores(r.mode, confirmedEntries)
+		talismanrcConfig.AddIgnores(confirmedEntries)
 
 		for _, confirmedEntry := range confirmedEntries {
 			resultsDetails := r.getResultDetailsForFilePath(gitrepo.FilePath(confirmedEntry.GetFileName()))

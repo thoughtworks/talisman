@@ -33,7 +33,7 @@ func (p PassingDetection) Test(comparator helpers.IgnoreEvaluator, currentAdditi
 func TestEmptyValidationChainPassesAllValidations(t *testing.T) {
 	ie := helpers.BuildIgnoreEvaluator("pre-push", nil, gitrepo.RepoLocatedAt("."))
 	v := NewChain(ie)
-	results := helpers.NewDetectionResults(talismanrc.HookMode)
+	results := helpers.NewDetectionResults()
 	v.Test(nil, &talismanrc.TalismanRC{}, results)
 	assert.False(t, results.HasFailures(), "Empty validation chain is expected to always pass")
 }
@@ -43,7 +43,7 @@ func TestValidationChainWithFailingValidationAlwaysFails(t *testing.T) {
 	v := NewChain(ie)
 	v.AddDetector(PassingDetection{})
 	v.AddDetector(FailingDetection{})
-	results := helpers.NewDetectionResults(talismanrc.HookMode)
+	results := helpers.NewDetectionResults()
 	v.Test(nil, &talismanrc.TalismanRC{}, results)
 
 	assert.False(t, results.Successful(), "Expected validation chain with a failure to fail.")

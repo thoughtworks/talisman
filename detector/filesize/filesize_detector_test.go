@@ -19,7 +19,7 @@ func ignoreEvaluatorWithTalismanRC(tRC *talismanrc.TalismanRC) helpers.IgnoreEva
 }
 
 func TestShouldFlagLargeFiles(t *testing.T) {
-	results := helpers.NewDetectionResults(talismanrc.HookMode)
+	results := helpers.NewDetectionResults()
 	content := []byte("more than one byte")
 	additions := []gitrepo.Addition{gitrepo.NewAddition("filename", content)}
 	NewFileSizeDetector(2).Test(defaultIgnoreEvaluator, additions, talismanRC, results, func() {})
@@ -27,7 +27,7 @@ func TestShouldFlagLargeFiles(t *testing.T) {
 }
 
 func TestShouldNotFlagLargeFilesIfThresholdIsBelowSeverity(t *testing.T) {
-	results := helpers.NewDetectionResults(talismanrc.HookMode)
+	results := helpers.NewDetectionResults()
 	content := []byte("more than one byte")
 	talismanRCWithThreshold := &talismanrc.TalismanRC{Threshold: severity.High}
 	additions := []gitrepo.Addition{gitrepo.NewAddition("filename", content)}
@@ -37,7 +37,7 @@ func TestShouldNotFlagLargeFilesIfThresholdIsBelowSeverity(t *testing.T) {
 }
 
 func TestShouldNotFlagSmallFiles(t *testing.T) {
-	results := helpers.NewDetectionResults(talismanrc.HookMode)
+	results := helpers.NewDetectionResults()
 	content := []byte("m")
 	additions := []gitrepo.Addition{gitrepo.NewAddition("filename", content)}
 	NewFileSizeDetector(2).Test(defaultIgnoreEvaluator, additions, talismanRC, results, func() {})
@@ -45,7 +45,7 @@ func TestShouldNotFlagSmallFiles(t *testing.T) {
 }
 
 func TestShouldNotFlagIgnoredLargeFiles(t *testing.T) {
-	results := helpers.NewDetectionResults(talismanrc.HookMode)
+	results := helpers.NewDetectionResults()
 	content := []byte("more than one byte")
 
 	filename := "filename"
