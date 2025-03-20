@@ -108,18 +108,6 @@ func TestAddingSecretKeyShouldExitZeroIfPEMFileIsIgnored(t *testing.T) {
 	})
 }
 
-func TestAddingSecretKeyShouldExitOneIfPEMFileIsPresentInTheGitHistory(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
-		options.Scan = false
-
-		git.SetupBaselineFiles("simple-file")
-		git.CreateFileWithContents("private.pem", "secret")
-		git.CreateFileWithContents(".talismanrc", talismanRCDataWithFileNameAndCorrectChecksum)
-		git.AddAndcommit("private.pem", "add private key")
-		assert.Equal(t, 0, runTalismanInPrePushMode(git), "Expected run() to return 0 and pass as pem file was ignored")
-	})
-}
-
 func TestScanningSimpleFileShouldExitZero(t *testing.T) {
 	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
 		options.Scan = false
@@ -316,6 +304,19 @@ func TestScan(t *testing.T) {
 			options.IgnoreHistory = true
 			assert.Equal(t, 0, runTalisman(git), "Expected run() to return 0 since secret was removed from head")
 		})
+	})
+}
+
+func TestScanDetectsIgnoredSecret(t *testing.T) {
+	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+		options.Scan = true
+		options.IgnoreHistory = false
+
+		git.SetupBaselineFiles("simple-file")
+		git.CreateFileWithContents("private.pem", "secret")
+		git.CreateFileWithContents(".talismanrc", talismanRCDataWithFileNameAndCorrectChecksum)
+		git.AddAndcommit("private.pem", "add private key")
+		assert.Equal(t, 1, runTalisman(git), "Expected run() to return 1 because ignores aren't check when scanning history")
 	})
 }
 
