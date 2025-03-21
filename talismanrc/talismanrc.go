@@ -31,8 +31,8 @@ type persistedRC struct {
 	CustomSeverities []CustomSeverityConfig `yaml:"custom_severities,omitempty"`
 	AllowedPatterns  []string               `yaml:"allowed_patterns,omitempty"`
 	Experimental     ExperimentalConfig     `yaml:"experimental,omitempty"`
-	Threshold        severity.Severity      `default:"low" yaml:"threshold,omitempty"`
-	Version          string                 `default:"2.0" yaml:"version"`
+	Threshold        severity.Severity      `yaml:"threshold,omitempty"`
+	Version          string                 `yaml:"version"`
 }
 
 // SuggestRCFor returns the talismanRC file content corresponding to input ignore configs
