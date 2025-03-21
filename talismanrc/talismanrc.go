@@ -14,13 +14,14 @@ import (
 )
 
 type TalismanRC struct {
-	FileIgnoreConfig []FileIgnoreConfig     `yaml:"-"`
+	FileIgnoreConfig []FileIgnoreConfig     `yaml:"fileignoreconfig,omitempty"`
 	ScopeConfig      []ScopeConfig          `yaml:"-"`
 	CustomPatterns   []PatternString        `yaml:"-"`
 	CustomSeverities []CustomSeverityConfig `yaml:"-"`
 	AllowedPatterns  []*regexp.Regexp       `yaml:"-"`
 	Experimental     ExperimentalConfig     `yaml:"-"`
 	Threshold        severity.Severity      `yaml:"-"`
+	Version          string                 `yaml:"version"`
 	base             *persistedRC
 }
 
@@ -37,8 +38,8 @@ type persistedRC struct {
 
 // SuggestRCFor returns the talismanRC file content corresponding to input ignore configs
 func SuggestRCFor(configs []FileIgnoreConfig) string {
-	pRC := persistedRC{FileIgnoreConfig: configs}
-	result, _ := yaml.Marshal(pRC)
+	tRC := TalismanRC{FileIgnoreConfig: configs, Version: DefaultRCVersion}
+	result, _ := yaml.Marshal(tRC)
 
 	return string(result)
 }
@@ -199,8 +200,4 @@ func Load() (*TalismanRC, error) {
 
 func ConfigFromFile() (*persistedRC, error) {
 	return readConfigFromRCFile(repoFileReader())
-}
-
-func MakeWithFileIgnores(fileIgnoreConfigs []FileIgnoreConfig) *persistedRC {
-	return &persistedRC{FileIgnoreConfig: fileIgnoreConfigs, Version: DefaultRCVersion}
 }

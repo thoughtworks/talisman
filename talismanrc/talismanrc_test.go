@@ -117,13 +117,6 @@ func TestIgnoringDetectors(t *testing.T) {
 	assertAcceptsDetector("foo", "someDetector", "foo", "someOtherDetector", t)
 }
 
-func TestMakeWithFileIgnores(t *testing.T) {
-	ignoreConfigs := []FileIgnoreConfig{}
-	builtConfig := MakeWithFileIgnores(ignoreConfigs)
-	assert.Equal(t, builtConfig.FileIgnoreConfig, []FileIgnoreConfig{})
-	assert.Equal(t, builtConfig.Version, DefaultRCVersion)
-}
-
 func TestAddIgnoreFilesInHookMode(t *testing.T) {
 	ignoreConfig := FileIgnoreConfig{
 		FileName:        "Foo",
@@ -228,7 +221,7 @@ func TestSuggestRCFor(t *testing.T) {
 		expectedRC := `fileignoreconfig:
 - filename: some_filename
   checksum: some_checksum
-version: ""
+version: "1.0"
 `
 		str := SuggestRCFor(fileIgnoreConfigs)
 		assert.Equal(t, expectedRC, str)
@@ -244,7 +237,7 @@ version: ""
 		expectedRC := `fileignoreconfig:
 - filename: some_filename
   checksum: some_checksum
-version: ""
+version: "1.0"
 `
 		str := SuggestRCFor(fileIgnoreConfigs)
 		assert.Equal(t, expectedRC, str)

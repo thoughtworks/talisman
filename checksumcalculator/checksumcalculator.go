@@ -5,8 +5,6 @@ import (
 	"talisman/gitrepo"
 	"talisman/talismanrc"
 	"talisman/utility"
-
-	"gopkg.in/yaml.v2"
 )
 
 type ChecksumCalculator interface {
@@ -36,9 +34,7 @@ func (cc *checksumCalculator) SuggestTalismanRC(fileNamePatterns []string) strin
 	}
 	if len(fileIgnoreConfigs) != 0 {
 		result.WriteString("\n\x1b[33m.talismanrc format for given file names / patterns\x1b[0m\n")
-		talismanRC := talismanrc.MakeWithFileIgnores(fileIgnoreConfigs)
-		m, _ := yaml.Marshal(&talismanRC)
-		result.Write(m)
+		result.Write([]byte(talismanrc.SuggestRCFor(fileIgnoreConfigs)))
 	}
 	return result.String()
 }
