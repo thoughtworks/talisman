@@ -120,24 +120,19 @@ func TestIgnoringDetectors(t *testing.T) {
 func TestMakeWithFileIgnores(t *testing.T) {
 	ignoreConfigs := []FileIgnoreConfig{}
 	builtConfig := MakeWithFileIgnores(ignoreConfigs)
-	assert.Equal(t, builtConfig.FileIgnoreConfig, ignoreConfigs)
+	assert.Equal(t, builtConfig.FileIgnoreConfig, []FileIgnoreConfig{})
 	assert.Equal(t, builtConfig.Version, DefaultRCVersion)
 }
 
-func TestBuildIgnoreConfig(t *testing.T) {
-	ignoreConfig := BuildIgnoreConfig("filename", "asdfasdfasdfasdfasdf", nil)
-	assert.IsType(t, &FileIgnoreConfig{}, ignoreConfig)
-}
-
 func TestAddIgnoreFilesInHookMode(t *testing.T) {
-	ignoreConfig := &FileIgnoreConfig{
+	ignoreConfig := FileIgnoreConfig{
 		FileName:        "Foo",
 		Checksum:        "SomeCheckSum",
 		IgnoreDetectors: []string{},
 		AllowedPatterns: []string{}}
 	os.Remove(DefaultRCFileName)
 	talismanRCConfig := createTalismanRCWithScopeIgnores([]string{})
-	talismanRCConfig.base.AddIgnores([]IgnoreConfig{ignoreConfig})
+	talismanRCConfig.base.AddIgnores([]FileIgnoreConfig{ignoreConfig})
 	talismanRCConfigFromFile, _ := ConfigFromFile()
 	assert.Equal(t, 1, len(talismanRCConfigFromFile.FileIgnoreConfig))
 	os.Remove(DefaultRCFileName)
@@ -168,7 +163,7 @@ func testAdditionWithData(path string, content []byte) gitrepo.Addition {
 }
 
 func createTalismanRCWithFileIgnores(filename string, detector string, allowedPatterns []string) *TalismanRC {
-	fileIgnoreConfig := &FileIgnoreConfig{}
+	fileIgnoreConfig := FileIgnoreConfig{}
 	fileIgnoreConfig.FileName = filename
 	if detector != "" {
 		fileIgnoreConfig.IgnoreDetectors = []string{detector}
@@ -177,7 +172,7 @@ func createTalismanRCWithFileIgnores(filename string, detector string, allowedPa
 		fileIgnoreConfig.AllowedPatterns = allowedPatterns
 	}
 
-	return &TalismanRC{IgnoreConfigs: []IgnoreConfig{fileIgnoreConfig}}
+	return &TalismanRC{FileIgnoreConfig: []FileIgnoreConfig{fileIgnoreConfig}}
 }
 
 func createTalismanRCWithScopeIgnores(scopesToIgnore []string) *TalismanRC {
@@ -224,8 +219,8 @@ func TestFileIgnoreConfig_GetAllowedPatterns(t *testing.T) {
 
 func TestSuggestRCFor(t *testing.T) {
 	t.Run("should suggest proper RC when ignore configs are valid", func(t *testing.T) {
-		fileIgnoreConfigs := []IgnoreConfig{
-			&FileIgnoreConfig{
+		fileIgnoreConfigs := []FileIgnoreConfig{
+			{
 				FileName: "some_filename",
 				Checksum: "some_checksum",
 			},
@@ -240,8 +235,8 @@ version: ""
 	})
 
 	t.Run("should ignore invalid configs", func(t *testing.T) {
-		fileIgnoreConfigs := []IgnoreConfig{
-			&FileIgnoreConfig{
+		fileIgnoreConfigs := []FileIgnoreConfig{
+			{
 				FileName: "some_filename",
 				Checksum: "some_checksum",
 			},

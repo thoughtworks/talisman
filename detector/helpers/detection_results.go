@@ -260,11 +260,11 @@ func (r *DetectionResults) Report(promptContext prompt.PromptContext, mode strin
 }
 
 func (r *DetectionResults) suggestTalismanRC(filePaths []string, promptContext prompt.PromptContext, mode string) {
-	var entriesToAdd []talismanrc.IgnoreConfig
+	var entriesToAdd []talismanrc.FileIgnoreConfig
 	hasher := utility.MakeHasher(mode, ".")
 	for _, filePath := range filePaths {
 		currentChecksum := hasher.CollectiveSHA256Hash([]string{filePath})
-		fileIgnoreConfig := talismanrc.BuildIgnoreConfig(filePath, currentChecksum, []string{})
+		fileIgnoreConfig := talismanrc.IgnoreFileWithChecksum(filePath, currentChecksum)
 		entriesToAdd = append(entriesToAdd, fileIgnoreConfig)
 	}
 
@@ -291,8 +291,8 @@ func (r *DetectionResults) suggestTalismanRC(filePaths []string, promptContext p
 
 }
 
-func getUserConfirmation(configs []talismanrc.IgnoreConfig, promptContext prompt.PromptContext) []talismanrc.IgnoreConfig {
-	confirmed := []talismanrc.IgnoreConfig{}
+func getUserConfirmation(configs []talismanrc.FileIgnoreConfig, promptContext prompt.PromptContext) []talismanrc.FileIgnoreConfig {
+	confirmed := []talismanrc.FileIgnoreConfig{}
 	if len(configs) != 0 {
 		fmt.Println("==== Interactively adding to talismanrc ====")
 	}
@@ -304,7 +304,7 @@ func getUserConfirmation(configs []talismanrc.IgnoreConfig, promptContext prompt
 	return confirmed
 }
 
-func printTalismanIgnoreSuggestion(entriesToAdd []talismanrc.IgnoreConfig) {
+func printTalismanIgnoreSuggestion(entriesToAdd []talismanrc.FileIgnoreConfig) {
 	ignoreEntries := talismanrc.SuggestRCFor(entriesToAdd)
 	suggestString := fmt.Sprintf("\n\x1b[33mIf you are absolutely sure that you want to ignore the " +
 		"above files from talisman detectors, consider pasting the following format in .talismanrc file" +
@@ -313,7 +313,7 @@ func printTalismanIgnoreSuggestion(entriesToAdd []talismanrc.IgnoreConfig) {
 	fmt.Println(ignoreEntries)
 }
 
-func confirm(config talismanrc.IgnoreConfig, promptContext prompt.PromptContext) bool {
+func confirm(config talismanrc.FileIgnoreConfig, promptContext prompt.PromptContext) bool {
 	bytes, err := yaml.Marshal(&config)
 	if err != nil {
 		logrus.Errorf("error marshalling file ignore config: %s", err)

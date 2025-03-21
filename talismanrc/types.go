@@ -12,13 +12,6 @@ type CustomSeverityConfig struct {
 	Severity severity.Severity `yaml:"severity"`
 }
 
-type IgnoreConfig interface {
-	isEffective(string) bool
-	GetFileName() string
-	GetAllowedPatterns() []*regexp.Regexp
-	ChecksumMatches(checksum string) bool
-}
-
 type FileIgnoreConfig struct {
 	FileName        string   `yaml:"filename"`
 	Checksum        string   `yaml:"checksum,omitempty"`
@@ -49,6 +42,10 @@ func (i *FileIgnoreConfig) GetAllowedPatterns() []*regexp.Regexp {
 		}
 	}
 	return i.compiledPatterns
+}
+
+func IgnoreFileWithChecksum(filename, checksum string) FileIgnoreConfig {
+	return FileIgnoreConfig{FileName: filename, Checksum: checksum}
 }
 
 type ScopeConfig struct {

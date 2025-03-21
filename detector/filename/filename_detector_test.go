@@ -169,12 +169,12 @@ func shouldIgnoreFilesWhichWouldOtherwiseTriggerErrors(
 
 func shouldNotFailWithDefaultDetectorAndIgnores(fileName, ignore string, threshold severity.Severity, t *testing.T) {
 	results := helpers.NewDetectionResults()
-	fileIgnoreConfig := &talismanrc.FileIgnoreConfig{
+	fileIgnoreConfig := talismanrc.FileIgnoreConfig{
 		FileName:        ignore,
 		IgnoreDetectors: []string{"filename"},
 	}
 	talismanRC, _ := talismanrc.Load()
-	talismanRC.IgnoreConfigs = []talismanrc.IgnoreConfig{fileIgnoreConfig}
+	talismanRC.FileIgnoreConfig = []talismanrc.FileIgnoreConfig{fileIgnoreConfig}
 
 	DefaultFileNameDetector(threshold).
 		Test(ignoreEvaluatorWithTalismanRC(talismanRC), additionsNamed(fileName), talismanRC, results, func() {})

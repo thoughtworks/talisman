@@ -49,12 +49,12 @@ func TestShouldNotFlagIgnoredLargeFiles(t *testing.T) {
 	content := []byte("more than one byte")
 
 	filename := "filename"
-	fileIgnoreConfig := &talismanrc.FileIgnoreConfig{
+	fileIgnoreConfig := talismanrc.FileIgnoreConfig{
 		FileName:        filename,
 		IgnoreDetectors: []string{"filesize"},
 	}
 	talismanRC := &talismanrc.TalismanRC{
-		IgnoreConfigs: []talismanrc.IgnoreConfig{fileIgnoreConfig},
+		FileIgnoreConfig: []talismanrc.FileIgnoreConfig{fileIgnoreConfig},
 	}
 
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}

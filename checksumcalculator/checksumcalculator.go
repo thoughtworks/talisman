@@ -31,8 +31,7 @@ func (cc *checksumCalculator) SuggestTalismanRC(fileNamePatterns []string) strin
 	for _, pattern := range fileNamePatterns {
 		collectiveChecksum := cc.CalculateCollectiveChecksumForPattern(pattern)
 		if collectiveChecksum != "" {
-			fileIgnoreConfig := talismanrc.FileIgnoreConfig{FileName: pattern, Checksum: collectiveChecksum, IgnoreDetectors: []string{}}
-			fileIgnoreConfigs = append(fileIgnoreConfigs, fileIgnoreConfig)
+			fileIgnoreConfigs = append(fileIgnoreConfigs, talismanrc.IgnoreFileWithChecksum(pattern, collectiveChecksum))
 		}
 	}
 	if len(fileIgnoreConfigs) != 0 {

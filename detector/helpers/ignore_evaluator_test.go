@@ -20,7 +20,7 @@ func TestIsScanNotRequired(t *testing.T) {
 
 	t.Run("should return false if talismanrc is empty", func(t *testing.T) {
 		ignoreConfig := &talismanrc.TalismanRC{
-			IgnoreConfigs: []talismanrc.IgnoreConfig{},
+			FileIgnoreConfig: []talismanrc.FileIgnoreConfig{},
 		}
 		ie := ignoreEvaluator{nil, ignoreConfig}
 		addition := gitrepo.Addition{Path: "some.txt"}
@@ -35,8 +35,8 @@ func TestIsScanNotRequired(t *testing.T) {
 		defer ctrl.Finish()
 		checksumCalculator := mockchecksumcalculator.NewMockChecksumCalculator(ctrl)
 		ignoreConfig := talismanrc.TalismanRC{
-			IgnoreConfigs: []talismanrc.IgnoreConfig{
-				&talismanrc.FileIgnoreConfig{
+			FileIgnoreConfig: []talismanrc.FileIgnoreConfig{
+				{
 					FileName: "some.txt",
 					Checksum: "sha1",
 				},
@@ -64,16 +64,16 @@ func (scc *sillyChecksumCalculator) SuggestTalismanRC(fileNamePatterns []string)
 
 func TestDeterminingFilesToIgnore(t *testing.T) {
 	tRC := talismanrc.TalismanRC{
-		IgnoreConfigs: []talismanrc.IgnoreConfig{
-			&talismanrc.FileIgnoreConfig{
+		FileIgnoreConfig: []talismanrc.FileIgnoreConfig{
+			{
 				FileName: "some.txt",
 				Checksum: "silly",
 			},
-			&talismanrc.FileIgnoreConfig{
+			{
 				FileName: "other.txt",
 				Checksum: "serious",
 			},
-			&talismanrc.FileIgnoreConfig{
+			{
 				FileName:        "ignore-contents",
 				IgnoreDetectors: []string{"filecontent"},
 			},

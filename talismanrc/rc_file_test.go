@@ -23,7 +23,7 @@ custom_patterns:
 	t.Run("talismanrc should not fail as long as the yaml structure is correct", func(t *testing.T) {
 		setRepoFileReader(repoFileReader)
 		rc, _ := Load()
-		assert.Equal(t, 1, len(rc.IgnoreConfigs))
+		assert.Equal(t, 1, len(rc.FileIgnoreConfig))
 		assert.Equal(t, 1, len(rc.CustomPatterns))
 	})
 	setRepoFileReader(defaultRepoFileReader)
@@ -60,14 +60,14 @@ func TestFor(t *testing.T) {
 	t.Run("talismanrc.For(mode) should read multiple entries in rc file correctly", func(t *testing.T) {
 		setRepoFileReader(repoFileReader)
 		rc, _ := Load()
-		assert.Equal(t, 3, len(rc.IgnoreConfigs))
+		assert.Equal(t, 3, len(rc.FileIgnoreConfig))
 
-		assert.Equal(t, rc.IgnoreConfigs[0].GetFileName(), "testfile_1.yml")
-		assert.True(t, rc.IgnoreConfigs[0].ChecksumMatches("file1_checksum"))
-		assert.Equal(t, rc.IgnoreConfigs[1].GetFileName(), "testfile_2.yml")
-		assert.True(t, rc.IgnoreConfigs[1].ChecksumMatches("file2_checksum"))
-		assert.Equal(t, rc.IgnoreConfigs[2].GetFileName(), "testfile_3.yml")
-		assert.True(t, rc.IgnoreConfigs[2].ChecksumMatches("file3_checksum"))
+		assert.Equal(t, rc.FileIgnoreConfig[0].GetFileName(), "testfile_1.yml")
+		assert.True(t, rc.FileIgnoreConfig[0].ChecksumMatches("file1_checksum"))
+		assert.Equal(t, rc.FileIgnoreConfig[1].GetFileName(), "testfile_2.yml")
+		assert.True(t, rc.FileIgnoreConfig[1].ChecksumMatches("file2_checksum"))
+		assert.Equal(t, rc.FileIgnoreConfig[2].GetFileName(), "testfile_3.yml")
+		assert.True(t, rc.FileIgnoreConfig[2].ChecksumMatches("file3_checksum"))
 
 		setRepoFileReader(defaultRepoFileReader)
 	})

@@ -45,7 +45,7 @@ func (ie *ignoreEvaluator) ShouldIgnore(addition gitrepo.Addition, detectorType 
 
 // isScanNotRequired returns true if an Addition's checksum matches one ignored by the .talismanrc file
 func (ie *ignoreEvaluator) isScanNotRequired(addition gitrepo.Addition) bool {
-	for _, ignore := range ie.talismanRC.IgnoreConfigs {
+	for _, ignore := range ie.talismanRC.FileIgnoreConfig {
 		if addition.Matches(ignore.GetFileName()) {
 			currentCollectiveChecksum := ie.calculator.CalculateCollectiveChecksumForPattern(ignore.GetFileName())
 			return ignore.ChecksumMatches(currentCollectiveChecksum)

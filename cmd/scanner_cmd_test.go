@@ -63,9 +63,9 @@ func TestScannerCmdDetectsSecretAndIgnoresWhileRunningInIgnoreHistoryModeWithVal
 		os.Chdir(git.GetRoot())
 
 		tRC := &talismanrc.TalismanRC{
-			IgnoreConfigs: []talismanrc.IgnoreConfig{
-				&talismanrc.FileIgnoreConfig{FileName: "go.sum", Checksum: "582093519ae682d5170aecc9b935af7e90ed528c577ecd2c9dd1fad8f4924ab9"},
-				&talismanrc.FileIgnoreConfig{FileName: "go.mod", Checksum: "8a03b9b61c505ace06d590d2b9b4f4b6fa70136e14c26875ced149180e00d1af"},
+			FileIgnoreConfig: []talismanrc.FileIgnoreConfig{
+				{FileName: "go.sum", Checksum: "582093519ae682d5170aecc9b935af7e90ed528c577ecd2c9dd1fad8f4924ab9"},
+				{FileName: "go.mod", Checksum: "8a03b9b61c505ace06d590d2b9b4f4b6fa70136e14c26875ced149180e00d1af"},
 			}}
 		scannerCmd := NewScannerCmd(true, tRC, git.GetRoot())
 		scannerCmd.Run()
@@ -82,9 +82,9 @@ func TestScannerCmdDetectsSecretWhileRunningNormalScanMode(t *testing.T) {
 		os.Chdir(git.GetRoot())
 
 		tRC := &talismanrc.TalismanRC{
-			IgnoreConfigs: []talismanrc.IgnoreConfig{
-				&talismanrc.FileIgnoreConfig{FileName: "go.sum", Checksum: "582093519ae682d5170aecc9b935af7e90ed528c577ecd2c9dd1fad8f4924ab9"},
-				&talismanrc.FileIgnoreConfig{FileName: "go.mod", Checksum: "8a03b9b61c505ace06d590d2b9b4f4b6fa70136e14c26875ced149180e00d1af"},
+			FileIgnoreConfig: []talismanrc.FileIgnoreConfig{
+				{FileName: "go.sum", Checksum: "582093519ae682d5170aecc9b935af7e90ed528c577ecd2c9dd1fad8f4924ab9"},
+				{FileName: "go.mod", Checksum: "8a03b9b61c505ace06d590d2b9b4f4b6fa70136e14c26875ced149180e00d1af"},
 			}}
 		scannerCmd := NewScannerCmd(false, tRC, git.GetRoot())
 		scannerCmd.Run()

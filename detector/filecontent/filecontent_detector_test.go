@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var emptyTalismanRC = &talismanrc.TalismanRC{IgnoreConfigs: []talismanrc.IgnoreConfig{}}
+var emptyTalismanRC = &talismanrc.TalismanRC{FileIgnoreConfig: []talismanrc.FileIgnoreConfig{}}
 var defaultIgnoreEvaluator = helpers.BuildIgnoreEvaluator("default", emptyTalismanRC, gitrepo.RepoLocatedAt("."))
 var dummyCallback = func() {}
 var filename = "filename"
@@ -31,8 +31,8 @@ func TestShouldIgnoreFileIfNeeded(t *testing.T) {
 	results := helpers.NewDetectionResults()
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte("prettySafe"))}
 	talismanRCIWithFilenameIgnore := &talismanrc.TalismanRC{
-		IgnoreConfigs: []talismanrc.IgnoreConfig{
-			&talismanrc.FileIgnoreConfig{FileName: filename},
+		FileIgnoreConfig: []talismanrc.FileIgnoreConfig{
+			{FileName: filename},
 		},
 	}
 
@@ -204,12 +204,12 @@ func TestShouldNotFlagPotentialSecretsIfIgnored(t *testing.T) {
 func TestResultsShouldNotFlagCreditCardNumberIfSpecifiedInFileIgnores(t *testing.T) {
 	const creditCardNumber string = "340000000000009"
 	results := helpers.NewDetectionResults()
-	fileIgnoreConfig := &talismanrc.FileIgnoreConfig{
+	fileIgnoreConfig := talismanrc.FileIgnoreConfig{
 		FileName: filename, Checksum: "",
 		AllowedPatterns: []string{creditCardNumber},
 	}
 	talismanRCWithFileIgnore := &talismanrc.TalismanRC{
-		IgnoreConfigs: []talismanrc.IgnoreConfig{fileIgnoreConfig},
+		FileIgnoreConfig: []talismanrc.FileIgnoreConfig{fileIgnoreConfig},
 	}
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(creditCardNumber))}
 

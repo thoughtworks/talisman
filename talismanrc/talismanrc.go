@@ -14,7 +14,7 @@ import (
 )
 
 type TalismanRC struct {
-	IgnoreConfigs    []IgnoreConfig         `yaml:"-"`
+	FileIgnoreConfig []FileIgnoreConfig     `yaml:"-"`
 	ScopeConfig      []ScopeConfig          `yaml:"-"`
 	CustomPatterns   []PatternString        `yaml:"-"`
 	CustomSeverities []CustomSeverityConfig `yaml:"-"`
@@ -36,17 +36,8 @@ type persistedRC struct {
 }
 
 // SuggestRCFor returns the talismanRC file content corresponding to input ignore configs
-func SuggestRCFor(configs []IgnoreConfig) string {
-	fileIgnoreConfigs := []FileIgnoreConfig{}
-	for _, config := range configs {
-		fIC, ok := config.(*FileIgnoreConfig)
-		if ok {
-			fileIgnoreConfigs = append(fileIgnoreConfigs, *fIC)
-		} else {
-			logr.Debugf("Ignoring unknown IgnoreConfig : %#v", config)
-		}
-	}
-	pRC := persistedRC{FileIgnoreConfig: fileIgnoreConfigs}
+func SuggestRCFor(configs []FileIgnoreConfig) string {
+	pRC := persistedRC{FileIgnoreConfig: configs}
 	result, _ := yaml.Marshal(pRC)
 
 	return string(result)
@@ -88,17 +79,12 @@ func (tRC *TalismanRC) FilterAdditions(additions []gitrepo.Addition) []gitrepo.A
 	return result
 }
 
-func (tRC *persistedRC) AddIgnores(entriesToAdd []IgnoreConfig) {
+func (tRC *persistedRC) AddIgnores(entriesToAdd []FileIgnoreConfig) {
 	if len(entriesToAdd) > 0 {
 		logr.Debugf("Adding entries: %v", entriesToAdd)
 		talismanRCConfig, _ := ConfigFromFile()
 
-		fileIgnoreEntries := make([]FileIgnoreConfig, len(entriesToAdd))
-		for idx, entry := range entriesToAdd {
-			newVal, _ := entry.(*FileIgnoreConfig)
-			fileIgnoreEntries[idx] = *newVal
-		}
-		talismanRCConfig.FileIgnoreConfig = combineFileIgnores(talismanRCConfig.FileIgnoreConfig, fileIgnoreEntries)
+		talismanRCConfig.FileIgnoreConfig = combineFileIgnores(talismanRCConfig.FileIgnoreConfig, entriesToAdd)
 
 		ignoreEntries, _ := yaml.Marshal(&talismanRCConfig)
 		file, err := fs.OpenFile(currentRCFileName, os.O_CREATE|os.O_WRONLY, 0644)
@@ -164,7 +150,7 @@ func (tRC *TalismanRC) FilterAllowedPatternsFromAddition(addition gitrepo.Additi
 	}
 
 	// Processing allowed patterns based on file path
-	for _, ignoreConfig := range tRC.IgnoreConfigs {
+	for _, ignoreConfig := range tRC.FileIgnoreConfig {
 		if ignoreConfig.GetFileName() == additionPathAsString {
 			for _, pattern := range ignoreConfig.GetAllowedPatterns() {
 				addition.Data = pattern.ReplaceAll(addition.Data, []byte(""))
@@ -176,7 +162,7 @@ func (tRC *TalismanRC) FilterAllowedPatternsFromAddition(addition gitrepo.Additi
 
 func (tRC *TalismanRC) effectiveRules(detectorName string) []string {
 	var result []string
-	for _, ignore := range tRC.IgnoreConfigs {
+	for _, ignore := range tRC.FileIgnoreConfig {
 		if ignore.isEffective(detectorName) {
 			result = append(result, ignore.GetFileName())
 		}
@@ -198,14 +184,8 @@ func fromPersistedRC(configFromTalismanRCFile *persistedRC) *TalismanRC {
 		tRC.AllowedPatterns[i] = regexp.MustCompile(p)
 	}
 
-	tRC.IgnoreConfigs = make(
-		[]IgnoreConfig,
-		len(configFromTalismanRCFile.FileIgnoreConfig),
-	)
+	tRC.FileIgnoreConfig = configFromTalismanRCFile.FileIgnoreConfig
 
-	for i := range configFromTalismanRCFile.FileIgnoreConfig {
-		tRC.IgnoreConfigs[i] = &configFromTalismanRCFile.FileIgnoreConfig[i]
-	}
 	tRC.base = configFromTalismanRCFile
 
 	return &tRC
@@ -223,8 +203,4 @@ func ConfigFromFile() (*persistedRC, error) {
 
 func MakeWithFileIgnores(fileIgnoreConfigs []FileIgnoreConfig) *persistedRC {
 	return &persistedRC{FileIgnoreConfig: fileIgnoreConfigs, Version: DefaultRCVersion}
-}
-
-func BuildIgnoreConfig(filepath, checksum string, detectors []string) IgnoreConfig {
-	return &FileIgnoreConfig{FileName: filepath, Checksum: checksum, IgnoreDetectors: detectors}
 }

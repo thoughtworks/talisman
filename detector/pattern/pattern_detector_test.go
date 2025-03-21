@@ -70,12 +70,12 @@ func TestShouldIgnorePasswordPatternsIfChecksumMatches(t *testing.T) {
 	content := []byte("\"password\" : UnsafePassword")
 	filename := "secret.txt"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
-	fileIgnoreConfig := &talismanrc.FileIgnoreConfig{
+	fileIgnoreConfig := talismanrc.FileIgnoreConfig{
 		FileName:        filename,
 		Checksum:        "833b6c24c8c2c5c7e1663226dc401b29c005492dc76a1150fc0e0f07f29d4cc3",
 		IgnoreDetectors: []string{"filecontent"},
 		AllowedPatterns: []string{}}
-	ignores := &talismanrc.TalismanRC{IgnoreConfigs: []talismanrc.IgnoreConfig{fileIgnoreConfig}}
+	ignores := &talismanrc.TalismanRC{FileIgnoreConfig: []talismanrc.FileIgnoreConfig{fileIgnoreConfig}}
 
 	NewPatternDetector(customPatterns).Test(ignoreEvaluatorWithTalismanRC(ignores), additions, ignores, results, dummyCallback)
 
@@ -87,13 +87,13 @@ func TestShouldIgnoreAllowedPattern(t *testing.T) {
 	content := []byte("\"key\" : \"This is an allowed keyword\"\npassword=y0uw1lln3v3rgu3ssmyP@55w0rd")
 	filename := "allowed_pattern.txt"
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, content)}
-	fileIgnoreConfig := &talismanrc.FileIgnoreConfig{
+	fileIgnoreConfig := talismanrc.FileIgnoreConfig{
 		FileName: filename, Checksum: "",
 		IgnoreDetectors: []string{},
 		AllowedPatterns: []string{"key"}}
 	ignores := &talismanrc.TalismanRC{
-		IgnoreConfigs:   []talismanrc.IgnoreConfig{fileIgnoreConfig},
-		AllowedPatterns: []*regexp.Regexp{regexp.MustCompile("password")}}
+		FileIgnoreConfig: []talismanrc.FileIgnoreConfig{fileIgnoreConfig},
+		AllowedPatterns:  []*regexp.Regexp{regexp.MustCompile("password")}}
 
 	NewPatternDetector(customPatterns).Test(defaultIgnoreEvaluator, additions, ignores, results, dummyCallback)
 
