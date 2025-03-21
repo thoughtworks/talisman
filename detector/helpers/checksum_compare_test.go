@@ -42,8 +42,8 @@ func TestChecksumCompare_IsScanNotRequired(t *testing.T) {
 				},
 			},
 		}
+		addition := gitrepo.Addition{Name: "some.txt", Path: "some.txt"}
 		cc := NewChecksumCompare(checksumCalculator, &ignoreConfig)
-		addition := gitrepo.Addition{Name: "some.txt"}
 		checksumCalculator.EXPECT().CalculateCollectiveChecksumForPattern("some.txt").Return("sha1")
 
 		required := cc.IsScanNotRequired(addition)

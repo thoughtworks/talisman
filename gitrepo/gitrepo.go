@@ -12,13 +12,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//FilePath represents the absolute path of an added file
+// FilePath represents the absolute path of an added file
 type FilePath string
 
-//FileName represents the base name of an added file
+// FileName represents the base name of an added file
 type FileName string
 
-//Addition represents the end state of a file
+// Addition represents the end state of a file
 type Addition struct {
 	Path    FilePath
 	Name    FileName
@@ -26,13 +26,13 @@ type Addition struct {
 	Data    []byte
 }
 
-//GitRepo represents a Git repository located at the absolute path represented by root
+// GitRepo represents a Git repository located at the absolute path represented by root
 type GitRepo struct {
 	root string
 }
 
-//RepoLocatedAt returns a new GitRepo with it's root located at the location specified by the argument.
-//If the argument is not an absolute path, it will be turned into one.
+// RepoLocatedAt returns a new GitRepo with it's root located at the location specified by the argument.
+// If the argument is not an absolute path, it will be turned into one.
 func RepoLocatedAt(path string) GitRepo {
 	absoluteRoot, _ := filepath.Abs(path)
 	return GitRepo{absoluteRoot}
@@ -117,7 +117,7 @@ func MatchGitDiffLine(gitDiffString string) (bool, string) {
 	return false, ""
 }
 
-//StagedAdditions returns the files staged for commit in a GitRepo
+// StagedAdditions returns the files staged for commit in a GitRepo
 func (repo GitRepo) StagedAdditions() []Addition {
 	files := repo.stagedFiles()
 	result := make([]Addition, len(files))
@@ -132,7 +132,7 @@ func (repo GitRepo) StagedAdditions() []Addition {
 	return result
 }
 
-//AllAdditions returns all the outgoing additions and modifications in a GitRepo. This does not include files that were deleted.
+// AllAdditions returns all the outgoing additions and modifications in a GitRepo. This does not include files that were deleted.
 func (repo GitRepo) AllAdditions() []Addition {
 	result := string(repo.executeRepoCommand("git", "rev-parse", "--abbrev-ref", "origin/HEAD"))
 	log.Debugf("Result of getting default branch %v", result)
@@ -141,7 +141,7 @@ func (repo GitRepo) AllAdditions() []Addition {
 	return repo.AdditionsWithinRange(oldCommit, newCommit)
 }
 
-//AdditionsWithinRange returns the outgoing additions and modifications in a GitRepo that are in the given commit range. This does not include files that were deleted.
+// AdditionsWithinRange returns the outgoing additions and modifications in a GitRepo that are in the given commit range. This does not include files that were deleted.
 func (repo GitRepo) AdditionsWithinRange(oldCommit string, newCommit string) []Addition {
 	files := repo.outgoingNonDeletedFiles(oldCommit, newCommit)
 	result := make([]Addition, len(files))
@@ -157,7 +157,7 @@ func (repo GitRepo) AdditionsWithinRange(oldCommit string, newCommit string) []A
 	return result
 }
 
-//NewAddition returns a new Addition for a file with supplied name and contents
+// NewAddition returns a new Addition for a file with supplied name and contents
 func NewAddition(filePath string, content []byte) Addition {
 	return Addition{
 		Path: FilePath(filePath),
@@ -166,7 +166,7 @@ func NewAddition(filePath string, content []byte) Addition {
 	}
 }
 
-//NewScannerAddition returns an new Addition for a file with supplied contents and all of the commits the file is in
+// NewScannerAddition returns an new Addition for a file with supplied contents and all of the commits the file is in
 func NewScannerAddition(filePath string, commits []string, content []byte) Addition {
 	return Addition{
 		Path:    FilePath(filePath),
@@ -176,9 +176,9 @@ func NewScannerAddition(filePath string, commits []string, content []byte) Addit
 	}
 }
 
-//CheckIfFileExists checks if the file exists on the file system. Does not look into the file contents
-//Returns TRUE if file exists
-//Returns FALSE if the file is not found
+// CheckIfFileExists checks if the file exists on the file system. Does not look into the file contents
+// Returns TRUE if file exists
+// Returns FALSE if the file is not found
 func (repo GitRepo) CheckIfFileExists(fileName string) bool {
 	filepath := path.Join(repo.root, fileName)
 	if _, err := os.Stat(filepath); os.IsNotExist(err) {
@@ -187,18 +187,21 @@ func (repo GitRepo) CheckIfFileExists(fileName string) bool {
 	return true
 }
 
-//Matches states whether the addition matches the given pattern.
-//If the pattern ends in a path separator, then all files inside a directory with that name are matched. However, files with that name itself will not be matched.
-//If a pattern contains the path separator in any other location, the match works according to the pattern logic of the default golang glob mechanism
-//If there is no path separator anywhere in the pattern, the pattern is matched against the base name of the file. Thus, the pattern will match files with that name anywhere in the repository.
+// Matches states whether the addition matches the given pattern.
+// If the pattern ends in a path separator, then all files inside a directory with that name are matched. However, files with that name itself will not be matched.
+// If a pattern contains the path separator in any other location, the match works according to the pattern logic of the default golang glob mechanism
+// If there are other special characters in the pattern, the pattern is matched against the base name of the file. Thus, the pattern will match files with that pattern anywhere in the repository.
+// If there are no special characters in the pattern, then it means exact filename is provided as pattern like file.txt. Thus, the pattern is matched against the file path so that not all files with the same name in the repo are not returned.
 func (a Addition) Matches(pattern string) bool {
 	var result bool
-	if pattern[len(pattern)-1] == '/' {
+	if pattern[len(pattern)-1] == '/' { // If the pattern ends in a path separator, then all files inside a directory with that name are matched. However, files with that name itself will not be matched.
 		result = strings.HasPrefix(string(a.Path), pattern)
-	} else if strings.ContainsRune(pattern, '/') {
+	} else if strings.ContainsRune(pattern, '/') { // If a pattern contains the path separator in any other location, the match works according to the pattern logic of the default golang glob mechanism
 		result, _ = path.Match(pattern, string(a.Path))
-	} else {
+	} else if strings.ContainsAny(pattern, "*?[]\\") { // If there are other special characters in the pattern, the pattern is matched against the base name of the file. Thus, the pattern will match files with that pattern anywhere in the repository.
 		result, _ = path.Match(pattern, string(a.Name))
+	} else { // If there are no special characters in the pattern, then it means exact filename is provided as pattern like file.txt. Thus, the pattern is matched against the file path so that not all files with the same name in the repo are not returned.
+		result = strings.Compare(string(a.Path), pattern) == 0
 	}
 	log.WithFields(log.Fields{
 		"pattern":  pattern,
@@ -208,7 +211,7 @@ func (a Addition) Matches(pattern string) bool {
 	return result
 }
 
-//TrackedFilesAsAdditions returns all of the tracked files in a GitRepo as Additions
+// TrackedFilesAsAdditions returns all of the tracked files in a GitRepo as Additions
 func (repo GitRepo) TrackedFilesAsAdditions() []Addition {
 	trackedFilePaths := repo.trackedFilePaths()
 	var additions []Addition
