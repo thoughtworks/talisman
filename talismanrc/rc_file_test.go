@@ -36,7 +36,7 @@ func TestShouldIgnoreUnformattedFiles(t *testing.T) {
 		})
 
 		talismanRC, _ := Load()
-		assert.True(t, talismanRC.AcceptsAll(), "Expected commented line '%s' to result in no ignore patterns", s)
+		assert.Equal(t, &TalismanRC{Version: "1.0"}, talismanRC, "Expected commented line '%s' to result in an empty TalismanRC")
 	}
 	setRepoFileReader(defaultRepoFileReader)
 }

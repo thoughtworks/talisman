@@ -49,11 +49,10 @@ custom_severities:
 - detector: Base64Content
   severity: low
 `)
-	persistedRC, _ := newPersistedRC(talismanRCContents)
-	talismanRC := fromPersistedRC(persistedRC)
-	assert.Equal(t, persistedRC.Threshold, severity.High)
-	assert.Equal(t, len(persistedRC.CustomSeverities), 1)
-	assert.Equal(t, persistedRC.CustomSeverities, talismanRC.CustomSeverities)
+	talismanRC, _ := newPersistedRC(talismanRCContents)
+	assert.Equal(t, talismanRC.Threshold, severity.High)
+	assert.Equal(t, len(talismanRC.CustomSeverities), 1)
+	assert.Equal(t, talismanRC.CustomSeverities, []CustomSeverityConfig{{Detector: "Base64Content", Severity: severity.Low}})
 }
 
 func TestDirectoryPatterns(t *testing.T) {

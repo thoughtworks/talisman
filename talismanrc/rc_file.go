@@ -21,7 +21,7 @@ var (
 	currentRCFileName = DefaultRCFileName
 )
 
-func readConfigFromRCFile(fileReader func(string) ([]byte, error)) (*persistedRC, error) {
+func readConfigFromRCFile(fileReader func(string) ([]byte, error)) (*TalismanRC, error) {
 	fileContents, err := fileReader(currentRCFileName)
 	if err != nil {
 		panic(err)
@@ -29,13 +29,13 @@ func readConfigFromRCFile(fileReader func(string) ([]byte, error)) (*persistedRC
 	return newPersistedRC(fileContents)
 }
 
-func newPersistedRC(fileContents []byte) (*persistedRC, error) {
-	talismanRCFromFile := persistedRC{}
+func newPersistedRC(fileContents []byte) (*TalismanRC, error) {
+	talismanRCFromFile := TalismanRC{}
 	err := yaml.Unmarshal(fileContents, &talismanRCFromFile)
 	if err != nil {
 		logr.Errorf("Unable to parse .talismanrc : %v", err)
 		fmt.Println(fmt.Errorf("\n\x1b[1m\x1b[31mUnable to parse .talismanrc %s. Please ensure it is following the right YAML structure\x1b[0m\x1b[0m", err))
-		return &persistedRC{}, err
+		return &TalismanRC{}, err
 	}
 	if talismanRCFromFile.Version == "" {
 		talismanRCFromFile.Version = DefaultRCVersion
@@ -54,7 +54,6 @@ func SetRcFilename__(rcFileName string) {
 type RepoFileReader func(string) ([]byte, error)
 
 var repoFileReader = func() RepoFileReader {
-
 	return func(path string) ([]byte, error) {
 		data, err := utility.SafeReadFile(path)
 		if err != nil {

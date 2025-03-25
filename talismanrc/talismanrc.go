@@ -2,7 +2,6 @@ package talismanrc
 
 import (
 	"os"
-	"regexp"
 	"sort"
 
 	logr "github.com/sirupsen/logrus"
@@ -24,28 +23,12 @@ type TalismanRC struct {
 	Version          string                 `yaml:"version"`
 }
 
-type persistedRC struct {
-	FileIgnoreConfig []FileIgnoreConfig     `yaml:"fileignoreconfig,omitempty"`
-	ScopeConfig      []ScopeConfig          `yaml:"scopeconfig,omitempty"`
-	CustomPatterns   []PatternString        `yaml:"custom_patterns,omitempty"`
-	CustomSeverities []CustomSeverityConfig `yaml:"custom_severities,omitempty"`
-	AllowedPatterns  []string               `yaml:"allowed_patterns,omitempty"`
-	Experimental     ExperimentalConfig     `yaml:"experimental,omitempty"`
-	Threshold        severity.Severity      `yaml:"threshold,omitempty"`
-	Version          string                 `yaml:"version"`
-}
-
 // SuggestRCFor returns the talismanRC file content corresponding to input ignore configs
 func SuggestRCFor(configs []FileIgnoreConfig) string {
 	tRC := TalismanRC{FileIgnoreConfig: configs, Version: DefaultRCVersion}
 	result, _ := yaml.Marshal(tRC)
 
 	return string(result)
-}
-
-// AcceptsAll returns true if there are no rules specified
-func (tRC *TalismanRC) AcceptsAll() bool {
-	return len(tRC.effectiveRules("any-detector")) == 0
 }
 
 // Accept answers true if the Addition.Path is configured to be checked by the detectors
@@ -169,27 +152,6 @@ func (tRC *TalismanRC) effectiveRules(detectorName string) []string {
 	return result
 }
 
-func fromPersistedRC(configFromTalismanRCFile *persistedRC) *TalismanRC {
-	tRC := TalismanRC{}
-
-	tRC.Threshold = configFromTalismanRCFile.Threshold
-	tRC.ScopeConfig = configFromTalismanRCFile.ScopeConfig
-	tRC.Experimental = configFromTalismanRCFile.Experimental
-	tRC.CustomPatterns = configFromTalismanRCFile.CustomPatterns
-	tRC.CustomSeverities = configFromTalismanRCFile.CustomSeverities
-	tRC.AllowedPatterns = make([]*Pattern, len(configFromTalismanRCFile.AllowedPatterns))
-	for i, p := range configFromTalismanRCFile.AllowedPatterns {
-		tRC.AllowedPatterns[i] = &Pattern{regexp.MustCompile(p)}
-	}
-	tRC.Version = configFromTalismanRCFile.Version
-
-	tRC.FileIgnoreConfig = configFromTalismanRCFile.FileIgnoreConfig
-
-	return &tRC
-}
-
 func Load() (*TalismanRC, error) {
-	configFromTalismanRCFile, err := readConfigFromRCFile(repoFileReader())
-	talismanRC := fromPersistedRC(configFromTalismanRCFile)
-	return talismanRC, err
+	return readConfigFromRCFile(repoFileReader())
 }
