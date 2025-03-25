@@ -22,7 +22,7 @@ func TestShouldFilterAllowedPatternsFromAddition(t *testing.T) {
 	const hex string = "68656C6C6F20776F726C6421"
 	const fileContent string = "Prefix content" + hex
 	gitRepoAddition1 := testAdditionWithData("file1", []byte(fileContent))
-	talismanrc := &TalismanRC{AllowedPatterns: []*regexp.Regexp{regexp.MustCompile(hex)}}
+	talismanrc := &TalismanRC{AllowedPatterns: []*Pattern{{regexp.MustCompile(hex)}}}
 
 	fileContentFiltered := talismanrc.FilterAllowedPatternsFromAddition(gitRepoAddition1)
 

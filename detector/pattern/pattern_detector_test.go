@@ -93,7 +93,7 @@ func TestShouldIgnoreAllowedPattern(t *testing.T) {
 		AllowedPatterns: []string{"key"}}
 	ignores := &talismanrc.TalismanRC{
 		FileIgnoreConfig: []talismanrc.FileIgnoreConfig{fileIgnoreConfig},
-		AllowedPatterns:  []*regexp.Regexp{regexp.MustCompile("password")}}
+		AllowedPatterns:  []*talismanrc.Pattern{{Regexp: regexp.MustCompile("password")}}}
 
 	NewPatternDetector(customPatterns).Test(defaultIgnoreEvaluator, additions, ignores, results, dummyCallback)
 

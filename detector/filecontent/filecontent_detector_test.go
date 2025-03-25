@@ -191,7 +191,7 @@ func TestShouldNotFlagPotentialCreditCardNumberIfAboveThreshold(t *testing.T) {
 func TestShouldNotFlagPotentialSecretsIfIgnored(t *testing.T) {
 	const hex string = "68656C6C6F20776F726C6421"
 	talismanRCWithIgnores := &talismanrc.TalismanRC{
-		AllowedPatterns: []*regexp.Regexp{regexp.MustCompile("[0-9a-fA-F]*")}}
+		AllowedPatterns: []*talismanrc.Pattern{{Regexp: regexp.MustCompile("[0-9a-fA-F]*")}}}
 	results := helpers.NewDetectionResults()
 	additions := []gitrepo.Addition{gitrepo.NewAddition(filename, []byte(hex))}
 

@@ -3,9 +3,30 @@ package talismanrc
 import (
 	"regexp"
 	"talisman/detector/severity"
+
+	logr "github.com/sirupsen/logrus"
 )
 
 type PatternString string
+
+type Pattern struct {
+	*regexp.Regexp
+}
+
+func (p Pattern) MarshalYAML() (interface{}, error) {
+	return p.String(), nil
+}
+
+func (p *Pattern) UnmarshalYAML(unmarshal func(interface{}) error) error {
+	var s string
+	err := unmarshal(&s)
+	if err != nil {
+		logr.Errorf("Pattern.UmarshalYAML error: %v", err)
+		return err
+	}
+	*p = Pattern{regexp.MustCompile(s)}
+	return nil
+}
 
 type CustomSeverityConfig struct {
 	Detector string            `yaml:"detector"`

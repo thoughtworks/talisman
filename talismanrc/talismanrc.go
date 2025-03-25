@@ -18,7 +18,7 @@ type TalismanRC struct {
 	ScopeConfig      []ScopeConfig          `yaml:"-"`
 	CustomPatterns   []PatternString        `yaml:"-"`
 	CustomSeverities []CustomSeverityConfig `yaml:"-"`
-	AllowedPatterns  []*regexp.Regexp       `yaml:"-"`
+	AllowedPatterns  []*Pattern             `yaml:"-"`
 	Experimental     ExperimentalConfig     `yaml:"-"`
 	Threshold        severity.Severity      `yaml:"-"`
 	Version          string                 `yaml:"version"`
@@ -180,9 +180,9 @@ func fromPersistedRC(configFromTalismanRCFile *persistedRC) *TalismanRC {
 	tRC.Experimental = configFromTalismanRCFile.Experimental
 	tRC.CustomPatterns = configFromTalismanRCFile.CustomPatterns
 	tRC.CustomSeverities = configFromTalismanRCFile.CustomSeverities
-	tRC.AllowedPatterns = make([]*regexp.Regexp, len(configFromTalismanRCFile.AllowedPatterns))
+	tRC.AllowedPatterns = make([]*Pattern, len(configFromTalismanRCFile.AllowedPatterns))
 	for i, p := range configFromTalismanRCFile.AllowedPatterns {
-		tRC.AllowedPatterns[i] = regexp.MustCompile(p)
+		tRC.AllowedPatterns[i] = &Pattern{regexp.MustCompile(p)}
 	}
 
 	tRC.FileIgnoreConfig = configFromTalismanRCFile.FileIgnoreConfig
