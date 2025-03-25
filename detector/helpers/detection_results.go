@@ -270,7 +270,7 @@ func (r *DetectionResults) suggestTalismanRC(filePaths []string, promptContext p
 
 	if promptContext.Interactive && runtime.GOOS != "windows" {
 		confirmedEntries := getUserConfirmation(entriesToAdd, promptContext)
-		talismanrcConfig, _ := talismanrc.ConfigFromFile()
+		talismanrcConfig, _ := talismanrc.Load()
 		talismanrcConfig.AddIgnores(confirmedEntries)
 
 		for _, confirmedEntry := range confirmedEntries {

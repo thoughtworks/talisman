@@ -3,7 +3,6 @@ package talismanrc
 import (
 	"fmt"
 	"io"
-	"os"
 	"regexp"
 	"testing"
 
@@ -11,6 +10,7 @@ import (
 	"talisman/gitrepo"
 
 	logr "github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -117,18 +117,70 @@ func TestIgnoringDetectors(t *testing.T) {
 	assertAcceptsDetector("foo", "someDetector", "foo", "someOtherDetector", t)
 }
 
-func TestAddIgnoreFilesInHookMode(t *testing.T) {
+func TestAddingFileIgnores(t *testing.T) {
+	fs := afero.NewMemMapFs()
+	file, err := afero.TempFile(fs, "", DefaultRCFileName)
+	assert.NoError(t, err)
+	ignoreFile := file.Name()
+
+	SetFs__(fs)
+	SetRcFilename__(ignoreFile)
+	setRepoFileReader(func(string) ([]byte, error) { return afero.ReadFile(fs, ignoreFile) })
+
 	ignoreConfig := FileIgnoreConfig{
-		FileName:        "Foo",
-		Checksum:        "SomeCheckSum",
-		IgnoreDetectors: []string{},
-		AllowedPatterns: []string{}}
-	os.Remove(DefaultRCFileName)
-	talismanRCConfig := createTalismanRCWithScopeIgnores([]string{})
-	talismanRCConfig.base.AddIgnores([]FileIgnoreConfig{ignoreConfig})
-	talismanRCConfigFromFile, _ := ConfigFromFile()
-	assert.Equal(t, 1, len(talismanRCConfigFromFile.FileIgnoreConfig))
-	os.Remove(DefaultRCFileName)
+		FileName: "Foo",
+		Checksum: "SomeCheckSum"}
+	t.Run("When .talismanrc doesn't exist yet", func(t *testing.T) {
+
+		initialRCConfig, _ := Load()
+		initialRCConfig.AddIgnores([]FileIgnoreConfig{ignoreConfig})
+		newRCConfig, _ := Load()
+		assert.Equal(t, 1, len(newRCConfig.FileIgnoreConfig))
+		_ = fs.Remove(ignoreFile)
+	})
+
+	t.Run("When there already is a .talismanrc", func(t *testing.T) {
+		existingContent := `
+fileignoreconfig:
+- filename: existing.pem
+  checksum: 123444ddssa75333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
+scopeconfig: [scope: go]
+allowed_patterns:
+- this-is-okay
+- key={listOfThings.id}
+custom_patterns:
+- this-isn't-okay
+threshold: medium
+custom_severities:
+- detector: HexContent
+  severity: low
+experimental:
+  base64EntropyThreshold: 4.7
+version: 1.0
+`
+		err = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
+		assert.NoError(t, err)
+
+		initialRCConfig, _ := Load()
+		initialRCConfig.AddIgnores([]FileIgnoreConfig{ignoreConfig})
+		newRCConfig, _ := Load()
+		expectedTalismanRC := &TalismanRC{
+			FileIgnoreConfig: []FileIgnoreConfig{
+				ignoreConfig,
+				{FileName: "existing.pem", Checksum: "123444ddssa75333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac"}},
+			ScopeConfig: []ScopeConfig{{"go"}},
+			AllowedPatterns: []*Pattern{
+				{regexp.MustCompile("this-is-okay")},
+				{regexp.MustCompile("key={listOfThings.id}")}},
+			CustomPatterns: []PatternString{"this-isn't-okay"},
+			Threshold:      severity.Medium,
+			CustomSeverities: []CustomSeverityConfig{
+				{Detector: "HexContent", Severity: severity.Low}},
+			Experimental: ExperimentalConfig{Base64EntropyThreshold: 4.7},
+			Version:      "1.0",
+		}
+		assert.Equal(t, expectedTalismanRC, newRCConfig)
+	})
 }
 
 func assertDenies(line, ignoreDetector string, path string, t *testing.T) {

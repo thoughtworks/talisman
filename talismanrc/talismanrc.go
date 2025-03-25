@@ -15,14 +15,13 @@ import (
 
 type TalismanRC struct {
 	FileIgnoreConfig []FileIgnoreConfig     `yaml:"fileignoreconfig,omitempty"`
-	ScopeConfig      []ScopeConfig          `yaml:"-"`
-	CustomPatterns   []PatternString        `yaml:"-"`
-	CustomSeverities []CustomSeverityConfig `yaml:"-"`
-	AllowedPatterns  []*Pattern             `yaml:"-"`
-	Experimental     ExperimentalConfig     `yaml:"-"`
-	Threshold        severity.Severity      `yaml:"-"`
+	ScopeConfig      []ScopeConfig          `yaml:"scopeconfig,omitempty"`
+	CustomPatterns   []PatternString        `yaml:"custom_patterns,omitempty"`
+	CustomSeverities []CustomSeverityConfig `yaml:"custom_severities,omitempty"`
+	AllowedPatterns  []*Pattern             `yaml:"allowed_patterns,omitempty"`
+	Experimental     ExperimentalConfig     `yaml:"experimental,omitempty"`
+	Threshold        severity.Severity      `yaml:"threshold,omitempty"`
 	Version          string                 `yaml:"version"`
-	base             *persistedRC
 }
 
 type persistedRC struct {
@@ -80,14 +79,12 @@ func (tRC *TalismanRC) FilterAdditions(additions []gitrepo.Addition) []gitrepo.A
 	return result
 }
 
-func (tRC *persistedRC) AddIgnores(entriesToAdd []FileIgnoreConfig) {
+func (tRC *TalismanRC) AddIgnores(entriesToAdd []FileIgnoreConfig) {
 	if len(entriesToAdd) > 0 {
 		logr.Debugf("Adding entries: %v", entriesToAdd)
-		talismanRCConfig, _ := ConfigFromFile()
+		tRC.FileIgnoreConfig = combineFileIgnores(tRC.FileIgnoreConfig, entriesToAdd)
 
-		talismanRCConfig.FileIgnoreConfig = combineFileIgnores(talismanRCConfig.FileIgnoreConfig, entriesToAdd)
-
-		ignoreEntries, _ := yaml.Marshal(&talismanRCConfig)
+		ignoreEntries, _ := yaml.Marshal(&tRC)
 		file, err := fs.OpenFile(currentRCFileName, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			logr.Errorf("error opening %s: %s", currentRCFileName, err)
@@ -184,20 +181,15 @@ func fromPersistedRC(configFromTalismanRCFile *persistedRC) *TalismanRC {
 	for i, p := range configFromTalismanRCFile.AllowedPatterns {
 		tRC.AllowedPatterns[i] = &Pattern{regexp.MustCompile(p)}
 	}
+	tRC.Version = configFromTalismanRCFile.Version
 
 	tRC.FileIgnoreConfig = configFromTalismanRCFile.FileIgnoreConfig
-
-	tRC.base = configFromTalismanRCFile
 
 	return &tRC
 }
 
 func Load() (*TalismanRC, error) {
-	configFromTalismanRCFile, err := ConfigFromFile()
+	configFromTalismanRCFile, err := readConfigFromRCFile(repoFileReader())
 	talismanRC := fromPersistedRC(configFromTalismanRCFile)
 	return talismanRC, err
-}
-
-func ConfigFromFile() (*persistedRC, error) {
-	return readConfigFromRCFile(repoFileReader())
 }
