@@ -20,10 +20,11 @@ var (
 	currentRCFileName = DefaultRCFileName
 )
 
-func readConfigFromRCFile(fileReader func(string) ([]byte, error)) (*TalismanRC, error) {
-	fileContents, err := fileReader(currentRCFileName)
+func Load() (*TalismanRC, error) {
+	fileContents, err := afero.ReadFile(fs, currentRCFileName)
 	if err != nil {
-		panic(err)
+		// File does not exist or is not readable, proceed as if there is no .talismanrc
+		fileContents = []byte{}
 	}
 	return newPersistedRC(fileContents)
 }
@@ -48,16 +49,4 @@ func SetFs__(_fs afero.Fs) {
 
 func SetRcFilename__(rcFileName string) {
 	currentRCFileName = rcFileName
-}
-
-type RepoFileReader func(string) ([]byte, error)
-
-var repoFileReader = func() RepoFileReader {
-	return func(path string) ([]byte, error) {
-		data, err := afero.ReadFile(fs, currentRCFileName)
-		if err != nil {
-			return []byte{}, nil
-		}
-		return data, nil
-	}
 }

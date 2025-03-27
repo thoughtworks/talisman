@@ -151,7 +151,3 @@ func (tRC *TalismanRC) effectiveRules(detectorName string) []string {
 
 	return result
 }
-
-func Load() (*TalismanRC, error) {
-	return readConfigFromRCFile(repoFileReader())
-}
