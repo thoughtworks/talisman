@@ -124,7 +124,6 @@ func TestAddingFileIgnores(t *testing.T) {
 
 	SetFs__(fs)
 	SetRcFilename__(ignoreFile)
-	setRepoFileReader(func(string) ([]byte, error) { return afero.ReadFile(fs, ignoreFile) })
 
 	ignoreConfig := FileIgnoreConfig{
 		FileName: "Foo",

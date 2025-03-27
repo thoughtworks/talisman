@@ -2,7 +2,6 @@ package talismanrc
 
 import (
 	"fmt"
-	"talisman/utility"
 
 	logr "github.com/sirupsen/logrus"
 
@@ -55,7 +54,7 @@ type RepoFileReader func(string) ([]byte, error)
 
 var repoFileReader = func() RepoFileReader {
 	return func(path string) ([]byte, error) {
-		data, err := utility.SafeReadFile(path)
+		data, err := afero.ReadFile(fs, currentRCFileName)
 		if err != nil {
 			return []byte{}, nil
 		}

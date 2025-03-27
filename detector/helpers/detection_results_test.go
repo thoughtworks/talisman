@@ -177,6 +177,8 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 
 		expectedFileContent := `fileignoreconfig:
+- filename: existing.pem
+  checksum: 123444ddssa75333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
 - filename: some_file.pem
   checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
 version: "1.0"
@@ -219,6 +221,8 @@ version: "1.0"
 		expectedFileContent := `fileignoreconfig:
 - filename: another.pem
   checksum: 117e23557c02cbd472854ebce4933d6daec1fd207971286f6ffc9f1774c1a83b
+- filename: existing.pem
+  checksum: 123444ddssa75333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
 - filename: some_file.pem
   checksum: 87139cc4d975333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
 version: "1.0"
