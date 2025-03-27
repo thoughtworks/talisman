@@ -59,7 +59,7 @@ fileignoreconfig:
 custom_patterns:
 - 'pwd_[a-z]{8,20}'`)
 
-		rc, err := newPersistedRC(fileContents)
+		rc, err := talismanRCFromYaml(fileContents)
 		assert.Nil(t, err, "Should successfully unmarshal valid yaml")
 		assert.Equal(t, 1, len(rc.FileIgnoreConfig))
 		assert.Equal(t, 1, len(rc.CustomPatterns))
@@ -75,7 +75,7 @@ fileignoreconfig:
 - filename: testfile_3.yml
   checksum: file3_checksum`)
 
-		rc, _ := newPersistedRC(fileContent)
+		rc, _ := talismanRCFromYaml(fileContent)
 		assert.Equal(t, 3, len(rc.FileIgnoreConfig))
 
 		assert.Equal(t, rc.FileIgnoreConfig[0].GetFileName(), "testfile_1.yml")
@@ -88,7 +88,7 @@ fileignoreconfig:
 
 	t.Run("Should read severity level", func(t *testing.T) {
 		talismanRCContents := []byte("threshold: high")
-		persistedTalismanrc, _ := newPersistedRC(talismanRCContents)
+		persistedTalismanrc, _ := talismanRCFromYaml(talismanRCContents)
 		assert.Equal(t, persistedTalismanrc.Threshold, severity.High)
 	})
 
@@ -98,7 +98,7 @@ custom_severities:
 - detector: Base64Content
   severity: low
 `)
-		talismanRC, _ := newPersistedRC(talismanRCContents)
+		talismanRC, _ := talismanRCFromYaml(talismanRCContents)
 		assert.Equal(t, talismanRC.CustomSeverities, []CustomSeverityConfig{{Detector: "Base64Content", Severity: severity.Low}})
 	})
 }
@@ -106,7 +106,7 @@ custom_severities:
 func TestShouldIgnoreUnformattedFiles(t *testing.T) {
 	for _, s := range []string{"#", "#monkey", "# this monkey likes bananas  "} {
 		fileContents := []byte(s)
-		talismanRC, err := newPersistedRC(fileContents)
+		talismanRC, err := talismanRCFromYaml(fileContents)
 		assert.Nil(t, err, "Should successfully unmarshal commented yaml")
 		assert.Equal(t, &TalismanRC{Version: "1.0"}, talismanRC, "Expected commented line '%s' to result in an empty TalismanRC")
 	}

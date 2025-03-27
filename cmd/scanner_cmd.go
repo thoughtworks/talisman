@@ -31,7 +31,7 @@ func (s *ScannerCmd) Run() int {
 	fmt.Printf("\n\n")
 	utility.CreateArt("Running Scan..")
 
-	additionsToScan := s.tRC.FilterAdditions(s.additions)
+	additionsToScan := s.tRC.RemoveScopedFiles(s.additions)
 
 	detector.DefaultChain(s.tRC, s.ignoreEvaluator).Test(additionsToScan, s.tRC, s.results)
 	reportsPath, err := report.GenerateReport(s.results, s.reportDirectory)

@@ -20,16 +20,17 @@ var (
 	currentRCFileName = DefaultRCFileName
 )
 
+// Load creates a TalismanRC struct based on a .talismanrc file, if present
 func Load() (*TalismanRC, error) {
 	fileContents, err := afero.ReadFile(fs, currentRCFileName)
 	if err != nil {
 		// File does not exist or is not readable, proceed as if there is no .talismanrc
 		fileContents = []byte{}
 	}
-	return newPersistedRC(fileContents)
+	return talismanRCFromYaml(fileContents)
 }
 
-func newPersistedRC(fileContents []byte) (*TalismanRC, error) {
+func talismanRCFromYaml(fileContents []byte) (*TalismanRC, error) {
 	talismanRCFromFile := TalismanRC{}
 	err := yaml.Unmarshal(fileContents, &talismanRCFromFile)
 	if err != nil {

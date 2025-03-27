@@ -34,7 +34,7 @@ func (r *runner) Run(tRC *talismanrc.TalismanRC, promptContext prompt.PromptCont
 	ie := helpers.BuildIgnoreEvaluator(r.mode, tRC, repo)
 
 	setCustomSeverities(tRC)
-	additionsToScan := tRC.FilterAdditions(r.additions)
+	additionsToScan := tRC.RemoveScopedFiles(r.additions)
 
 	detector.DefaultChain(tRC, ie).Test(additionsToScan, tRC, r.results)
 	r.printReport(promptContext)

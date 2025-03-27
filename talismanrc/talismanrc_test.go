@@ -44,7 +44,7 @@ func TestShouldFilterAllowedPatternsFromAddition(t *testing.T) {
 	gitRepoAddition1 := testAdditionWithData("file1", []byte(fileContent))
 	talismanrc := &TalismanRC{AllowedPatterns: []*Pattern{{regexp.MustCompile(hex)}}}
 
-	fileContentFiltered := talismanrc.FilterAllowedPatternsFromAddition(gitRepoAddition1)
+	fileContentFiltered := talismanrc.RemoveAllowedPatterns(gitRepoAddition1)
 
 	assert.Equal(t, fileContentFiltered, "Prefix content")
 }
@@ -56,8 +56,8 @@ func TestShouldFilterAllowedPatternsFromAdditionBasedOnFileConfig(t *testing.T) 
 	gitRepoAddition2 := testAdditionWithData("file2", []byte(fileContent))
 	talismanrc := createTalismanRCWithFileIgnores("file1", "somedetector", []string{hexContent})
 
-	fileContentFiltered1 := talismanrc.FilterAllowedPatternsFromAddition(gitRepoAddition1)
-	fileContentFiltered2 := talismanrc.FilterAllowedPatternsFromAddition(gitRepoAddition2)
+	fileContentFiltered1 := talismanrc.RemoveAllowedPatterns(gitRepoAddition1)
+	fileContentFiltered2 := talismanrc.RemoveAllowedPatterns(gitRepoAddition2)
 
 	assert.Equal(t, fileContentFiltered1, "Prefix content")
 	assert.Equal(t, fileContentFiltered2, fileContent)
@@ -111,7 +111,7 @@ func TestIgnoreAdditionsByScope(t *testing.T) {
 	for scopeName, additions := range testTable {
 		t.Run(fmt.Sprintf("should ignore files for %s scope", scopeName), func(t *testing.T) {
 			talismanRCConfig := createTalismanRCWithScopeIgnores([]string{scopeName})
-			filteredAdditions := talismanRCConfig.FilterAdditions(additions)
+			filteredAdditions := talismanRCConfig.RemoveScopedFiles(additions)
 			for _, addition := range additions {
 				assert.NotContains(t, filteredAdditions, addition, "Expected %s to be ignored", addition.Name)
 			}

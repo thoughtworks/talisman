@@ -50,7 +50,7 @@ func (detector PatternDetector) Test(comparator helpers.IgnoreEvaluator, current
 				ignoredFilePaths <- addition.Path
 				return
 			}
-			detections := detector.secretsPattern.check(ignoreConfig.FilterAllowedPatternsFromAddition(addition), ignoreConfig.Threshold)
+			detections := detector.secretsPattern.check(ignoreConfig.RemoveAllowedPatterns(addition), ignoreConfig.Threshold)
 			matches <- match{name: addition.Name, path: addition.Path, detections: detections, commits: addition.Commits}
 		}(addition)
 	}

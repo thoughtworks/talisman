@@ -23,7 +23,7 @@ type TalismanRC struct {
 	Version          string                 `yaml:"version"`
 }
 
-// SuggestRCFor returns the talismanRC file content corresponding to input ignore configs
+// SuggestRCFor returns a string representation of a .talismanrc for the specified FileIgnoreConfigs
 func SuggestRCFor(configs []FileIgnoreConfig) string {
 	tRC := TalismanRC{FileIgnoreConfig: configs, Version: DefaultRCVersion}
 	result, _ := yaml.Marshal(tRC)
@@ -31,13 +31,8 @@ func SuggestRCFor(configs []FileIgnoreConfig) string {
 	return string(result)
 }
 
-// Accept answers true if the Addition.Path is configured to be checked by the detectors
-func (tRC *TalismanRC) Accept(addition gitrepo.Addition, detectorName string) bool {
-	return !tRC.Deny(addition, detectorName)
-}
-
-// FilterAdditions removes scope files from additions
-func (tRC *TalismanRC) FilterAdditions(additions []gitrepo.Addition) []gitrepo.Addition {
+// RemoveScopedFiles removes scope files from additions
+func (tRC *TalismanRC) RemoveScopedFiles(additions []gitrepo.Addition) []gitrepo.Addition {
 	var applicableScopeFileNames []string
 	if tRC.ScopeConfig != nil {
 		for _, scope := range tRC.ScopeConfig {
@@ -62,6 +57,7 @@ func (tRC *TalismanRC) FilterAdditions(additions []gitrepo.Addition) []gitrepo.A
 	return result
 }
 
+// AddIgnores inserts the specified FileIgnoreConfigs to an existing .talismanrc file, or creates one if it doesn't exist.
 func (tRC *TalismanRC) AddIgnores(entriesToAdd []FileIgnoreConfig) {
 	if len(entriesToAdd) > 0 {
 		logr.Debugf("Adding entries: %v", entriesToAdd)
@@ -112,18 +108,8 @@ func combineFileIgnores(exsiting, incoming []FileIgnoreConfig) []FileIgnoreConfi
 	return result
 }
 
-// Deny answers true if the Addition.Path is configured to be ignored and not checked by the detectors
-func (tRC *TalismanRC) Deny(addition gitrepo.Addition, detectorName string) bool {
-	for _, pattern := range tRC.effectiveRules(detectorName) {
-		if addition.Matches(pattern) {
-			return true
-		}
-	}
-	return false
-}
-
-// Strip git addition
-func (tRC *TalismanRC) FilterAllowedPatternsFromAddition(addition gitrepo.Addition) string {
+// RemoveAllowedPatterns removes globally- and per-file allowed patterns from an Addition
+func (tRC *TalismanRC) RemoveAllowedPatterns(addition gitrepo.Addition) string {
 	additionPathAsString := string(addition.Path)
 	// Processing global allowed patterns
 	for _, pattern := range tRC.AllowedPatterns {
@@ -141,6 +127,21 @@ func (tRC *TalismanRC) FilterAllowedPatternsFromAddition(addition gitrepo.Additi
 	return string(addition.Data)
 }
 
+// Deny answers true if the Addition should NOT be checked by the specified detector
+func (tRC *TalismanRC) Deny(addition gitrepo.Addition, detectorName string) bool {
+	for _, pattern := range tRC.effectiveRules(detectorName) {
+		if addition.Matches(pattern) {
+			return true
+		}
+	}
+	return false
+}
+
+// Accept answers true if the Addition should be checked by the specified detector
+func (tRC *TalismanRC) Accept(addition gitrepo.Addition, detectorName string) bool {
+	return !tRC.Deny(addition, detectorName)
+}
+
 func (tRC *TalismanRC) effectiveRules(detectorName string) []string {
 	var result []string
 	for _, ignore := range tRC.FileIgnoreConfig {
@@ -148,6 +149,5 @@ func (tRC *TalismanRC) effectiveRules(detectorName string) []string {
 			result = append(result, ignore.GetFileName())
 		}
 	}
-
 	return result
 }
