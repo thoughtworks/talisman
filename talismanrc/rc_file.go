@@ -61,7 +61,3 @@ var repoFileReader = func() RepoFileReader {
 		return data, nil
 	}
 }
-
-func setRepoFileReader(rfr RepoFileReader) {
-	repoFileReader = func() RepoFileReader { return rfr }
-}
