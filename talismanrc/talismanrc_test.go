@@ -14,6 +14,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const fullyConfiguredTalismanRC = `
+---
+fileignoreconfig:
+- filename: existing.pem
+  checksum: 123444ddssa75333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
+scopeconfig: [scope: go]
+allowed_patterns:
+- this-is-okay
+- key={listOfThings.id}
+custom_patterns:
+- this-isn't-okay
+threshold: medium
+custom_severities:
+- detector: HexContent
+  severity: low
+experimental:
+  base64EntropyThreshold: 4.7
+version: 1.0
+`
+
 func init() {
 	logr.SetOutput(io.Discard)
 }
@@ -41,18 +61,6 @@ func TestShouldFilterAllowedPatternsFromAdditionBasedOnFileConfig(t *testing.T) 
 
 	assert.Equal(t, fileContentFiltered1, "Prefix content")
 	assert.Equal(t, fileContentFiltered2, fileContent)
-}
-
-func TestObeysCustomSeverityLevelsAndThreshold(t *testing.T) {
-	talismanRCContents := []byte(`threshold: high
-custom_severities:
-- detector: Base64Content
-  severity: low
-`)
-	talismanRC, _ := newPersistedRC(talismanRCContents)
-	assert.Equal(t, talismanRC.Threshold, severity.High)
-	assert.Equal(t, len(talismanRC.CustomSeverities), 1)
-	assert.Equal(t, talismanRC.CustomSeverities, []CustomSeverityConfig{{Detector: "Base64Content", Severity: severity.Low}})
 }
 
 func TestDirectoryPatterns(t *testing.T) {
@@ -138,25 +146,7 @@ func TestAddingFileIgnores(t *testing.T) {
 	})
 
 	t.Run("When there already is a .talismanrc", func(t *testing.T) {
-		existingContent := `
-fileignoreconfig:
-- filename: existing.pem
-  checksum: 123444ddssa75333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
-scopeconfig: [scope: go]
-allowed_patterns:
-- this-is-okay
-- key={listOfThings.id}
-custom_patterns:
-- this-isn't-okay
-threshold: medium
-custom_severities:
-- detector: HexContent
-  severity: low
-experimental:
-  base64EntropyThreshold: 4.7
-version: 1.0
-`
-		err = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
+		err = afero.WriteFile(fs, ignoreFile, []byte(fullyConfiguredTalismanRC), 0666)
 		assert.NoError(t, err)
 
 		initialRCConfig, _ := Load()
@@ -227,37 +217,6 @@ func createTalismanRCWithScopeIgnores(scopesToIgnore []string) *TalismanRC {
 	}
 
 	return &TalismanRC{ScopeConfig: scopeConfigs}
-}
-
-func TestFileIgnoreConfig_ChecksumMatches(t *testing.T) {
-	fileIgnoreConfig := &FileIgnoreConfig{
-		FileName:        "some_filename",
-		Checksum:        "some_checksum",
-		IgnoreDetectors: nil,
-		AllowedPatterns: nil,
-	}
-
-	assert.True(t, fileIgnoreConfig.ChecksumMatches("some_checksum"))
-	assert.False(t, fileIgnoreConfig.ChecksumMatches("some_other_checksum"))
-}
-
-func TestFileIgnoreConfig_GetAllowedPatterns(t *testing.T) {
-	fileIgnoreConfig := &FileIgnoreConfig{
-		FileName:        "some_filename",
-		Checksum:        "some_checksum",
-		IgnoreDetectors: nil,
-		AllowedPatterns: nil,
-	}
-
-	//No allowed patterns specified
-	allowedPatterns := fileIgnoreConfig.GetAllowedPatterns()
-	assert.Equal(t, 0, len(allowedPatterns))
-
-	fileIgnoreConfig.compiledPatterns = nil
-	fileIgnoreConfig.AllowedPatterns = []string{"[Ff]ile[nN]ame"}
-	allowedPatterns = fileIgnoreConfig.GetAllowedPatterns()
-	assert.Equal(t, 1, len(allowedPatterns))
-	assert.Regexp(t, allowedPatterns[0], "fileName")
 }
 
 func TestSuggestRCFor(t *testing.T) {

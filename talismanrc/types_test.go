@@ -31,3 +31,36 @@ func TestCustomMarshalling(t *testing.T) {
 		assert.Equal(t, pattern.String(), strings.TrimSpace(string(str)))
 	})
 }
+
+func TestFileIgnoreConfig(t *testing.T) {
+	t.Run("Checksum matching", func(t *testing.T) {
+		fileIgnoreConfig := &FileIgnoreConfig{
+			FileName:        "some_filename",
+			Checksum:        "some_checksum",
+			IgnoreDetectors: nil,
+			AllowedPatterns: nil,
+		}
+
+		assert.True(t, fileIgnoreConfig.ChecksumMatches("some_checksum"))
+		assert.False(t, fileIgnoreConfig.ChecksumMatches("some_other_checksum"))
+	})
+
+	t.Run("Compiles regexes for patterns as needed", func(t *testing.T) {
+		fileIgnoreConfig := &FileIgnoreConfig{
+			FileName:        "some_filename",
+			Checksum:        "some_checksum",
+			IgnoreDetectors: nil,
+			AllowedPatterns: nil,
+		}
+
+		//No allowed patterns specified
+		allowedPatterns := fileIgnoreConfig.GetAllowedPatterns()
+		assert.Equal(t, 0, len(allowedPatterns))
+
+		fileIgnoreConfig.compiledPatterns = nil
+		fileIgnoreConfig.AllowedPatterns = []string{"[Ff]ile[nN]ame"}
+		allowedPatterns = fileIgnoreConfig.GetAllowedPatterns()
+		assert.Equal(t, 1, len(allowedPatterns))
+		assert.Regexp(t, allowedPatterns[0], "fileName")
+	})
+}
