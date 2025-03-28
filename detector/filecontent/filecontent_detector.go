@@ -114,7 +114,7 @@ func (fc *FileContentDetector) Test(comparator helpers.IgnoreEvaluator, currentA
 				return
 			}
 
-			if string(addition.Name) == talismanrc.DefaultRCFileName {
+			if string(addition.Name) == talismanrc.RCFileName {
 				content := re.ReplaceAllString(string(addition.Data), "")
 				data := []byte(content)
 				addition.Data = data
@@ -169,7 +169,7 @@ func processContent(c content, threshold severity.Severity, result *helpers.Dete
 			log.WithFields(log.Fields{
 				"filePath": c.path,
 			}).Info(c.contentType.getInfo())
-			if string(c.name) == talismanrc.DefaultRCFileName || !c.severity.ExceedsThreshold(threshold) {
+			if string(c.name) == talismanrc.RCFileName || !c.severity.ExceedsThreshold(threshold) {
 				result.Warn(c.path, "filecontent", fmt.Sprintf(c.contentType.getMessageFormat(), formatForReporting(res)), []string{}, c.severity)
 			} else {
 				result.Fail(c.path, "filecontent", fmt.Sprintf(c.contentType.getMessageFormat(), formatForReporting(res)), []string{}, c.severity)

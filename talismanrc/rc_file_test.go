@@ -11,21 +11,18 @@ import (
 
 func TestLoadingFromFile(t *testing.T) {
 	fs := afero.NewMemMapFs()
-	file, err := afero.TempFile(fs, "", DefaultRCFileName)
-	assert.NoError(t, err, "Problem setting up test .talismanrc?")
-	talismanRCFile := file.Name()
 	SetFs__(fs)
 
 	t.Run("Creates an empty TalismanRC if .talismanrc file doesn't exist", func(t *testing.T) {
-		SetRcFilename__("not-a-file")
+		talismanRCFileExists, _ := afero.Exists(fs, RCFileName)
+		assert.False(t, talismanRCFileExists, ".talismanrc file should NOT exist for this test!")
 		emptyRC, err := Load()
 		assert.NoError(t, err, "Should not error if there is a problem reading the file")
 		assert.Equal(t, &TalismanRC{Version: DefaultRCVersion}, emptyRC)
 	})
 
 	t.Run("Loads all valid TalismanRC fields", func(t *testing.T) {
-		SetRcFilename__(talismanRCFile)
-		err = afero.WriteFile(fs, talismanRCFile, []byte(fullyConfiguredTalismanRC), 0666)
+		err := afero.WriteFile(fs, RCFileName, []byte(fullyConfiguredTalismanRC), 0666)
 		assert.NoError(t, err, "Problem setting up test .talismanrc?")
 
 		talismanRCFromFile, _ := Load()
@@ -45,8 +42,6 @@ func TestLoadingFromFile(t *testing.T) {
 		}
 		assert.Equal(t, expectedTalismanRC, talismanRCFromFile)
 	})
-
-	SetRcFilename__(DefaultRCFileName)
 }
 
 func TestWritingToFile(t *testing.T) {
@@ -55,22 +50,22 @@ func TestWritingToFile(t *testing.T) {
 	SetFs__(fs)
 
 	t.Run("When there is no .talismanrc file", func(t *testing.T) {
-		talismanRCFileExists, _ := afero.Exists(fs, DefaultRCFileName)
+		talismanRCFileExists, _ := afero.Exists(fs, RCFileName)
 		assert.False(t, talismanRCFileExists, "Problem setting up tests")
 		tRC.saveToFile()
-		talismanRCFileExists, _ = afero.Exists(fs, DefaultRCFileName)
+		talismanRCFileExists, _ = afero.Exists(fs, RCFileName)
 		assert.True(t, talismanRCFileExists, "Should have created a new .talismanrc file")
-		fileContents, _ := afero.ReadFile(fs, DefaultRCFileName)
+		fileContents, _ := afero.ReadFile(fs, RCFileName)
 		assert.Equal(t, "version: \"1.0\"\n", string(fileContents))
 	})
 
 	t.Run("When there already is a .talismanrc file", func(t *testing.T) {
-		err := afero.WriteFile(fs, DefaultRCFileName, []byte("Some existing content to overwrite"), 0666)
+		err := afero.WriteFile(fs, RCFileName, []byte("Some existing content to overwrite"), 0666)
 		assert.NoError(t, err, "Problem setting up tests")
 		tRC.saveToFile()
-		talismanRCFileExists, _ := afero.Exists(fs, DefaultRCFileName)
+		talismanRCFileExists, _ := afero.Exists(fs, RCFileName)
 		assert.True(t, talismanRCFileExists, "Should have created a new .talismanrc file")
-		fileContents, _ := afero.ReadFile(fs, DefaultRCFileName)
+		fileContents, _ := afero.ReadFile(fs, RCFileName)
 		assert.Equal(t, "version: \"1.0\"\n", string(fileContents))
 	})
 }

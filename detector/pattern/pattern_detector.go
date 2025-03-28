@@ -88,7 +88,7 @@ func (detector PatternDetector) processMatch(match match, result *helpers.Detect
 	for _, detectionWithSeverity := range match.detections {
 		for _, detection := range detectionWithSeverity.detections {
 			if detection != "" {
-				if string(match.name) == talismanrc.DefaultRCFileName || !detectionWithSeverity.severity.ExceedsThreshold(threshold) {
+				if string(match.name) == talismanrc.RCFileName || !detectionWithSeverity.severity.ExceedsThreshold(threshold) {
 					log.WithFields(log.Fields{
 						"filePath": match.path,
 						"pattern":  detection,

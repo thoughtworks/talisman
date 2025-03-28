@@ -10,19 +10,18 @@ import (
 )
 
 const (
-	//DefaultRCFileName represents the name of default file in which all the ignore patterns are configured in new version
-	DefaultRCVersion         = "1.0"
-	DefaultRCFileName string = ".talismanrc"
+	// RCFileName represents the name of default file in which all the ignore patterns are configured in new version
+	RCFileName       = ".talismanrc"
+	DefaultRCVersion = "1.0"
 )
 
 var (
-	fs                = afero.NewOsFs()
-	currentRCFileName = DefaultRCFileName
+	fs = afero.NewOsFs()
 )
 
 // Load creates a TalismanRC struct based on a .talismanrc file, if present
 func Load() (*TalismanRC, error) {
-	fileContents, err := afero.ReadFile(fs, currentRCFileName)
+	fileContents, err := afero.ReadFile(fs, RCFileName)
 	if err != nil {
 		// File does not exist or is not readable, proceed as if there is no .talismanrc
 		fileContents = []byte{}
@@ -46,16 +45,12 @@ func talismanRCFromYaml(fileContents []byte) (*TalismanRC, error) {
 
 func (tRC *TalismanRC) saveToFile() {
 	ignoreEntries, _ := yaml.Marshal(&tRC)
-	err := afero.WriteFile(fs, currentRCFileName, ignoreEntries, 0644)
+	err := afero.WriteFile(fs, RCFileName, ignoreEntries, 0644)
 	if err != nil {
-		logr.Errorf("error writing to %s: %s", currentRCFileName, err)
+		logr.Errorf("error writing to %s: %s", RCFileName, err)
 	}
 }
 
 func SetFs__(_fs afero.Fs) {
 	fs = _fs
-}
-
-func SetRcFilename__(rcFileName string) {
-	currentRCFileName = rcFileName
 }

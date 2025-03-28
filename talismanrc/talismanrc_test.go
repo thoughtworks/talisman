@@ -126,12 +126,7 @@ func TestIgnoringDetectors(t *testing.T) {
 
 func TestAddingFileIgnores(t *testing.T) {
 	fs := afero.NewMemMapFs()
-	file, err := afero.TempFile(fs, "", DefaultRCFileName)
-	assert.NoError(t, err)
-	ignoreFile := file.Name()
-
 	SetFs__(fs)
-	SetRcFilename__(ignoreFile)
 
 	ignoreConfig := FileIgnoreConfig{
 		FileName: "Foo",
@@ -141,11 +136,11 @@ func TestAddingFileIgnores(t *testing.T) {
 		initialRCConfig.AddIgnores([]FileIgnoreConfig{ignoreConfig})
 		newRCConfig, _ := Load()
 		assert.Equal(t, 1, len(newRCConfig.FileIgnoreConfig))
-		_ = fs.Remove(ignoreFile)
+		_ = fs.Remove(RCFileName)
 	})
 
 	t.Run("When .talismanrc has lots of configurations", func(t *testing.T) {
-		err = afero.WriteFile(fs, ignoreFile, []byte(fullyConfiguredTalismanRC), 0666)
+		err := afero.WriteFile(fs, RCFileName, []byte(fullyConfiguredTalismanRC), 0666)
 		assert.NoError(t, err)
 
 		initialRCConfig, _ := Load()

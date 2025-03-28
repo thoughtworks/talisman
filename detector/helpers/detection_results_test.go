@@ -116,18 +116,13 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 
 	// Creating temp file with some content
 	fs := afero.NewMemMapFs()
-	file, err := afero.TempFile(fs, "", "talismanrc")
-	assert.NoError(t, err)
-	ignoreFile := file.Name()
-
 	talismanrc.SetFs__(fs)
-	talismanrc.SetRcFilename__(ignoreFile)
 
 	existingContent := `fileignoreconfig:
 - filename: existing.pem
   checksum: 123444ddssa75333b25b6275f97680604add51b84eb8f4a3b9dcbbc652e6f27ac
 `
-	err = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
+	err := afero.WriteFile(fs, talismanrc.RCFileName, []byte(existingContent), 0666)
 	assert.NoError(t, err)
 
 	// The tests below depend on the upper configuration which is shared across all three of them. Hence the order in
@@ -137,39 +132,39 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 		prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
 
 		results.Report(promptContext, "default")
-		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
+		bytesFromFile, err := afero.ReadFile(fs, talismanrc.RCFileName)
 
 		assert.NoError(t, err)
 		assert.Equal(t, existingContent, string(bytesFromFile))
 	})
 
-	_ = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
+	_ = afero.WriteFile(fs, talismanrc.RCFileName, []byte(existingContent), 0666)
 	t.Run("when user declines, entry should not be added to talismanrc", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add some_file.pem with above checksum in talismanrc ?").Return(false)
 		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 
 		results.Report(promptContext, "default")
-		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
+		bytesFromFile, err := afero.ReadFile(fs, talismanrc.RCFileName)
 
 		assert.NoError(t, err)
 		assert.Equal(t, existingContent, string(bytesFromFile))
 	})
 
-	_ = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
+	_ = afero.WriteFile(fs, talismanrc.RCFileName, []byte(existingContent), 0666)
 	t.Run("when interactive flag is set to false, it should not ask user", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(false, prompter)
 		prompter.EXPECT().Confirm(gomock.Any()).Return(false).Times(0)
 		results.Fail("some_file.pem", "filecontent", "Bomb", []string{}, severity.Low)
 
 		results.Report(promptContext, "default")
-		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
+		bytesFromFile, err := afero.ReadFile(fs, talismanrc.RCFileName)
 
 		assert.NoError(t, err)
 		assert.Equal(t, existingContent, string(bytesFromFile))
 	})
 
-	_ = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
+	_ = afero.WriteFile(fs, talismanrc.RCFileName, []byte(existingContent), 0666)
 	t.Run("when user confirms, entry should be appended to given ignore file", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add some_file.pem with above checksum in talismanrc ?").Return(true)
@@ -184,13 +179,13 @@ func TestTalismanRCSuggestionWhenThereAreFailures(t *testing.T) {
 version: "1.0"
 `
 		results.Report(promptContext, "default")
-		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
+		bytesFromFile, err := afero.ReadFile(fs, talismanrc.RCFileName)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedFileContent, string(bytesFromFile))
 	})
 
-	_ = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
+	_ = afero.WriteFile(fs, talismanrc.RCFileName, []byte(existingContent), 0666)
 	t.Run("when user confirms, entry for existing file should updated", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add existing.pem with above checksum in talismanrc ?").Return(true)
@@ -203,13 +198,13 @@ version: "1.0"
 version: "1.0"
 `
 		results.Report(promptContext, "default")
-		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
+		bytesFromFile, err := afero.ReadFile(fs, talismanrc.RCFileName)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedFileContent, string(bytesFromFile))
 	})
 
-	_ = afero.WriteFile(fs, ignoreFile, []byte(existingContent), 0666)
+	_ = afero.WriteFile(fs, talismanrc.RCFileName, []byte(existingContent), 0666)
 	t.Run("when user confirms for multiple entries, they should be appended to given ignore file", func(t *testing.T) {
 		promptContext := prompt.NewPromptContext(true, prompter)
 		prompter.EXPECT().Confirm("Do you want to add some_file.pem with above checksum in talismanrc ?").Return(true)
@@ -228,12 +223,12 @@ version: "1.0"
 version: "1.0"
 `
 		results.Report(promptContext, "default")
-		bytesFromFile, err := afero.ReadFile(fs, ignoreFile)
+		bytesFromFile, err := afero.ReadFile(fs, talismanrc.RCFileName)
 
 		assert.NoError(t, err)
 		assert.Equal(t, expectedFileContent, string(bytesFromFile))
 	})
 
-	err = fs.Remove(ignoreFile)
+	err = fs.Remove(talismanrc.RCFileName)
 	assert.NoError(t, err)
 }
