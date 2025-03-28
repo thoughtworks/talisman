@@ -49,6 +49,32 @@ func TestLoadingFromFile(t *testing.T) {
 	SetRcFilename__(DefaultRCFileName)
 }
 
+func TestWritingToFile(t *testing.T) {
+	tRC := &TalismanRC{Version: DefaultRCVersion}
+	fs := afero.NewMemMapFs()
+	SetFs__(fs)
+
+	t.Run("When there is no .talismanrc file", func(t *testing.T) {
+		talismanRCFileExists, _ := afero.Exists(fs, DefaultRCFileName)
+		assert.False(t, talismanRCFileExists, "Problem setting up tests")
+		tRC.saveToFile()
+		talismanRCFileExists, _ = afero.Exists(fs, DefaultRCFileName)
+		assert.True(t, talismanRCFileExists, "Should have created a new .talismanrc file")
+		fileContents, _ := afero.ReadFile(fs, DefaultRCFileName)
+		assert.Equal(t, "version: \"1.0\"\n", string(fileContents))
+	})
+
+	t.Run("When there already is a .talismanrc file", func(t *testing.T) {
+		err := afero.WriteFile(fs, DefaultRCFileName, []byte("Some existing content to overwrite"), 0666)
+		assert.NoError(t, err, "Problem setting up tests")
+		tRC.saveToFile()
+		talismanRCFileExists, _ := afero.Exists(fs, DefaultRCFileName)
+		assert.True(t, talismanRCFileExists, "Should have created a new .talismanrc file")
+		fileContents, _ := afero.ReadFile(fs, DefaultRCFileName)
+		assert.Equal(t, "version: \"1.0\"\n", string(fileContents))
+	})
+}
+
 func TestUnmarshalsValidYaml(t *testing.T) {
 	t.Run("Should not fail as long as the yaml structure is correct", func(t *testing.T) {
 		fileContents := []byte(`

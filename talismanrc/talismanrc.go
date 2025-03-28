@@ -1,7 +1,6 @@
 package talismanrc
 
 import (
-	"os"
 	"sort"
 
 	logr "github.com/sirupsen/logrus"
@@ -62,23 +61,7 @@ func (tRC *TalismanRC) AddIgnores(entriesToAdd []FileIgnoreConfig) {
 	if len(entriesToAdd) > 0 {
 		logr.Debugf("Adding entries: %v", entriesToAdd)
 		tRC.FileIgnoreConfig = combineFileIgnores(tRC.FileIgnoreConfig, entriesToAdd)
-
-		ignoreEntries, _ := yaml.Marshal(&tRC)
-		file, err := fs.OpenFile(currentRCFileName, os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			logr.Errorf("error opening %s: %s", currentRCFileName, err)
-		}
-		defer func() {
-			err := file.Close()
-			if err != nil {
-				logr.Errorf("error closing %s: %s", currentRCFileName, err)
-			}
-		}()
-		logr.Debugf("Writing talismanrc: %v", string(ignoreEntries))
-		_, err = file.WriteString(string(ignoreEntries))
-		if err != nil {
-			logr.Errorf("error writing to %s: %s", currentRCFileName, err)
-		}
+		tRC.saveToFile()
 	}
 }
 

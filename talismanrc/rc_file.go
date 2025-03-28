@@ -44,6 +44,14 @@ func talismanRCFromYaml(fileContents []byte) (*TalismanRC, error) {
 	return &talismanRCFromFile, nil
 }
 
+func (tRC *TalismanRC) saveToFile() {
+	ignoreEntries, _ := yaml.Marshal(&tRC)
+	err := afero.WriteFile(fs, currentRCFileName, ignoreEntries, 0644)
+	if err != nil {
+		logr.Errorf("error writing to %s: %s", currentRCFileName, err)
+	}
+}
+
 func SetFs__(_fs afero.Fs) {
 	fs = _fs
 }

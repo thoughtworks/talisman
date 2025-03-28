@@ -136,8 +136,7 @@ func TestAddingFileIgnores(t *testing.T) {
 	ignoreConfig := FileIgnoreConfig{
 		FileName: "Foo",
 		Checksum: "SomeCheckSum"}
-	t.Run("When .talismanrc doesn't exist yet", func(t *testing.T) {
-
+	t.Run("When .talismanrc is empty", func(t *testing.T) {
 		initialRCConfig, _ := Load()
 		initialRCConfig.AddIgnores([]FileIgnoreConfig{ignoreConfig})
 		newRCConfig, _ := Load()
@@ -145,7 +144,7 @@ func TestAddingFileIgnores(t *testing.T) {
 		_ = fs.Remove(ignoreFile)
 	})
 
-	t.Run("When there already is a .talismanrc", func(t *testing.T) {
+	t.Run("When .talismanrc has lots of configurations", func(t *testing.T) {
 		err = afero.WriteFile(fs, ignoreFile, []byte(fullyConfiguredTalismanRC), 0666)
 		assert.NoError(t, err)
 
