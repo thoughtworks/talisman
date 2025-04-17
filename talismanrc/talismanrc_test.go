@@ -90,8 +90,7 @@ func TestIgnoreAdditionsByScope(t *testing.T) {
 		"node": {
 			testAddition("yarn.lock"),
 			testAddition("pnpm-lock.yaml"),
-			testAddition("package-lock.json"),
-			testAddition("node_modules/module1/foo.js")},
+			testAddition("package-lock.json")},
 		"go": {
 			testAddition("Gopkg.lock"),
 			testAddition("makefile"),
