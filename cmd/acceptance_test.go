@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"strings"
 	"talisman/prompt"
@@ -413,25 +412,12 @@ func runTalisman(git *git_testing.GitTesting) int {
 	return run(promptContext)
 }
 
-type Operation func(dirName string)
-
-func withNewTmpDirNamed(dirName string, operation Operation) {
-	path, err := ioutil.TempDir(os.TempDir(), dirName)
-	if err != nil {
-		panic(err)
-	}
-	operation(path)
-}
-
 type GitOperation func(*git_testing.GitTesting)
 
 func withNewTmpGitRepo(doGitOperation GitOperation) {
-	withNewTmpDirNamed("talisman-acceptance-test", func(gitPath string) {
-		gt := git_testing.Init(gitPath)
-		gt.RemoveHooks()
-		doGitOperation(gt)
-		os.RemoveAll(gitPath)
-	})
+	gt := git_testing.Init()
+	defer gt.Clean()
+	doGitOperation(gt)
 }
 
 func mockStdIn(oldSha string, newSha string) io.Reader {

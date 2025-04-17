@@ -251,7 +251,7 @@ func TestMatchingAdditionBasename(t *testing.T) {
 
 func setupOriginAndClones(originLocation, cloneLocation string) (*git_testing.GitTesting, GitRepo) {
 	origin := RepoLocatedAt(originLocation)
-	git := git_testing.Init(origin.root)
+	git := git_testing.InitAt(origin.root)
 	git.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
 	git.SetupBaselineFiles("c.txt", filepath.Join("folder b", "c.txt"))
 	cwd, _ := os.Getwd()

@@ -10,15 +10,25 @@ import (
 
 	lorem "github.com/drhodes/golorem"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/afero"
 )
 
 var Logger *logrus.Entry
 
+// GitTesting provides an API for manipulating a git repository during tests
 type GitTesting struct {
 	gitRoot string
 }
 
-func Init(gitRoot string) *GitTesting {
+// Init creates a GitTesting based in a temporary directory
+func Init() *GitTesting {
+	fs := afero.NewMemMapFs()
+	path, _ := afero.TempDir(fs, afero.GetTempDir(fs, "talisman-test"), "")
+	return InitAt(path)
+}
+
+// InitAt creates a GitTesting based at the specified path
+func InitAt(gitRoot string) *GitTesting {
 	os.MkdirAll(gitRoot, 0777)
 	testingRepo := &GitTesting{gitRoot}
 	output := testingRepo.ExecCommand("git", "init", ".")
@@ -26,6 +36,7 @@ func Init(gitRoot string) *GitTesting {
 	testingRepo.ExecCommand("git", "config", "user.email", "talisman-test-user@example.com")
 	testingRepo.ExecCommand("git", "config", "user.name", "Talisman Test User")
 	testingRepo.ExecCommand("git", "config", "commit.gpgsign", "false")
+	testingRepo.removeHooks()
 	return testingRepo
 }
 
@@ -42,11 +53,9 @@ func (git *GitTesting) GitClone(cloneName string) *GitTesting {
 
 func (git *GitTesting) SetupBaselineFiles(filenames ...string) {
 	Logger.Debugf("Creating %v in %s\n", filenames, git.gitRoot)
-	git.doInGitRoot(func() {
-		for _, filename := range filenames {
-			git.CreateFileWithContents(filename, lorem.Sentence(8, 10), lorem.Sentence(8, 10))
-		}
-	})
+	for _, filename := range filenames {
+		git.CreateFileWithContents(filename, lorem.Sentence(8, 10), lorem.Sentence(8, 10))
+	}
 	git.AddAndcommit("*", "initial commit")
 }
 
@@ -182,7 +191,13 @@ func (git *GitTesting) GetRoot() string {
 	return git.gitRoot
 }
 
-// RemoveHooks removes all file-system hooks from git-test repo
-func (git *GitTesting) RemoveHooks() {
+// removeHooks removes all file-system hooks from git-test repo.
+// We do this to prevent any user-installed hooks from interfering with tests.
+func (git *GitTesting) removeHooks() {
 	git.ExecCommand("rm", "-rf", ".git/hooks/")
+}
+
+// Clean removes the directory containing the git repository represented by a GitTesting
+func (git *GitTesting) Clean() {
+	os.RemoveAll(git.gitRoot)
 }

@@ -35,7 +35,7 @@ func TestNewRepoGetsCreatedWithAbsolutePath(t *testing.T) {
 func TestInitializingANewRepoSetsUpFolderAndGitStructures(t *testing.T) {
 	cleanTestData()
 	repo := RepoLocatedAt(filepath.Join("data", "dir", "sub_dir", "testLocation2"))
-	git_testing.Init(repo.root)
+	git_testing.InitAt(repo.root)
 	assert.True(t, exists(repo.root), "Git Repo initialization should create the directory structure required")
 	assert.True(t, isGitRepo(repo.root), "Repo root does not contain the .git folder")
 }
@@ -43,7 +43,7 @@ func TestInitializingANewRepoSetsUpFolderAndGitStructures(t *testing.T) {
 func TestSettingUpBaselineFilesSetsUpACommitInRepo(t *testing.T) {
 	cleanTestData()
 	repo := RepoLocatedAt(testLocation1)
-	git := git_testing.Init(repo.root)
+	git := git_testing.InitAt(repo.root)
 	git.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
 	verifyPresenceOfGitRepoWithCommits(testLocation1, 1, t)
 }
@@ -51,7 +51,7 @@ func TestSettingUpBaselineFilesSetsUpACommitInRepo(t *testing.T) {
 func TestEditingFilesInARepoWorks(t *testing.T) {
 	cleanTestData()
 	repo := RepoLocatedAt(testLocation1)
-	git := git_testing.Init(repo.root)
+	git := git_testing.InitAt(repo.root)
 	git.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
 	git.AppendFileContent("a.txt", "\nmonkey see.\n", "monkey do.")
 	content := git.FileContents("a.txt")
@@ -63,7 +63,7 @@ func TestEditingFilesInARepoWorks(t *testing.T) {
 func TestRemovingFilesInARepoWorks(t *testing.T) {
 	cleanTestData()
 	repo := RepoLocatedAt(testLocation1)
-	git := git_testing.Init(repo.root)
+	git := git_testing.InitAt(repo.root)
 	git.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
 	git.RemoveFile("a.txt")
 	assert.False(t, exists(filepath.Join("data", "testLocation1", "a.txt")), "Unexpected. Deleted file a.txt still exists inside the repo")
@@ -74,7 +74,7 @@ func TestRemovingFilesInARepoWorks(t *testing.T) {
 func TestCloningARepoToAnotherWorks(t *testing.T) {
 	cleanTestData()
 	repo := RepoLocatedAt(testLocation1)
-	git := git_testing.Init(repo.root)
+	git := git_testing.InitAt(repo.root)
 	git.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
 	cwd, _ := os.Getwd()
 	anotherRepoLocation := filepath.Join(cwd, "data", "somewhereElse", "testLocationClone")
@@ -88,7 +88,7 @@ func TestCloningARepoToAnotherWorks(t *testing.T) {
 func TestEarliestCommits(t *testing.T) {
 	cleanTestData()
 	repo := RepoLocatedAt(testLocation1)
-	git := git_testing.Init(repo.root)
+	git := git_testing.InitAt(repo.root)
 	git.SetupBaselineFiles("a.txt")
 	initialCommit := git.EarliestCommit()
 	git.AppendFileContent("a.txt", "\nmonkey see.\n", "monkey do.")
@@ -99,7 +99,7 @@ func TestEarliestCommits(t *testing.T) {
 func TestLatestCommits(t *testing.T) {
 	cleanTestData()
 	repo := RepoLocatedAt(testLocation1)
-	git := git_testing.Init(repo.root)
+	git := git_testing.InitAt(repo.root)
 	git.SetupBaselineFiles("a.txt")
 	git.AppendFileContent("a.txt", "\nmonkey see.\n", "monkey do.")
 	git.AddAndcommit("a.txt", "modified content")
