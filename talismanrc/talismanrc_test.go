@@ -90,13 +90,19 @@ func TestIgnoreAdditionsByScope(t *testing.T) {
 		"node": {
 			testAddition("yarn.lock"),
 			testAddition("pnpm-lock.yaml"),
-			testAddition("package-lock.json")},
+			testAddition("package-lock.json"),
+		},
 		"go": {
 			testAddition("Gopkg.lock"),
 			testAddition("makefile"),
-			testAddition("go.mod"), testAddition("go.sum"),
-			testAddition("Gopkg.toml"), testAddition("Gopkg.lock"),
-			testAddition("glide.yaml"), testAddition("glide.lock"),
+			testAddition("go.mod"),
+			testAddition("go.sum"),
+			testAddition("submodule/go.mod"),
+			testAddition("submodule/go.sum"),
+			testAddition("Gopkg.toml"),
+			testAddition("Gopkg.lock"),
+			testAddition("glide.yaml"),
+			testAddition("glide.lock"),
 		},
 		"images": {
 			testAddition("img.jpeg"),
@@ -105,7 +111,9 @@ func TestIgnoreAdditionsByScope(t *testing.T) {
 			testAddition("img.tiff"),
 			testAddition("img.bmp"),
 		},
-		"bazel": {testAddition("bazelfile.bzl")},
+		"bazel": {
+			testAddition("bazelfile.bzl"),
+		},
 		"terraform": {
 			testAddition(".terraform.lock.hcl"),
 			testAddition("foo/.terraform.lock.hcl"),

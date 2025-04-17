@@ -187,11 +187,19 @@ func (repo GitRepo) CheckIfFileExists(fileName string) bool {
 	return true
 }
 
-// Matches states whether the addition matches the given pattern.
-// If the pattern ends in a path separator, then all files inside a directory with that name are matched. However, files with that name itself will not be matched.
-// If a pattern contains the path separator in any other location, the match works according to the pattern logic of the default golang glob mechanism
-// If there are other special characters in the pattern, the pattern is matched against the base name of the file. Thus, the pattern will match files with that pattern anywhere in the repository.
-// If there are no special characters in the pattern, then it means exact filename is provided as pattern like file.txt. Thus, the pattern is matched against the file path so that not all files with the same name in the repo are not returned.
+// Matches reports whether the addition matches the given pattern.
+//
+// If the pattern ends in a path separator, then all files inside a directory with that name are matched.
+// However, files with that name itself will not be matched.
+//
+// If a pattern contains the path separator in any other location,
+// the match works according to the pattern logic of the default golang glob mechanism.
+//
+// If there are other special characters in the pattern, the pattern is matched against the base name of the file.
+// Thus, the pattern will match files with that pattern anywhere in the repository.
+//
+// If there are no special characters in the pattern, then it means exact filename is provided as pattern like file.txt.
+// Thus, the pattern is matched against the file path so that not all files with the same name in the repo are not returned.
 func (a Addition) Matches(pattern string) bool {
 	var result bool
 	if pattern[len(pattern)-1] == '/' { // If the pattern ends in a path separator, then all files inside a directory with that name are matched. However, files with that name itself will not be matched.
@@ -199,7 +207,7 @@ func (a Addition) Matches(pattern string) bool {
 	} else if strings.ContainsRune(pattern, '/') { // If a pattern contains the path separator in any other location, the match works according to the pattern logic of the default golang glob mechanism
 		result, _ = path.Match(pattern, string(a.Path))
 	} else if strings.ContainsAny(pattern, "*?[]\\") { // If there are other special characters in the pattern, the pattern is matched against the base name of the file. Thus, the pattern will match files with that pattern anywhere in the repository.
-		result, _ = path.Match(pattern, string(a.Name))
+		result = a.NameMatches(pattern)
 	} else { // If there are no special characters in the pattern, then it means exact filename is provided as pattern like file.txt. Thus, the pattern is matched against the file path so that not all files with the same name in the repo are not returned.
 		result = strings.Compare(string(a.Path), pattern) == 0
 	}
@@ -208,6 +216,12 @@ func (a Addition) Matches(pattern string) bool {
 		"filePath": a.Path,
 		"match":    result,
 	}).Debug("Checking addition for match.")
+	return result
+}
+
+// NameMatches reports whether the basename of the Addition matches the given pattern
+func (a Addition) NameMatches(pattern string) bool {
+	result, _ := path.Match(pattern, string(a.Name))
 	return result
 }
 

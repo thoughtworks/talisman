@@ -44,7 +44,7 @@ func (tRC *TalismanRC) RemoveScopedFiles(additions []gitrepo.Addition) []gitrepo
 	for _, addition := range additions {
 		isFilePresentInScope := false
 		for _, fileName := range applicableScopeFileNames {
-			if addition.Matches(fileName) {
+			if addition.NameMatches(fileName) {
 				isFilePresentInScope = true
 				break
 			}

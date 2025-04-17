@@ -2,7 +2,6 @@ package gitrepo
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -44,9 +43,9 @@ func TestGetDiffForStagedFiles(t *testing.T) {
 		modifiedAddition := additions[0]
 		createdAddition := additions[1]
 
-		aTxtFileContents, err := ioutil.ReadFile(path.Join(cloneLocation, "a.txt"))
+		aTxtFileContents, err := os.ReadFile(path.Join(cloneLocation, "a.txt"))
 		assert.NoError(t, err)
-		newTxtFileContents, err := ioutil.ReadFile(path.Join(cloneLocation, "new.txt"))
+		newTxtFileContents, err := os.ReadFile(path.Join(cloneLocation, "new.txt"))
 		assert.NoError(t, err)
 
 		expectedModifiedAddition := Addition{
@@ -81,7 +80,7 @@ func TestGetDiffForStagedFilesWithSpacesInPath(t *testing.T) {
 	if assert.Len(t, additions, 1) {
 		modifiedAddition := additions[0]
 
-		aTxtFileContents, err := ioutil.ReadFile(path.Join(cloneLocation, "folder b/c.txt"))
+		aTxtFileContents, err := os.ReadFile(path.Join(cloneLocation, "folder b/c.txt"))
 		assert.NoError(t, err)
 
 		expectedModifiedAddition := Addition{
@@ -204,17 +203,6 @@ func TestStagedAdditionsShouldNotIncludeDeletedFiles(t *testing.T) {
 	assert.Len(t, stagedAdditions, 0)
 }
 
-func TestMatchShouldAllowWildcardPatternMatches(t *testing.T) {
-	file1 := Addition{Path: "bigfile", Name: "bigfile"}
-	file2 := Addition{Path: "anotherbigfile", Name: "anotherbigfile"}
-	file3 := Addition{Path: "somefile", Name: "somefile"}
-	pattern := "*bigfile"
-
-	assert.True(t, file1.Matches(pattern))
-	assert.True(t, file2.Matches(pattern))
-	assert.False(t, file3.Matches(pattern))
-}
-
 func TestMatchShouldMatchExactFileIfNoPatternIsProvided(t *testing.T) {
 	file1 := Addition{Path: "bigfile", Name: "bigfile"}
 	file2 := Addition{Path: "subfolder/bigfile", Name: "bigfile"}
@@ -226,49 +214,39 @@ func TestMatchShouldMatchExactFileIfNoPatternIsProvided(t *testing.T) {
 	assert.False(t, file3.Matches(pattern))
 }
 
-func TestMatchShouldAllowStarPattern(t *testing.T) {
-	file1 := Addition{Path: "GitRepoPath1/File1.txt", Name: "File1.txt"}
-	file2 := Addition{Path: "GitRepoPath1/File2.txt", Name: "File2.txt"}
-	file3 := Addition{Path: "GitRepoPath1/somefile", Name: "somefile"}
-	file4 := Addition{Path: "somefile.jpg", Name: "somefile.jpg"}
-	file5 := Addition{Path: "somefile.txt", Name: "somefile.txt"}
-	file6 := Addition{Path: "File1.txt", Name: "File1.txt"}
-	file7 := Addition{Path: "File3.txt", Name: "File3.txt"}
+func TestMatchingWithPatterns(t *testing.T) {
+	files := []Addition{
+		NewAddition("GitRepoPath1/File1.txt", nil),
+		NewAddition("GitRepoPath1/File2.txt", nil),
+		NewAddition("GitRepoPath1/somefile", nil),
+		NewAddition("somefile.jpg", nil),
+		NewAddition("somefile.txt", nil),
+		NewAddition("File1.txt", nil),
+		NewAddition("File3.txt", nil),
+	}
 
-	pattern := "GitRepoPath1/*.txt"
+	expectedToMatch := map[string][]bool{
+		"GitRepoPath1/*.txt": {true, true, false, false, false, false, false},
+		"*.txt":              {true, true, false, false, true, true, true},
+		"File?.txt":          {true, true, false, false, false, true, true},
+		"File[1].txt":        {true, false, false, false, false, true, false},
+		"File[1-2].txt":      {true, true, false, false, false, true, false},
+		"File\\1.txt":        {true, false, false, false, false, true, false},
+	}
 
-	assert.True(t, file1.Matches(pattern))
-	assert.True(t, file2.Matches(pattern))
-	assert.False(t, file3.Matches(pattern))
-	assert.False(t, file4.Matches(pattern))
-	assert.False(t, file5.Matches(pattern))
+	for pattern, expectedResults := range expectedToMatch {
+		t.Run(fmt.Sprintf("Testing matches for pattern %s", pattern), func(t *testing.T) {
+			for i := range files {
+				assert.Equal(t, expectedResults[i], files[i].Matches(pattern))
+			}
+		})
+	}
+}
 
-	pattern1 := "*.txt"
-	assert.True(t, file1.Matches(pattern1))
-	assert.True(t, file2.Matches(pattern1))
-	assert.False(t, file3.Matches(pattern1))
-	assert.False(t, file4.Matches(pattern1))
-	assert.True(t, file5.Matches(pattern1))
-
-	pattern2 := "File?.txt"
-	assert.True(t, file1.Matches(pattern2))
-	assert.True(t, file2.Matches(pattern2))
-	assert.True(t, file6.Matches(pattern2))
-
-	pattern3 := "File[1].txt"
-	assert.True(t, file1.Matches(pattern3))
-	assert.False(t, file2.Matches(pattern3))
-	assert.True(t, file6.Matches(pattern3))
-
-	pattern4 := "File[1-2].txt"
-	assert.True(t, file1.Matches(pattern4))
-	assert.True(t, file2.Matches(pattern4))
-	assert.True(t, file6.Matches(pattern4))
-	assert.False(t, file7.Matches(pattern4))
-
-	pattern5 := "File\\1.txt"
-	assert.True(t, file1.Matches(pattern5))
-	assert.True(t, file6.Matches(pattern5))
+func TestMatchingAdditionBasename(t *testing.T) {
+	addition := NewAddition("subdirectory/nested-file", nil)
+	assert.False(t, addition.Matches("nested-file"))
+	assert.True(t, addition.NameMatches("nested-file"))
 }
 
 func setupOriginAndClones(originLocation, cloneLocation string) (*git_testing.GitTesting, GitRepo) {
