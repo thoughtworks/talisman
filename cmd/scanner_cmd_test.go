@@ -10,7 +10,7 @@ import (
 )
 
 func TestScannerCmdRunsSuccessfully(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("some-dir/should-be-included.txt", "safeContents")
 		git.AddAndcommit("*", "Start of Scan")
@@ -23,7 +23,7 @@ func TestScannerCmdRunsSuccessfully(t *testing.T) {
 }
 
 func TestScannerCmdDetectsSecretAndFails(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("some-dir/file-with-secret.txt", awsAccessKeyIDExample)
 		git.AddAndcommit("*", "Initial Commit")
@@ -40,7 +40,7 @@ func TestScannerCmdDetectsSecretAndFails(t *testing.T) {
 }
 
 func TestScannerCmdAddingSecretKeyShouldExitZeroIfFileIsWithinConfiguredScope(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("go.sum", awsAccessKeyIDExample)
 		git.CreateFileWithContents("go.mod", awsAccessKeyIDExample)
@@ -55,7 +55,7 @@ func TestScannerCmdAddingSecretKeyShouldExitZeroIfFileIsWithinConfiguredScope(t 
 }
 
 func TestScannerCmdDetectsSecretAndIgnoresWhileRunningInIgnoreHistoryModeWithValidIgnoreConf(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("go.sum", awsAccessKeyIDExample)
 		git.CreateFileWithContents("go.mod", awsAccessKeyIDExample)
@@ -74,7 +74,7 @@ func TestScannerCmdDetectsSecretAndIgnoresWhileRunningInIgnoreHistoryModeWithVal
 }
 
 func TestScannerCmdDetectsSecretWhileRunningNormalScanMode(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("go.sum", awsAccessKeyIDExample)
 		git.CreateFileWithContents("go.mod", awsAccessKeyIDExample)

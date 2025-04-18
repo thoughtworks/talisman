@@ -19,6 +19,15 @@ type GitTesting struct {
 	gitRoot string
 }
 
+type GitOperation func(*GitTesting)
+
+// DoInTempGitRepo initializes a temporary git repository and executes the provided GitOperation in it
+func DoInTempGitRepo(gitOperation GitOperation) {
+	gt := Init()
+	defer gt.Clean()
+	gitOperation(gt)
+}
+
 // Init creates a GitTesting based in a temporary directory
 func Init() *GitTesting {
 	fs := afero.NewMemMapFs()

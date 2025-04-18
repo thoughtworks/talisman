@@ -1,14 +1,15 @@
 package main
 
 import (
-	"github.com/stretchr/testify/assert"
 	"os"
 	"talisman/git_testing"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestChecksumCalculatorShouldExitSuccess(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file.txt")
 		git.CreateFileWithContents("private.pem", "secret")
 		git.CreateFileWithContents("another/private.pem", "secret")
@@ -22,7 +23,7 @@ func TestChecksumCalculatorShouldExitSuccess(t *testing.T) {
 }
 
 func TestChecksumCalculatorShouldExitFailure(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file.txt")
 		git.CreateFileWithContents("private.pem", "secret")
 		git.CreateFileWithContents("another/private.pem", "secret")
@@ -36,7 +37,7 @@ func TestChecksumCalculatorShouldExitFailure(t *testing.T) {
 }
 
 func TestChecksumCalculatorShouldExitFailureWhenHasherIsEmpty(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		checksumCmd := ChecksumCmd{[]string{"*.java"}, nil, git.GetRoot()}
 		assert.Equal(t, 1, checksumCmd.Run(), "Expected run() to return 1 because hasher failed to start")
 	})

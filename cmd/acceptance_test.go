@@ -62,21 +62,21 @@ func init() {
 }
 
 func TestNotHavingAnyOutgoingChangesShouldNotFail(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		assert.Equal(t, 0, runTalismanInPrePushMode(git), "Expected run() to return 0 if no input is available on stdin. This happens when there are no outgoing changes")
 	})
 }
 
 func TestAddingSimpleFileShouldExitZero(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		assert.Equal(t, 0, runTalismanInPrePushMode(git), "Expected run() to return 0 and pass as no suspicious files are in the repo")
 	})
 }
 
 func TestAddingSecretKeyShouldExitOne(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
 		git.AddAndcommit("*", "add private key")
@@ -87,7 +87,7 @@ func TestAddingSecretKeyShouldExitOne(t *testing.T) {
 
 func TestAddingSecretKeyAsFileContentShouldExitOne(t *testing.T) {
 
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("contains_keys.properties", awsAccessKeyIDExample)
 		git.AddAndcommit("*", "add private key as content")
@@ -97,7 +97,7 @@ func TestAddingSecretKeyAsFileContentShouldExitOne(t *testing.T) {
 }
 
 func TestAddingSecretKeyShouldExitZeroIfPEMFileIsIgnored(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
 		git.CreateFileWithContents(".talismanrc", talismanRCDataWithFileNameAndCorrectChecksum)
@@ -108,7 +108,7 @@ func TestAddingSecretKeyShouldExitZeroIfPEMFileIsIgnored(t *testing.T) {
 }
 
 func TestScanningSimpleFileShouldExitZero(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		options.Scan = false
 
 		git.SetupBaselineFiles("simple-file")
@@ -117,7 +117,7 @@ func TestScanningSimpleFileShouldExitZero(t *testing.T) {
 }
 
 func TestChecksumCalculatorShouldExitOne(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		options.Checksum = "*txt1"
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
@@ -129,7 +129,7 @@ func TestChecksumCalculatorShouldExitOne(t *testing.T) {
 }
 
 func TestShouldExitOneWhenSecretIsCommitted(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		options.Debug = false
 		options.GitHook = PreCommit
 		options.Scan = false
@@ -141,7 +141,7 @@ func TestShouldExitOneWhenSecretIsCommitted(t *testing.T) {
 }
 
 func TestShouldExitZeroWhenNonSecretIsCommittedButFileContainsSecretPreviously(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		options.Debug = false
 		options.GitHook = PreCommit
 		git.SetupBaselineFiles("simple-file")
@@ -157,7 +157,7 @@ func TestShouldExitZeroWhenNonSecretIsCommittedButFileContainsSecretPreviously(t
 
 // Need to work on this test case as talismanrc does  not yet support comments
 func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnoredAndCommented(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
 		git.CreateFileWithContents(".talismanrc", talismanRCDataWithIgnoreDetectorWithFilename)
@@ -168,7 +168,7 @@ func TestAddingSecretKeyShouldExitZeroIfPEMFilesAreIgnoredAndCommented(t *testin
 }
 
 func TestAddingSecretKeyShouldExitOneIfTheyContainBadContentButOnlyFilenameDetectorWasIgnored(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", awsAccessKeyIDExample)
 		git.CreateFileWithContents(".talismanrc", talismanRCDataWithIgnoreDetectorWithFilename)
@@ -179,7 +179,7 @@ func TestAddingSecretKeyShouldExitOneIfTheyContainBadContentButOnlyFilenameDetec
 }
 
 func TestAddingSecretKeyShouldExitZeroIfFileIsWithinConfiguredScope(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("glide.lock", awsAccessKeyIDExample)
 		git.CreateFileWithContents("glide.yaml", awsAccessKeyIDExample)
@@ -191,7 +191,7 @@ func TestAddingSecretKeyShouldExitZeroIfFileIsWithinConfiguredScope(t *testing.T
 }
 
 func TestAddingSecretKeyShouldExitOneIfFileIsNotWithinConfiguredScope(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("danger.pem", awsAccessKeyIDExample)
 		git.CreateFileWithContents("glide.yaml", awsAccessKeyIDExample)
@@ -203,7 +203,7 @@ func TestAddingSecretKeyShouldExitOneIfFileIsNotWithinConfiguredScope(t *testing
 }
 
 func TestAddingSecretKeyShouldExitOneIfFileNameIsSensitiveButOnlyFilecontentDetectorWasIgnored(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", awsAccessKeyIDExample)
 		git.CreateFileWithContents(".talismanrc", talismanRCDataWithIgnoreDetectorWithFilecontent)
@@ -214,7 +214,7 @@ func TestAddingSecretKeyShouldExitOneIfFileNameIsSensitiveButOnlyFilecontentDete
 }
 
 func TestStagingSecretKeyShouldExitOneWhenPreCommitFlagIsSet(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents("private.pem", "secret")
 		git.Add("*")
@@ -227,7 +227,7 @@ func TestStagingSecretKeyShouldExitOneWhenPreCommitFlagIsSet(t *testing.T) {
 }
 
 func TestPatternFindsSecretKey(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		options.Debug = false
 		options.Pattern = "./*.*"
 
@@ -239,7 +239,7 @@ func TestPatternFindsSecretKey(t *testing.T) {
 }
 
 func TestPatternFindsNestedSecretKey(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		options.Debug = false
 		options.Pattern = "./**/*.*"
 
@@ -251,7 +251,7 @@ func TestPatternFindsNestedSecretKey(t *testing.T) {
 }
 
 func TestPatternFindsSecretInNestedFile(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		options.Debug = false
 		options.Pattern = "./**/*.*"
 
@@ -263,7 +263,7 @@ func TestPatternFindsSecretInNestedFile(t *testing.T) {
 }
 
 func TestFilesWithSameNameWithinRepositoryAreHandledAsSeparateFiles(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file", "some-dir/hello.txt")
 		git.CreateFileWithContents("hello.txt", awsAccessKeyIDExample)
 		git.AddAndcommit("*", "Start of Scan before talismanrc")
@@ -281,7 +281,7 @@ func TestFilesWithSameNameWithinRepositoryAreHandledAsSeparateFiles(t *testing.T
 }
 
 func TestScan(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		options.Debug = false
 		options.Pattern = "./**/*.*"
 		options.Scan = true
@@ -307,7 +307,7 @@ func TestScan(t *testing.T) {
 }
 
 func TestScanDetectsIgnoredSecret(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		options.Scan = true
 		options.IgnoreHistory = false
 
@@ -320,7 +320,7 @@ func TestScanDetectsIgnoredSecret(t *testing.T) {
 }
 
 func TestIgnoreHistoryDetectsExistingIssuesOnHead(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		options.Debug = false
 		options.Pattern = "./**/*.*"
 		options.Scan = true
@@ -337,7 +337,7 @@ func TestIgnoreHistoryDetectsExistingIssuesOnHead(t *testing.T) {
 }
 
 func TestTalismanFailsIfTalismanrcIsInvalidYamlInPrePushMode(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		git.SetupBaselineFiles("simple-file")
 		git.CreateFileWithContents(".talismanrc", invalidTalismanRC)
 		git.AddAndcommit("*", "Incorrect Talismanrc commit")
@@ -347,7 +347,7 @@ func TestTalismanFailsIfTalismanrcIsInvalidYamlInPrePushMode(t *testing.T) {
 }
 
 func TestTalismanFailsIfTalismanrcIsInvalidYamlInPreCommitMode(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		options.Debug = true
 		options.GitHook = PreCommit
 		git.SetupBaselineFiles("simple-file")
@@ -359,7 +359,7 @@ func TestTalismanFailsIfTalismanrcIsInvalidYamlInPreCommitMode(t *testing.T) {
 }
 
 func TestTalismanFailsIfTalismanrcIsInvalidYamlInScanMode(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		options.Debug = true
 		options.Scan = true
 		git.SetupBaselineFiles("simple-file")
@@ -371,7 +371,7 @@ func TestTalismanFailsIfTalismanrcIsInvalidYamlInScanMode(t *testing.T) {
 }
 
 func TestTalismanFailsIfTalismanrcIsInvalidYamlInScanWithHTMLMode(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		options.Debug = true
 		options.ScanWithHtml = true
 		git.SetupBaselineFiles("simple-file")
@@ -383,7 +383,7 @@ func TestTalismanFailsIfTalismanrcIsInvalidYamlInScanWithHTMLMode(t *testing.T) 
 }
 
 func TestTalismanFailsIfTalismanrcIsInvalidYamlInPatternMode(t *testing.T) {
-	withNewTmpGitRepo(func(git *git_testing.GitTesting) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
 		options.Debug = false
 		options.Pattern = "./*.*"
 
@@ -410,14 +410,6 @@ func runTalisman(git *git_testing.GitTesting) int {
 		talismanInput = mockStdIn(git.EarliestCommit(), git.LatestCommit())
 	}
 	return run(promptContext)
-}
-
-type GitOperation func(*git_testing.GitTesting)
-
-func withNewTmpGitRepo(doGitOperation GitOperation) {
-	gt := git_testing.Init()
-	defer gt.Clean()
-	doGitOperation(gt)
 }
 
 func mockStdIn(oldSha string, newSha string) io.Reader {
