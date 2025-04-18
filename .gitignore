@@ -5,7 +5,6 @@ _workspace
 talisman
 checksums
 vendor/
-gitrepo/data/*
 detector/.talismanrc
 .vscode/**
 coverage.out
