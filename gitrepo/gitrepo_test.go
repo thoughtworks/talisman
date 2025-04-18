@@ -11,7 +11,6 @@ import (
 	"talisman/git_testing"
 
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -31,182 +30,186 @@ func TestNewRepoGetsCreatedWithAbsolutePath(t *testing.T) {
 }
 
 func TestNoAdditionsBetweenSameRef(t *testing.T) {
-	git, repo := gitRepositoryWithOrigin()
-	defer git.Clean()
-	assert.Len(t, repo.AdditionsWithinRange("HEAD", "HEAD"), 0, "There should be no additions between a ref and itself.")
+	doInRepoWithCommit(func(git *git_testing.GitTesting) {
+		assert.Len(t, RepoLocatedAt(git.GetRoot()).AdditionsWithinRange("HEAD", "HEAD"), 0, "There should be no additions between a ref and itself.")
+	})
 }
 
 func TestGetDiffForStagedFiles(t *testing.T) {
-	git, repo := gitRepositoryWithOrigin()
-	defer git.Clean()
-	git.AppendFileContent("a.txt", "New content.\n", "Spanning multiple lines, even.")
-	git.CreateFileWithContents("new.txt", "created contents")
-	git.Add("a.txt")
-	git.Add("new.txt")
-	additions := repo.GetDiffForStagedFiles()
+	doInRepoWithCommit(func(git *git_testing.GitTesting) {
+		git.AppendFileContent("a.txt", "New content.\n", "Spanning multiple lines, even.")
+		git.CreateFileWithContents("new.txt", "created contents")
+		git.Add("a.txt")
+		git.Add("new.txt")
+		repo := RepoLocatedAt(git.GetRoot())
+		additions := repo.GetDiffForStagedFiles()
 
-	if assert.Len(t, additions, 2) {
-		modifiedAddition := additions[0]
-		createdAddition := additions[1]
+		if assert.Len(t, additions, 2) {
+			modifiedAddition := additions[0]
+			createdAddition := additions[1]
 
-		aTxtFileContents, err := os.ReadFile(filepath.Join(repo.root, "a.txt"))
-		assert.NoError(t, err)
-		newTxtFileContents, err := os.ReadFile(filepath.Join(repo.root, "new.txt"))
-		assert.NoError(t, err)
+			aTxtFileContents, err := os.ReadFile(filepath.Join(repo.root, "a.txt"))
+			assert.NoError(t, err)
+			newTxtFileContents, err := os.ReadFile(filepath.Join(repo.root, "new.txt"))
+			assert.NoError(t, err)
 
-		expectedModifiedAddition := Addition{
-			Path: FilePath("a.txt"),
-			Name: FileName("a.txt"),
-			Data: []byte(fmt.Sprintf("%s\n", string(aTxtFileContents))),
+			expectedModifiedAddition := Addition{
+				Path: FilePath("a.txt"),
+				Name: FileName("a.txt"),
+				Data: []byte(fmt.Sprintf("%s\n", string(aTxtFileContents))),
+			}
+
+			expectedCreatedAddition := Addition{
+				Path: FilePath("new.txt"),
+				Name: FileName("new.txt"),
+				Data: []byte(fmt.Sprintf("%s\n", string(newTxtFileContents))),
+			}
+
+			// For human-readable comparison
+			assert.Equal(t, string(expectedModifiedAddition.Data), string(modifiedAddition.Data))
+			assert.Equal(t, string(expectedCreatedAddition.Data), string(createdAddition.Data))
+
+			assert.Equal(t, expectedModifiedAddition, modifiedAddition)
+			assert.Equal(t, expectedCreatedAddition, createdAddition)
 		}
-
-		expectedCreatedAddition := Addition{
-			Path: FilePath("new.txt"),
-			Name: FileName("new.txt"),
-			Data: []byte(fmt.Sprintf("%s\n", string(newTxtFileContents))),
-		}
-
-		// For human-readable comparison
-		assert.Equal(t, string(expectedModifiedAddition.Data), string(modifiedAddition.Data))
-		assert.Equal(t, string(expectedCreatedAddition.Data), string(createdAddition.Data))
-
-		assert.Equal(t, expectedModifiedAddition, modifiedAddition)
-		assert.Equal(t, expectedCreatedAddition, createdAddition)
-	}
-
+	})
 }
 
 func TestGetDiffForStagedFilesWithSpacesInPath(t *testing.T) {
-	git, repo := gitRepositoryWithOrigin()
-	defer git.Clean()
-	git.AppendFileContent("folder b/c.txt", "New content.\n", "Spanning multiple lines, even.")
-	git.Add("folder b/c.txt")
-	additions := repo.GetDiffForStagedFiles()
+	doInRepoWithCommit(func(git *git_testing.GitTesting) {
+		git.AppendFileContent("folder b/c.txt", "New content.\n", "Spanning multiple lines, even.")
+		git.Add("folder b/c.txt")
+		repo := RepoLocatedAt(git.GetRoot())
+		additions := repo.GetDiffForStagedFiles()
 
-	if assert.Len(t, additions, 1) {
-		modifiedAddition := additions[0]
+		if assert.Len(t, additions, 1) {
+			modifiedAddition := additions[0]
 
-		aTxtFileContents, err := os.ReadFile(filepath.Join(repo.root, "folder b/c.txt"))
-		assert.NoError(t, err)
+			aTxtFileContents, err := os.ReadFile(filepath.Join(repo.root, "folder b/c.txt"))
+			assert.NoError(t, err)
 
-		expectedModifiedAddition := Addition{
-			Path: FilePath("folder b/c.txt"),
-			Name: FileName("c.txt"),
-			Data: []byte(fmt.Sprintf("%s\n", string(aTxtFileContents))),
+			expectedModifiedAddition := Addition{
+				Path: FilePath("folder b/c.txt"),
+				Name: FileName("c.txt"),
+				Data: []byte(fmt.Sprintf("%s\n", string(aTxtFileContents))),
+			}
+
+			// For human-readable comparison
+			assert.Equal(t, string(expectedModifiedAddition.Data), string(modifiedAddition.Data))
+
+			assert.Equal(t, expectedModifiedAddition, modifiedAddition)
 		}
-
-		// For human-readable comparison
-		assert.Equal(t, string(expectedModifiedAddition.Data), string(modifiedAddition.Data))
-
-		assert.Equal(t, expectedModifiedAddition, modifiedAddition)
-	}
+	})
 }
 
 func TestAdditionsReturnsEditsAndAdds(t *testing.T) {
-	git, repo := gitRepositoryWithOrigin()
-	defer git.Clean()
-	git.AppendFileContent("a.txt", "New content.\n", "Spanning multiple lines, even.")
-	git.CreateFileWithContents("new.txt", "created contents")
-	git.AddAndcommit("*", "added to lorem-ipsum content with my own stuff!")
+	doInRepoWithCommit(func(git *git_testing.GitTesting) {
+		git.AppendFileContent("a.txt", "New content.\n", "Spanning multiple lines, even.")
+		git.CreateFileWithContents("new.txt", "created contents")
+		git.AddAndcommit("*", "added to lorem-ipsum content with my own stuff!")
 
-	additions := repo.AdditionsWithinRange("HEAD~1", "HEAD")
-	assert.Len(t, additions, 2)
-	assert.True(t, strings.HasSuffix(string(additions[0].Data), "New content.\nSpanning multiple lines, even."))
+		additions := RepoLocatedAt(git.GetRoot()).additionsInLastCommit()
+		assert.Len(t, additions, 2)
+		assert.True(t, strings.HasSuffix(string(additions[0].Data), "New content.\nSpanning multiple lines, even."))
+	})
 }
 
 func TestNewlyAddedFilesAreCountedAsChanges(t *testing.T) {
-	git, repo := gitRepositoryWithOrigin()
-	defer git.Clean()
-	git.CreateFileWithContents("h", "Hello")
-	git.CreateFileWithContents("foo/bar/w", ", World!")
-	git.AddAndcommit("*", "added hello world")
-	assert.Len(t, repo.additionsInLastCommit(), 2)
+	doInRepoWithCommit(func(git *git_testing.GitTesting) {
+		git.CreateFileWithContents("h", "Hello")
+		git.CreateFileWithContents("foo/bar/w", ", World!")
+		git.AddAndcommit("*", "added hello world")
+		assert.Len(t, RepoLocatedAt(git.GetRoot()).additionsInLastCommit(), 2)
+	})
 }
 
 func TestOutgoingContentOfNewlyAddedFilesIsAvailableInChanges(t *testing.T) {
-	git, repo := gitRepositoryWithOrigin()
-	defer git.Clean()
-	git.CreateFileWithContents("foo/bar/w", "new contents")
-	git.AddAndcommit("*", "added new files")
-
-	assert.Len(t, repo.additionsInLastCommit(), 1)
-	assert.True(t, strings.HasSuffix(string(repo.AdditionsWithinRange("HEAD~1", "HEAD")[0].Data), "new contents"))
+	doInRepoWithCommit(func(git *git_testing.GitTesting) {
+		git.CreateFileWithContents("foo/bar/w", "new contents")
+		git.AddAndcommit("*", "added new files")
+		repo := RepoLocatedAt(git.GetRoot())
+		assert.Len(t, repo.additionsInLastCommit(), 1)
+		assert.True(t, strings.HasSuffix(string(repo.AdditionsWithinRange("HEAD~1", "HEAD")[0].Data), "new contents"))
+	})
 }
 
 func TestOutgoingContentOfModifiedFilesIsAvailableInChanges(t *testing.T) {
-	git, repo := gitRepositoryWithOrigin()
-	defer git.Clean()
-	git.AppendFileContent("a.txt", "New content.\n", "Spanning multiple lines, even.")
-	git.AddAndcommit("a.txt", "added to lorem-ipsum content with my own stuff!")
-	assert.Len(t, repo.additionsInLastCommit(), 1)
-	assert.True(t, strings.HasSuffix(string(repo.AdditionsWithinRange("HEAD~1", "HEAD")[0].Data), "New content.\nSpanning multiple lines, even."))
+	doInRepoWithCommit(func(git *git_testing.GitTesting) {
+		git.AppendFileContent("a.txt", "New content.\n", "Spanning multiple lines, even.")
+		git.AddAndcommit("a.txt", "added to lorem-ipsum content with my own stuff!")
+		repo := RepoLocatedAt(git.GetRoot())
+		assert.Len(t, repo.additionsInLastCommit(), 1)
+		assert.True(t, strings.HasSuffix(string(repo.AdditionsWithinRange("HEAD~1", "HEAD")[0].Data), "New content.\nSpanning multiple lines, even."))
+	})
 }
 
 func TestMultipleOutgoingChangesToTheSameFileAreAvailableInAdditions(t *testing.T) {
-	git, repo := gitRepositoryWithOrigin()
-	defer git.Clean()
-	git.AppendFileContent("a.txt", "New content.\n")
-	git.AddAndcommit("a.txt", "added some new content")
+	doInRepoWithCommit(func(git *git_testing.GitTesting) {
+		git.AppendFileContent("a.txt", "New content.\n")
+		git.AddAndcommit("a.txt", "added some new content")
 
-	git.AppendFileContent("a.txt", "More new content.\n")
-	git.AddAndcommit("a.txt", "added some more new content")
+		git.AppendFileContent("a.txt", "More new content.\n")
+		git.AddAndcommit("a.txt", "added some more new content")
 
-	assert.Len(t, repo.additionsInLastCommit(), 1)
-	assert.True(t, strings.HasSuffix(string(repo.AdditionsWithinRange("HEAD~1", "HEAD")[0].Data), "New content.\nMore new content.\n"))
+		repo := RepoLocatedAt(git.GetRoot())
+		assert.Len(t, repo.additionsInLastCommit(), 1)
+		assert.True(t, strings.HasSuffix(string(repo.AdditionsWithinRange("HEAD~1", "HEAD")[0].Data), "New content.\nMore new content.\n"))
+	})
 }
 
 func TestContentOfDeletedFilesIsNotAvailableInChanges(t *testing.T) {
-	git, repo := gitRepositoryWithOrigin()
-	defer git.Clean()
-	git.RemoveFile("a.txt")
-	git.AddAndcommit("a.txt", "Deleted this file. After all, it only had lorem-ipsum content.")
-	assert.Equal(t, 0, len(repo.additionsInLastCommit()), "There should be no additions because there only an outgoing deletion")
+	doInRepoWithCommit(func(git *git_testing.GitTesting) {
+		git.RemoveFile("a.txt")
+		git.AddAndcommit("a.txt", "Deleted this file. After all, it only had lorem-ipsum content.")
+		assert.Equal(t, 0, len(RepoLocatedAt(git.GetRoot()).additionsInLastCommit()), "There should be no additions because there only an outgoing deletion")
+	})
 }
 
 func TestDiffContainingBinaryFileChangesDoesNotBlowUp(t *testing.T) {
-	git, repo := gitRepositoryWithOrigin()
-	defer git.Clean()
-	exec.Command("cp", "./pixel.jpg", repo.root).Run()
-	git.AddAndcommit("pixel.jpg", "Testing binary diff.")
-	assert.Len(t, repo.additionsInLastCommit(), 1)
-	assert.Equal(t, "pixel.jpg", string(repo.additionsInLastCommit()[0].Name))
+	doInRepoWithCommit(func(git *git_testing.GitTesting) {
+		repo := RepoLocatedAt(git.GetRoot())
+		exec.Command("cp", "./pixel.jpg", repo.root).Run()
+		git.AddAndcommit("pixel.jpg", "Testing binary diff.")
+		assert.Len(t, repo.additionsInLastCommit(), 1)
+		assert.Equal(t, "pixel.jpg", string(repo.additionsInLastCommit()[0].Name))
+	})
 }
 
 func TestStagedAdditionsIncludeStagedFiles(t *testing.T) {
-	git, repo := gitRepositoryWithOrigin()
-	defer git.Clean()
-	git.OverwriteFileContent("a.txt", "New content.\n")
-	git.Add("a.txt")
+	doInRepoWithCommit(func(git *git_testing.GitTesting) {
+		git.OverwriteFileContent("a.txt", "New content.\n")
+		git.Add("a.txt")
 
-	git.AppendFileContent("a.txt", "More new content\n")
-	git.AppendFileContent("alice/bob/b.txt", "New content to b\n")
+		git.AppendFileContent("a.txt", "More new content\n")
+		git.AppendFileContent("alice/bob/b.txt", "New content to b\n")
 
-	stagedAdditions := repo.StagedAdditions()
-	assert.Len(t, stagedAdditions, 1)
-	assert.Equal(t, "a.txt", string(stagedAdditions[0].Name))
-	assert.Equal(t, "New content.\n", string(stagedAdditions[0].Data))
+		stagedAdditions := RepoLocatedAt(git.GetRoot()).StagedAdditions()
+		assert.Len(t, stagedAdditions, 1)
+		assert.Equal(t, "a.txt", string(stagedAdditions[0].Name))
+		assert.Equal(t, "New content.\n", string(stagedAdditions[0].Data))
+	})
 }
 
 func TestStagedAdditionsIncludeStagedNewFiles(t *testing.T) {
-	git, repo := gitRepositoryWithOrigin()
-	defer git.Clean()
-	git.CreateFileWithContents("new.txt", "New content.\n")
-	git.Add("new.txt")
+	doInRepoWithCommit(func(git *git_testing.GitTesting) {
+		git.CreateFileWithContents("new.txt", "New content.\n")
+		git.Add("new.txt")
 
-	stagedAdditions := repo.StagedAdditions()
-	assert.Len(t, stagedAdditions, 1)
-	assert.Equal(t, "new.txt", string(stagedAdditions[0].Name))
-	assert.Equal(t, "New content.\n", string(stagedAdditions[0].Data))
+		stagedAdditions := RepoLocatedAt(git.GetRoot()).StagedAdditions()
+		assert.Len(t, stagedAdditions, 1)
+		assert.Equal(t, "new.txt", string(stagedAdditions[0].Name))
+		assert.Equal(t, "New content.\n", string(stagedAdditions[0].Data))
+	})
 }
 
 func TestStagedAdditionsShouldNotIncludeDeletedFiles(t *testing.T) {
-	git, repo := gitRepositoryWithOrigin()
-	defer git.Clean()
-	git.RemoveFile("a.txt")
-	git.Add(".")
+	doInRepoWithCommit(func(git *git_testing.GitTesting) {
+		git.RemoveFile("a.txt")
+		git.Add(".")
 
-	stagedAdditions := repo.StagedAdditions()
-	assert.Len(t, stagedAdditions, 0)
+		stagedAdditions := RepoLocatedAt(git.GetRoot()).StagedAdditions()
+		assert.Len(t, stagedAdditions, 0)
+	})
 }
 
 func TestMatchShouldMatchExactFileIfNoPatternIsProvided(t *testing.T) {
@@ -255,14 +258,10 @@ func TestMatchingAdditionBasename(t *testing.T) {
 	assert.True(t, addition.NameMatches("nested-file"))
 }
 
-func gitRepositoryWithOrigin() (*git_testing.GitTesting, GitRepo) {
-	git := git_testing.Init()
-	git.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
-	git.SetupBaselineFiles("c.txt", filepath.Join("folder b", "c.txt"))
-
-	fs := afero.NewMemMapFs()
-	clonePath, _ := afero.TempDir(fs, afero.GetTempDir(fs, "talisman-gitrepo-test"), "")
-	gitClone := git.GitClone(clonePath)
-	git.Clean()
-	return gitClone, RepoLocatedAt(clonePath)
+func doInRepoWithCommit(gitOperation git_testing.GitOperation) {
+	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
+		git.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
+		git.SetupBaselineFiles("c.txt", filepath.Join("folder b", "c.txt"))
+		gitOperation(git)
+	})
 }
