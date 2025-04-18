@@ -34,7 +34,7 @@ func TestSettingUpBaselineFilesSetsUpACommitInRepo(t *testing.T) {
 	repo := Init()
 	defer repo.Clean()
 	repo.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
-	verifyPresenceOfGitRepoWithCommits(repo.gitRoot, 1, t)
+	verifyPresenceOfGitRepoWithCommits(t, 1, repo.gitRoot)
 }
 
 func TestEditingFilesInARepoWorks(t *testing.T) {
@@ -45,7 +45,7 @@ func TestEditingFilesInARepoWorks(t *testing.T) {
 	content := repo.FileContents("a.txt")
 	assert.True(t, strings.HasSuffix(string(content), "monkey see.\nmonkey do."))
 	repo.AddAndcommit("a.txt", "modified content")
-	verifyPresenceOfGitRepoWithCommits(repo.gitRoot, 2, t)
+	verifyPresenceOfGitRepoWithCommits(t, 2, repo.gitRoot)
 }
 
 func TestRemovingFilesInARepoWorks(t *testing.T) {
@@ -55,7 +55,7 @@ func TestRemovingFilesInARepoWorks(t *testing.T) {
 	repo.RemoveFile("a.txt")
 	assert.False(t, exists(filepath.Join("data", "testLocation1", "a.txt")), "Unexpected. Deleted file a.txt still exists inside the repo")
 	repo.AddAndcommit("a.txt", "removed it")
-	verifyPresenceOfGitRepoWithCommits(repo.gitRoot, 2, t)
+	verifyPresenceOfGitRepoWithCommits(t, 2, repo.gitRoot)
 }
 
 func TestCloningARepoToAnotherWorks(t *testing.T) {
@@ -66,10 +66,10 @@ func TestCloningARepoToAnotherWorks(t *testing.T) {
 	anotherRepoLocation, _ := afero.TempDir(fs, afero.GetTempDir(fs, "talisman-clone-test"), "")
 	cloned := repo.GitClone(anotherRepoLocation)
 	defer cloned.Clean()
-	verifyPresenceOfGitRepoWithCommits(repo.gitRoot, 1, t)
+	verifyPresenceOfGitRepoWithCommits(t, 1, repo.gitRoot)
 	logger.Debug("Finished with first verification")
 	logger.Debugf("Another location is %s\n", anotherRepoLocation)
-	verifyPresenceOfGitRepoWithCommits(anotherRepoLocation, 1, t)
+	verifyPresenceOfGitRepoWithCommits(t, 1, anotherRepoLocation)
 }
 
 func TestEarliestCommits(t *testing.T) {
@@ -93,9 +93,9 @@ func TestLatestCommits(t *testing.T) {
 	assert.NotEqual(t, repo.EarliestCommit(), repo.LatestCommit()) //bad test.
 }
 
-func verifyPresenceOfGitRepoWithCommits(location string, expectedCommitCount int, t *testing.T) {
+func verifyPresenceOfGitRepoWithCommits(t *testing.T, expectedCommitCount int, repoLocation string) {
 	wd, _ := os.Getwd()
-	os.Chdir(location)
+	os.Chdir(repoLocation)
 	defer func() { os.Chdir(wd) }()
 
 	cmd := exec.Command("git", "log", "--pretty=short")
