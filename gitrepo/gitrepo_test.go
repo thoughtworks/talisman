@@ -20,16 +20,20 @@ func init() {
 	git_testing.Logger.Debug("GitRepo test started")
 }
 
+func (repo GitRepo) additionsInLastCommit() []Addition {
+	return repo.AdditionsWithinRange("HEAD~1", "HEAD")
+}
+
 func TestNewRepoGetsCreatedWithAbsolutePath(t *testing.T) {
 	var testLocation1 = filepath.Join("data", "testLocation1")
 	repo := RepoLocatedAt(testLocation1)
 	assert.True(t, filepath.IsAbs(repo.root))
 }
 
-func TestEmptyRepoReturnsNoFileChanges(t *testing.T) {
+func TestNoAdditionsBetweenSameRef(t *testing.T) {
 	git, repo := gitRepositoryWithOrigin()
 	defer git.Clean()
-	assert.Len(t, repo.allAdditions(), 0, "Repo with no new commits should have no new additions")
+	assert.Len(t, repo.AdditionsWithinRange("HEAD", "HEAD"), 0, "There should be no additions between a ref and itself.")
 }
 
 func TestGetDiffForStagedFiles(t *testing.T) {
@@ -116,7 +120,7 @@ func TestNewlyAddedFilesAreCountedAsChanges(t *testing.T) {
 	git.CreateFileWithContents("h", "Hello")
 	git.CreateFileWithContents("foo/bar/w", ", World!")
 	git.AddAndcommit("*", "added hello world")
-	assert.Len(t, repo.allAdditions(), 2)
+	assert.Len(t, repo.additionsInLastCommit(), 2)
 }
 
 func TestOutgoingContentOfNewlyAddedFilesIsAvailableInChanges(t *testing.T) {
@@ -125,8 +129,8 @@ func TestOutgoingContentOfNewlyAddedFilesIsAvailableInChanges(t *testing.T) {
 	git.CreateFileWithContents("foo/bar/w", "new contents")
 	git.AddAndcommit("*", "added new files")
 
-	assert.Len(t, repo.allAdditions(), 1)
-	assert.True(t, strings.HasSuffix(string(repo.allAdditions()[0].Data), "new contents"))
+	assert.Len(t, repo.additionsInLastCommit(), 1)
+	assert.True(t, strings.HasSuffix(string(repo.AdditionsWithinRange("HEAD~1", "HEAD")[0].Data), "new contents"))
 }
 
 func TestOutgoingContentOfModifiedFilesIsAvailableInChanges(t *testing.T) {
@@ -134,8 +138,8 @@ func TestOutgoingContentOfModifiedFilesIsAvailableInChanges(t *testing.T) {
 	defer git.Clean()
 	git.AppendFileContent("a.txt", "New content.\n", "Spanning multiple lines, even.")
 	git.AddAndcommit("a.txt", "added to lorem-ipsum content with my own stuff!")
-	assert.Len(t, repo.allAdditions(), 1)
-	assert.True(t, strings.HasSuffix(string(repo.allAdditions()[0].Data), "New content.\nSpanning multiple lines, even."))
+	assert.Len(t, repo.additionsInLastCommit(), 1)
+	assert.True(t, strings.HasSuffix(string(repo.AdditionsWithinRange("HEAD~1", "HEAD")[0].Data), "New content.\nSpanning multiple lines, even."))
 }
 
 func TestMultipleOutgoingChangesToTheSameFileAreAvailableInAdditions(t *testing.T) {
@@ -147,8 +151,8 @@ func TestMultipleOutgoingChangesToTheSameFileAreAvailableInAdditions(t *testing.
 	git.AppendFileContent("a.txt", "More new content.\n")
 	git.AddAndcommit("a.txt", "added some more new content")
 
-	assert.Len(t, repo.allAdditions(), 1)
-	assert.True(t, strings.HasSuffix(string(repo.allAdditions()[0].Data), "New content.\nMore new content.\n"))
+	assert.Len(t, repo.additionsInLastCommit(), 1)
+	assert.True(t, strings.HasSuffix(string(repo.AdditionsWithinRange("HEAD~1", "HEAD")[0].Data), "New content.\nMore new content.\n"))
 }
 
 func TestContentOfDeletedFilesIsNotAvailableInChanges(t *testing.T) {
@@ -156,7 +160,7 @@ func TestContentOfDeletedFilesIsNotAvailableInChanges(t *testing.T) {
 	defer git.Clean()
 	git.RemoveFile("a.txt")
 	git.AddAndcommit("a.txt", "Deleted this file. After all, it only had lorem-ipsum content.")
-	assert.Equal(t, 0, len(repo.allAdditions()), "There should be no additions because there only an outgoing deletion")
+	assert.Equal(t, 0, len(repo.additionsInLastCommit()), "There should be no additions because there only an outgoing deletion")
 }
 
 func TestDiffContainingBinaryFileChangesDoesNotBlowUp(t *testing.T) {
@@ -164,8 +168,8 @@ func TestDiffContainingBinaryFileChangesDoesNotBlowUp(t *testing.T) {
 	defer git.Clean()
 	exec.Command("cp", "./pixel.jpg", repo.root).Run()
 	git.AddAndcommit("pixel.jpg", "Testing binary diff.")
-	assert.Len(t, repo.allAdditions(), 1)
-	assert.Equal(t, "pixel.jpg", string(repo.allAdditions()[0].Name))
+	assert.Len(t, repo.additionsInLastCommit(), 1)
+	assert.Equal(t, "pixel.jpg", string(repo.additionsInLastCommit()[0].Name))
 }
 
 func TestStagedAdditionsIncludeStagedFiles(t *testing.T) {
