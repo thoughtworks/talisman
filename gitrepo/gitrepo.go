@@ -132,8 +132,8 @@ func (repo GitRepo) StagedAdditions() []Addition {
 	return result
 }
 
-// AllAdditions returns all the outgoing additions and modifications in a GitRepo. This does not include files that were deleted.
-func (repo GitRepo) AllAdditions() []Addition {
+// allAdditions returns all the outgoing additions and modifications in a GitRepo. This does not include files that were deleted.
+func (repo GitRepo) allAdditions() []Addition {
 	result := string(repo.executeRepoCommand("git", "rev-parse", "--abbrev-ref", "origin/HEAD"))
 	log.Debugf("Result of getting default branch %v", result)
 	oldCommit := strings.ReplaceAll(result, "\n", "")
