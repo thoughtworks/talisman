@@ -38,6 +38,10 @@ func RepoLocatedAt(path string) GitRepo {
 	return GitRepo{absoluteRoot}
 }
 
+func (repo GitRepo) Root() string {
+	return repo.root
+}
+
 // GetDiffForStagedFiles gets all the staged files and collects the diff section in each file
 func (repo GitRepo) GetDiffForStagedFiles() []Addition {
 	stagedContent := repo.executeRepoCommand("git", "diff", "--staged", "--src-prefix=a/", "--dst-prefix=b/")

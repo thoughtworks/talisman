@@ -2,7 +2,6 @@ package git_testing
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -116,7 +115,7 @@ func (git *GitTesting) FileContents(filePath string) []byte {
 	var result []byte
 	var err error
 	git.doInGitRoot(func() {
-		result, err = ioutil.ReadFile(filePath)
+		result, err = os.ReadFile(filePath)
 		git.die(fmt.Sprintf("when reading file %s", filePath), err)
 	})
 	return result

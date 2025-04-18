@@ -1,4 +1,4 @@
-package gitrepo
+package git_testing
 
 import (
 	"os"
@@ -7,9 +7,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"talisman/gitrepo"
 	"testing"
-
-	"talisman/git_testing"
 
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -20,38 +19,32 @@ var testLocation1 = filepath.Join("data", "testLocation1")
 var logger *logrus.Entry
 
 func init() {
-	git_testing.Logger = logrus.WithField("Environment", "Debug")
-	git_testing.Logger.Debug("Acceptance test started")
+	Logger = logrus.WithField("Environment", "Debug")
+	Logger.Debug("Acceptance test started")
 	logrus.SetOutput(os.Stderr)
-	logger = git_testing.Logger
-}
-
-func TestNewRepoGetsCreatedWithAbsolutePath(t *testing.T) {
-	cleanTestData()
-	repo := RepoLocatedAt(testLocation1)
-	assert.True(t, path.IsAbs(repo.root))
+	logger = Logger
 }
 
 func TestInitializingANewRepoSetsUpFolderAndGitStructures(t *testing.T) {
 	cleanTestData()
-	repo := RepoLocatedAt(filepath.Join("data", "dir", "sub_dir", "testLocation2"))
-	git_testing.InitAt(repo.root)
-	assert.True(t, exists(repo.root), "Git Repo initialization should create the directory structure required")
-	assert.True(t, isGitRepo(repo.root), "Repo root does not contain the .git folder")
+	repo := gitrepo.RepoLocatedAt(filepath.Join("data", "dir", "sub_dir", "testLocation2"))
+	InitAt(repo.Root())
+	assert.True(t, exists(repo.Root()), "Git Repo initialization should create the directory structure required")
+	assert.True(t, isGitRepo(repo.Root()), "Repo root does not contain the .git folder")
 }
 
 func TestSettingUpBaselineFilesSetsUpACommitInRepo(t *testing.T) {
 	cleanTestData()
-	repo := RepoLocatedAt(testLocation1)
-	git := git_testing.InitAt(repo.root)
+	repo := gitrepo.RepoLocatedAt(testLocation1)
+	git := InitAt(repo.Root())
 	git.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
 	verifyPresenceOfGitRepoWithCommits(testLocation1, 1, t)
 }
 
 func TestEditingFilesInARepoWorks(t *testing.T) {
 	cleanTestData()
-	repo := RepoLocatedAt(testLocation1)
-	git := git_testing.InitAt(repo.root)
+	repo := gitrepo.RepoLocatedAt(testLocation1)
+	git := InitAt(repo.Root())
 	git.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
 	git.AppendFileContent("a.txt", "\nmonkey see.\n", "monkey do.")
 	content := git.FileContents("a.txt")
@@ -62,8 +55,8 @@ func TestEditingFilesInARepoWorks(t *testing.T) {
 
 func TestRemovingFilesInARepoWorks(t *testing.T) {
 	cleanTestData()
-	repo := RepoLocatedAt(testLocation1)
-	git := git_testing.InitAt(repo.root)
+	repo := gitrepo.RepoLocatedAt(testLocation1)
+	git := InitAt(repo.Root())
 	git.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
 	git.RemoveFile("a.txt")
 	assert.False(t, exists(filepath.Join("data", "testLocation1", "a.txt")), "Unexpected. Deleted file a.txt still exists inside the repo")
@@ -73,8 +66,8 @@ func TestRemovingFilesInARepoWorks(t *testing.T) {
 
 func TestCloningARepoToAnotherWorks(t *testing.T) {
 	cleanTestData()
-	repo := RepoLocatedAt(testLocation1)
-	git := git_testing.InitAt(repo.root)
+	repo := gitrepo.RepoLocatedAt(testLocation1)
+	git := InitAt(repo.Root())
 	git.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
 	cwd, _ := os.Getwd()
 	anotherRepoLocation := filepath.Join(cwd, "data", "somewhereElse", "testLocationClone")
@@ -87,8 +80,8 @@ func TestCloningARepoToAnotherWorks(t *testing.T) {
 
 func TestEarliestCommits(t *testing.T) {
 	cleanTestData()
-	repo := RepoLocatedAt(testLocation1)
-	git := git_testing.InitAt(repo.root)
+	repo := gitrepo.RepoLocatedAt(testLocation1)
+	git := InitAt(repo.Root())
 	git.SetupBaselineFiles("a.txt")
 	initialCommit := git.EarliestCommit()
 	git.AppendFileContent("a.txt", "\nmonkey see.\n", "monkey do.")
@@ -98,8 +91,8 @@ func TestEarliestCommits(t *testing.T) {
 
 func TestLatestCommits(t *testing.T) {
 	cleanTestData()
-	repo := RepoLocatedAt(testLocation1)
-	git := git_testing.InitAt(repo.root)
+	repo := gitrepo.RepoLocatedAt(testLocation1)
+	git := InitAt(repo.Root())
 	git.SetupBaselineFiles("a.txt")
 	git.AppendFileContent("a.txt", "\nmonkey see.\n", "monkey do.")
 	git.AddAndcommit("a.txt", "modified content")

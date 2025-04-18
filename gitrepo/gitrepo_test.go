@@ -17,8 +17,13 @@ import (
 
 func init() {
 	git_testing.Logger = logrus.WithField("Environment", "Debug")
-	git_testing.Logger.Debug("Accetpance test started")
-	logger = git_testing.Logger
+	git_testing.Logger.Debug("GitRepo test started")
+}
+
+func TestNewRepoGetsCreatedWithAbsolutePath(t *testing.T) {
+	var testLocation1 = filepath.Join("data", "testLocation1")
+	repo := RepoLocatedAt(testLocation1)
+	assert.True(t, filepath.IsAbs(repo.root))
 }
 
 func TestEmptyRepoReturnsNoFileChanges(t *testing.T) {

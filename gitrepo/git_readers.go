@@ -63,18 +63,10 @@ func NewBatchGitHeadPathReader(root string) BatchReader {
 	return bgor
 }
 
-type batchGitHeadPathReader struct {
-	bgor *BatchGitObjectReader
-}
-
 func NewBatchGitStagedPathReader(root string) BatchReader {
 	bgor := newBatchGitObjectReader(root)
 	bgor.read = bgor.makePathReader(GIT_STAGED_PREFIX)
 	return bgor
-}
-
-type batchGitStagedPathReader struct {
-	bgor *BatchGitObjectReader
 }
 
 func NewBatchGitObjectHashReader(root string) BatchReader {
