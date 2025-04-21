@@ -24,15 +24,15 @@ func init() {
 
 func TestInitializingANewRepoSetsUpFolderAndGitStructures(t *testing.T) {
 	DoInTempGitRepo(func(repo *GitTesting) {
-		assert.True(t, exists(repo.gitRoot), "GitTesting initialization should create the directory structure required")
-		assert.True(t, isGitRepo(repo.gitRoot), "Repo root does not contain the .git folder")
+		assert.True(t, exists(repo.root), "GitTesting initialization should create the directory structure required")
+		assert.True(t, isGitRepo(repo.root), "Repo root does not contain the .git folder")
 	})
 }
 
 func TestSettingUpBaselineFilesSetsUpACommitInRepo(t *testing.T) {
 	DoInTempGitRepo(func(repo *GitTesting) {
 		repo.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
-		verifyPresenceOfGitRepoWithCommits(t, 1, repo.gitRoot)
+		verifyPresenceOfGitRepoWithCommits(t, 1, repo.root)
 	})
 }
 
@@ -43,7 +43,7 @@ func TestEditingFilesInARepoWorks(t *testing.T) {
 		content := repo.FileContents("a.txt")
 		assert.True(t, strings.HasSuffix(string(content), "monkey see.\nmonkey do."))
 		repo.AddAndcommit("a.txt", "modified content")
-		verifyPresenceOfGitRepoWithCommits(t, 2, repo.gitRoot)
+		verifyPresenceOfGitRepoWithCommits(t, 2, repo.root)
 	})
 }
 
@@ -53,7 +53,7 @@ func TestRemovingFilesInARepoWorks(t *testing.T) {
 		repo.RemoveFile("a.txt")
 		assert.False(t, exists(filepath.Join("data", "testLocation1", "a.txt")), "Unexpected. Deleted file a.txt still exists inside the repo")
 		repo.AddAndcommit("a.txt", "removed it")
-		verifyPresenceOfGitRepoWithCommits(t, 2, repo.gitRoot)
+		verifyPresenceOfGitRepoWithCommits(t, 2, repo.root)
 	})
 }
 

@@ -14,7 +14,7 @@ func TestChecksumCalculatorShouldExitSuccess(t *testing.T) {
 		git.CreateFileWithContents("private.pem", "secret")
 		git.CreateFileWithContents("another/private.pem", "secret")
 		git.CreateFileWithContents("sample.txt", "password")
-		os.Chdir(git.GetRoot())
+		os.Chdir(git.Root())
 
 		checksumCmd := NewChecksumCmd([]string{"*.txt"})
 		assert.Equal(t, 0, checksumCmd.Run(), "Expected run() to return 0 as given patterns are found and .talsimanrc is suggested")
@@ -28,7 +28,7 @@ func TestChecksumCalculatorShouldExitFailure(t *testing.T) {
 		git.CreateFileWithContents("private.pem", "secret")
 		git.CreateFileWithContents("another/private.pem", "secret")
 		git.CreateFileWithContents("sample.txt", "password")
-		os.Chdir(git.GetRoot())
+		os.Chdir(git.Root())
 
 		checksumCmd := NewChecksumCmd([]string{"*.java"})
 		assert.Equal(t, 1, checksumCmd.Run(), "Expected run() to return 1 as given patterns are found and .talsimanrc is suggested")
@@ -38,7 +38,7 @@ func TestChecksumCalculatorShouldExitFailure(t *testing.T) {
 
 func TestChecksumCalculatorShouldExitFailureWhenHasherIsEmpty(t *testing.T) {
 	git_testing.DoInTempGitRepo(func(git *git_testing.GitTesting) {
-		checksumCmd := ChecksumCmd{[]string{"*.java"}, nil, git.GetRoot()}
+		checksumCmd := ChecksumCmd{[]string{"*.java"}, nil, git.Root()}
 		assert.Equal(t, 1, checksumCmd.Run(), "Expected run() to return 1 because hasher failed to start")
 	})
 }

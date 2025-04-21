@@ -402,7 +402,7 @@ func runTalismanInPrePushMode(git *git_testing.GitTesting) int {
 
 func runTalisman(git *git_testing.GitTesting) int {
 	wd, _ := os.Getwd()
-	os.Chdir(git.GetRoot())
+	os.Chdir(git.Root())
 	defer func() { os.Chdir(wd) }()
 	prompter := prompt.NewPrompt()
 	promptContext := prompt.NewPromptContext(false, prompter)

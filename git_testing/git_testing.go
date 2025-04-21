@@ -16,7 +16,7 @@ var Logger *logrus.Entry
 
 // GitTesting provides an API for manipulating a git repository during tests
 type GitTesting struct {
-	gitRoot string
+	root string
 }
 
 type GitOperation func(*GitTesting)
@@ -32,24 +32,29 @@ func DoInTempGitRepo(gitOperation GitOperation) {
 func Init() *GitTesting {
 	fs := afero.NewMemMapFs()
 	path, _ := afero.TempDir(fs, afero.GetTempDir(fs, "talisman-test"), "")
-	return InitAt(path)
+	return initAt(path)
 }
 
-// InitAt creates a GitTesting based at the specified path
-func InitAt(gitRoot string) *GitTesting {
+// initAt creates a GitTesting based at the specified path
+func initAt(gitRoot string) *GitTesting {
 	os.MkdirAll(gitRoot, 0777)
 	testingRepo := &GitTesting{gitRoot}
-	output := testingRepo.ExecCommand("git", "init", ".")
+	output := testingRepo.execCommand("git", "init", ".")
 	logrus.Debugf("Git init result %v", string(output))
-	testingRepo.ExecCommand("git", "config", "user.email", "talisman-test-user@example.com")
-	testingRepo.ExecCommand("git", "config", "user.name", "Talisman Test User")
-	testingRepo.ExecCommand("git", "config", "commit.gpgsign", "false")
+	testingRepo.execCommand("git", "config", "user.email", "talisman-test-user@example.com")
+	testingRepo.execCommand("git", "config", "user.name", "Talisman Test User")
+	testingRepo.execCommand("git", "config", "commit.gpgsign", "false")
 	testingRepo.removeHooks()
 	return testingRepo
 }
 
+// Clean removes the directory containing the git repository represented by a GitTesting
+func (git *GitTesting) Clean() {
+	os.RemoveAll(git.root)
+}
+
 func (git *GitTesting) SetupBaselineFiles(filenames ...string) {
-	Logger.Debugf("Creating %v in %s\n", filenames, git.gitRoot)
+	Logger.Debugf("Creating %v in %s\n", filenames, git.root)
 	for _, filename := range filenames {
 		git.CreateFileWithContents(filename, lorem.Sentence(8, 10), lorem.Sentence(8, 10))
 	}
@@ -57,11 +62,11 @@ func (git *GitTesting) SetupBaselineFiles(filenames ...string) {
 }
 
 func (git *GitTesting) EarliestCommit() string {
-	return git.ExecCommand("git", "rev-list", "--max-parents=0", "HEAD")
+	return git.execCommand("git", "rev-list", "--max-parents=0", "HEAD")
 }
 
 func (git *GitTesting) LatestCommit() string {
-	return git.ExecCommand("git", "rev-parse", "HEAD")
+	return git.execCommand("git", "rev-parse", "HEAD")
 }
 
 func (git *GitTesting) CreateFileWithContents(filePath string, contents ...string) string {
@@ -125,11 +130,11 @@ func (git *GitTesting) AddAndcommit(fileName string, message string) {
 }
 
 func (git *GitTesting) Add(fileName string) {
-	git.ExecCommand("git", "add", fileName)
+	git.execCommand("git", "add", fileName)
 }
 
 func (git *GitTesting) Commit(fileName string, message string) {
-	git.ExecCommand("git", "commit", "-m", message)
+	git.execCommand("git", "commit", "-m", message)
 }
 
 // GetBlobDetails returns git blob details for a path
@@ -152,14 +157,14 @@ func (git *GitTesting) GetBlobDetails(fileName string) string {
 	return objectHashAndFilename
 }
 
-// ExecCommand executes a command with given arguments in the git repo directory
-func (git *GitTesting) ExecCommand(commandName string, args ...string) string {
+// execCommand executes a command with given arguments in the git repo directory
+func (git *GitTesting) execCommand(commandName string, args ...string) string {
 	var output []byte
 	git.doInGitRoot(func() {
 		result := exec.Command(commandName, args...)
 		var err error
 		output, err = result.Output()
-		summaryMessage := fmt.Sprintf("Command: %s %v\nWorkingDirectory: %s\nOutput %s\nError: %v", commandName, args, git.gitRoot, string(output), err)
+		summaryMessage := fmt.Sprintf("Command: %s %v\nWorkingDirectory: %s\nOutput %s\nError: %v", commandName, args, git.root, string(output), err)
 		git.die(summaryMessage, err)
 		Logger.Debug(summaryMessage)
 	})
@@ -178,23 +183,18 @@ func (git *GitTesting) die(msg string, err error) {
 
 func (git *GitTesting) doInGitRoot(operation func()) {
 	wd, _ := os.Getwd()
-	os.Chdir(git.gitRoot)
+	os.Chdir(git.root)
 	defer func() { os.Chdir(wd) }()
 	operation()
 }
 
-// GetRoot returns the root directory of the git-testing repo
-func (git *GitTesting) GetRoot() string {
-	return git.gitRoot
+// Root returns the root directory of the git-testing repo
+func (git *GitTesting) Root() string {
+	return git.root
 }
 
 // removeHooks removes all file-system hooks from git-test repo.
 // We do this to prevent any user-installed hooks from interfering with tests.
 func (git *GitTesting) removeHooks() {
-	git.ExecCommand("rm", "-rf", ".git/hooks/")
-}
-
-// Clean removes the directory containing the git repository represented by a GitTesting
-func (git *GitTesting) Clean() {
-	os.RemoveAll(git.gitRoot)
+	git.execCommand("rm", "-rf", ".git/hooks/")
 }
