@@ -10,7 +10,6 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -56,23 +55,6 @@ func TestRemovingFilesInARepoWorks(t *testing.T) {
 		repo.AddAndcommit("a.txt", "removed it")
 		verifyPresenceOfGitRepoWithCommits(t, 2, repo.gitRoot)
 	})
-}
-
-func TestCloningARepoToAnotherWorks(t *testing.T) {
-	fs := afero.NewMemMapFs()
-	anotherRepoLocation, _ := afero.TempDir(fs, afero.GetTempDir(fs, "talisman-clone-test"), "")
-	var cloned *GitTesting
-	DoInTempGitRepo(func(repo *GitTesting) {
-		repo.SetupBaselineFiles("a.txt", filepath.Join("alice", "bob", "b.txt"))
-		verifyPresenceOfGitRepoWithCommits(t, 1, repo.gitRoot)
-		logger.Debug("Finished with first verification")
-
-		logger.Debugf("Another location is %s\n", anotherRepoLocation)
-		cloned = repo.GitClone(anotherRepoLocation)
-		repo.Clean()
-	})
-	verifyPresenceOfGitRepoWithCommits(t, 1, anotherRepoLocation)
-	cloned.Clean()
 }
 
 func TestEarliestCommits(t *testing.T) {

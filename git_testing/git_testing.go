@@ -48,17 +48,6 @@ func InitAt(gitRoot string) *GitTesting {
 	return testingRepo
 }
 
-func (git *GitTesting) GitClone(cloneName string) *GitTesting {
-	result := git.ExecCommand("git", "clone", git.gitRoot, cloneName)
-	Logger.Debugf("Clone result : %s\n", result)
-	Logger.Debugf("GitRoot :%s \t CloneRoot: %s\n", git.gitRoot, cloneName)
-	clone := &GitTesting{cloneName}
-	clone.ExecCommand("git", "config", "user.email", "talisman-test-user@example.com")
-	clone.ExecCommand("git", "config", "user.name", "Talisman Test User")
-	clone.ExecCommand("git", "config", "commit.gpgsign", "false")
-	return clone
-}
-
 func (git *GitTesting) SetupBaselineFiles(filenames ...string) {
 	Logger.Debugf("Creating %v in %s\n", filenames, git.gitRoot)
 	for _, filename := range filenames {
