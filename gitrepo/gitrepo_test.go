@@ -31,7 +31,8 @@ func TestNewRepoGetsCreatedWithAbsolutePath(t *testing.T) {
 
 func TestNoAdditionsBetweenSameRef(t *testing.T) {
 	doInRepoWithCommit(func(git *git_testing.GitTesting) {
-		assert.Len(t, RepoLocatedAt(git.GetRoot()).AdditionsWithinRange("HEAD", "HEAD"), 0, "There should be no additions between a ref and itself.")
+		assert.Len(t, RepoLocatedAt(git.GetRoot()).AdditionsWithinRange("HEAD", "HEAD"), 0,
+			"There should be no additions between a ref and itself.")
 	})
 }
 
@@ -139,7 +140,7 @@ func TestOutgoingContentOfModifiedFilesIsAvailableInChanges(t *testing.T) {
 		git.AddAndcommit("a.txt", "added to lorem-ipsum content with my own stuff!")
 		repo := RepoLocatedAt(git.GetRoot())
 		assert.Len(t, repo.additionsInLastCommit(), 1)
-		assert.True(t, strings.HasSuffix(string(repo.AdditionsWithinRange("HEAD~1", "HEAD")[0].Data), "New content.\nSpanning multiple lines, even."))
+		assert.True(t, strings.HasSuffix(string(repo.additionsInLastCommit()[0].Data), "New content.\nSpanning multiple lines, even."))
 	})
 }
 
@@ -153,7 +154,7 @@ func TestMultipleOutgoingChangesToTheSameFileAreAvailableInAdditions(t *testing.
 
 		repo := RepoLocatedAt(git.GetRoot())
 		assert.Len(t, repo.additionsInLastCommit(), 1)
-		assert.True(t, strings.HasSuffix(string(repo.AdditionsWithinRange("HEAD~1", "HEAD")[0].Data), "New content.\nMore new content.\n"))
+		assert.True(t, strings.HasSuffix(string(repo.AdditionsWithinRange("HEAD~2", "HEAD")[0].Data), "New content.\nMore new content.\n"))
 	})
 }
 
@@ -161,7 +162,8 @@ func TestContentOfDeletedFilesIsNotAvailableInChanges(t *testing.T) {
 	doInRepoWithCommit(func(git *git_testing.GitTesting) {
 		git.RemoveFile("a.txt")
 		git.AddAndcommit("a.txt", "Deleted this file. After all, it only had lorem-ipsum content.")
-		assert.Equal(t, 0, len(RepoLocatedAt(git.GetRoot()).additionsInLastCommit()), "There should be no additions because there only an outgoing deletion")
+		assert.Equal(t, 0, len(RepoLocatedAt(git.GetRoot()).additionsInLastCommit()),
+			"There should be no additions because there is only an outgoing deletion")
 	})
 }
 
