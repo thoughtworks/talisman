@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "deps" # Prefix for commit messages
+    open-pull-requests-limit: 5 # Limit the number of open PRs
+    # ignore:
+    #   - dependency-name: "example-dependency" # Example of ignoring a specific dependency
+    #     versions: [">=2.0.0"]
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
