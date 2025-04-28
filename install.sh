@@ -79,7 +79,11 @@ function set_binary_name() {
 }
 
 function download() {
-  ASSETS=$(curl -Ls https://api.github.com/repos/"$INSTALL_ORG_REPO"/releases/latest |
+  if [ "$VERSION" != "latest" ]; then
+    VERSION="tags/$VERSION"
+  fi
+
+  ASSETS=$(curl -Ls https://api.github.com/repos/"$INSTALL_ORG_REPO"/releases/"$VERSION" |
     grep download_url | awk '{print $2}' | tr -d '"')
   BINARY_URL=$(echo "$ASSETS" | grep "$BINARY_NAME")
   CHECKSUM_URL=$(echo "$ASSETS" | grep $CHECKSUM_FILE_NAME)
@@ -93,7 +97,7 @@ function download() {
 function verify_checksum() {
   pushd "$TEMP_DIR" >/dev/null 2>&1
 
-  if ! command -v shasum &> /dev/null; then
+  if ! command -v shasum &>/dev/null; then
     sha256sum --ignore-missing -c $CHECKSUM_FILE_NAME
   else
     shasum -a 256 --ignore-missing -c $CHECKSUM_FILE_NAME
