@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 _linux_uname() {
   if [ "${FAKE_PARAMS[0]}" = "-m" ]; then
     echo "x86_64"
@@ -25,10 +27,16 @@ _mac_uname() {
 }
 export -f _mac_uname
 
+_curl_spy() {
+  echo "${FAKE_PARAMS[@]}" >>"$1"/_curl_args
+  echo 'download_url: talisman_linux_amd64checksums'
+}
+export -f _curl_spy
+
 setup() {
   temp=$(mktemp -d)
   fake uname _linux_uname
-  fake curl 'echo "download_url: talisman_linux_amd64checksums"'
+  fake curl "_curl_spy $temp"
   fake shasum true
   fake tput true
 }
@@ -62,6 +70,18 @@ test_errors_if_unable_to_install() {
 
 test_errors_if_no_install_location() {
   assert_status_code 1 "INSTALL_LOCATION=/does/not/exist ./install.sh"
+}
+
+test_defaults_to_installing_latest_release() {
+  INSTALL_LOCATION=$temp ./install.sh
+  requested_release=$(head -n 1 "$temp"/_curl_args | awk '{print $2}')
+  assert_matches ".*releases/latest$" "$requested_release" "Should install latest release if no version specified"
+}
+
+test_installing_specific_version() {
+  VERSION=v1.64.0 INSTALL_LOCATION=$temp ./install.sh
+  requested_release=$(head -n 1 "$temp"/_curl_args | awk '{print $2}')
+  assert_matches ".*releases/tags/v1.64.0$" "$requested_release" "Should install specified version"
 }
 
 test_mac_arm_binary_name() {

@@ -70,21 +70,27 @@ git hook frameworks and scripts. Pick the correct binary for your system from
 our [Releases Page](https://github.com/thoughtworks/talisman/releases), or run
 our [install script](https://github.com/thoughtworks/talisman/blob/main/install.sh):
 
-```
+```bash
 bash -c "$(curl --silent https://raw.githubusercontent.com/thoughtworks/talisman/main/install.sh)"
 ```
 
 Or set environment variable `INSTALL_LOCATION` to specify a custom location for
 the binary:
 
-```
+```bash
 INSTALL_LOCATION=/usr/local/bin bash -c "$(curl --silent https://raw.githubusercontent.com/thoughtworks/talisman/main/install.sh)"
+```
+
+Or set environment variable `VERSION` to install a specific version::
+
+```bash
+VERSION=v1.36.0 bash -c "$(curl --silent https://raw.githubusercontent.com/thoughtworks/talisman/main/install.sh)"
 ```
 
 Or using linuxbrew in Linux and homebrew in macOS by running the following
 command in terminal:
 
-```
+```bash
 brew install talisman
 ```
 
