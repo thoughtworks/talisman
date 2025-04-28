@@ -81,7 +81,7 @@ the binary:
 INSTALL_LOCATION=/usr/local/bin bash -c "$(curl --silent https://raw.githubusercontent.com/thoughtworks/talisman/main/install.sh)"
 ```
 
-Or set environment variable `VERSION` to install a specific version::
+Or set environment variable `VERSION` to a released tag to install a specific version::
 
 ```bash
 VERSION=v1.36.0 bash -c "$(curl --silent https://raw.githubusercontent.com/thoughtworks/talisman/main/install.sh)"
