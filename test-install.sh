@@ -99,3 +99,10 @@ test_windows_binary_name() {
   assert "test -x $temp/talisman_windows_386.exe" "Should install file with executable mode"
   assert_matches "$temp/talisman_windows_386.exe" "$(readlink "$temp/talisman")" "Should create a link"
 }
+
+test_pre_commit_golang_version() {
+  version_in_go_mod=$(grep '^go ' go.mod | awk '{print $2}')
+  grep 'language_version:' .pre-commit-hooks.yaml | awk '{print $2}' | while read -r version_in_pre_commit; do
+    assert_matches "$version_in_go_mod" "$version_in_pre_commit" "pre-commit-hooks should specify same golang version as go.mod"
+  done
+}
