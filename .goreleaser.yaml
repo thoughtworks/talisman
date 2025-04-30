@@ -1,3 +1,4 @@
+version: 2
 project_name: talisman
 
 before:
@@ -24,7 +25,7 @@ release:
 
 archives:
   - meta: false
-    format: binary
+    formats: binary
     wrap_in_directory: true
     name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
 
@@ -33,7 +34,7 @@ checksum:
   algorithm: sha256
 
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
 
 changelog:
   sort: asc
