@@ -6,6 +6,7 @@ import (
 )
 
 var delimiters = []string{".", "-", "="}
+
 const aggressivenessThreshold = 15 //decreasing makes it more aggressive
 
 type Base64AggressiveDetector struct {

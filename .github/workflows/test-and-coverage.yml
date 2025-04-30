@@ -15,6 +15,10 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      - name: Format
+        run: |
+          go fmt ./...
+          git diff --no-patch --exit-code
       - name: Test
         run: |
           git config user.email "talisman-maintainers@thoughtworks.com"

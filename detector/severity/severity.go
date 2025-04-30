@@ -24,6 +24,7 @@ func FromString(severity string) (Severity, error) {
 	}
 	return 0, fmt.Errorf("unknown severity %v", severity)
 }
+
 type Severity int
 
 func (s Severity) String() string {
@@ -58,7 +59,7 @@ func (s *Severity) UnmarshalJSON(input []byte) error {
 }
 
 func (s Severity) MarshalJSON() ([]byte, error) {
-	bytes := []byte(fmt.Sprintf("\"%s\"",String(s)))
+	bytes := []byte(fmt.Sprintf("\"%s\"", String(s)))
 	return bytes, nil
 }
 

@@ -34,8 +34,8 @@ func NewPrePushHook(stdin io.Reader) *PrePushHook {
 	return prePushHook
 }
 
-//If the outgoing ref does not exist on the remote, all commits on the local ref will be checked
-//If the outgoing ref already exists, all additions in the range between "localSha" and "remoteSha" will be validated
+// If the outgoing ref does not exist on the remote, all commits on the local ref will be checked
+// If the outgoing ref already exists, all additions in the range between "localSha" and "remoteSha" will be validated
 func (p *PrePushHook) getRepoAdditions() []gitrepo.Addition {
 	if p.runningOnDeletedRef() {
 		log.WithFields(log.Fields{

@@ -11,8 +11,9 @@ repos:
       - id: go-format
         name: Go Format
         language: system
-        entry: go fmt
+        entry: go fmt ./...
         types: [go]
+        pass_filenames: false
       - id: go-test
         name: Go Tests
         language: system

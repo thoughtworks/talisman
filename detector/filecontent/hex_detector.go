@@ -5,7 +5,7 @@ const HEX_ENTROPY_THRESHOLD = 2.7
 const MIN_HEX_SECRET_LENGTH = 20
 
 type HexDetector struct {
-	hexMap map[string]bool
+	hexMap  map[string]bool
 	entropy *Entropy
 }
 

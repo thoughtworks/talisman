@@ -12,7 +12,7 @@ import (
 	figure "github.com/common-nighthawk/go-figure"
 )
 
-//UniqueItems returns the array of strings containing unique items
+// UniqueItems returns the array of strings containing unique items
 func UniqueItems(stringSlice []string) []string {
 	keys := make(map[string]bool)
 	list := []string{}
@@ -25,13 +25,13 @@ func UniqueItems(stringSlice []string) []string {
 	return list
 }
 
-//Creates art for console output
+// Creates art for console output
 func CreateArt(msg string) {
 	myFigure := figure.NewFigure(msg, "basic", true)
 	myFigure.Print()
 }
 
-//Copies Files and Directories from source to destination
+// Copies Files and Directories from source to destination
 func File(src, dst string) error {
 	var err error
 	var srcfd *os.File
