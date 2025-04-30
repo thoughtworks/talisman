@@ -8,5 +8,3 @@ type PatternSeverity struct {
 	Pattern  *regexp.Regexp
 	Severity Severity
 }
-
-

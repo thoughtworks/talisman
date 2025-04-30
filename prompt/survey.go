@@ -17,16 +17,16 @@ func NewPrompt() Prompt {
 
 type prompt struct{}
 
-func NewPromptContext(interactive bool, prompt Prompt) PromptContext{
+func NewPromptContext(interactive bool, prompt Prompt) PromptContext {
 	return PromptContext{
 		Interactive: interactive,
-		Prompt: prompt,
+		Prompt:      prompt,
 	}
 }
 
 type PromptContext struct {
 	Interactive bool
-	Prompt Prompt
+	Prompt      Prompt
 }
 
 func (p prompt) Confirm(message string) bool {

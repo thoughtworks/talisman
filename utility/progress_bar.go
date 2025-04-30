@@ -36,7 +36,7 @@ func (d *noOpProgressBar) Increment() {}
 func (d *noOpProgressBar) Finish() {}
 
 type defaultProgressBar struct {
-	bar *pb.ProgressBar
+	bar   *pb.ProgressBar
 	title string
 }
 

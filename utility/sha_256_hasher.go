@@ -16,7 +16,7 @@ type SHA256Hasher interface {
 
 type DefaultSHA256Hasher struct{}
 
-//CollectiveSHA256Hash return collective sha256 hash of the passed paths
+// CollectiveSHA256Hash return collective sha256 hash of the passed paths
 func (*DefaultSHA256Hasher) CollectiveSHA256Hash(paths []string) string {
 	return collectiveSHA256Hash(paths, SafeReadFile)
 }
@@ -65,7 +65,7 @@ func collectiveSHA256Hash(paths []string, FileReader func(string) ([]byte, error
 
 var hashers = make(map[string]SHA256Hasher)
 
-//MakeHasher returns a SHA256 file/object hasher based on mode and a repo root
+// MakeHasher returns a SHA256 file/object hasher based on mode and a repo root
 func MakeHasher(mode string, root string) SHA256Hasher {
 	if hashers[mode] != nil {
 		return hashers[mode]

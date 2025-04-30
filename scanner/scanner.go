@@ -2,11 +2,11 @@ package scanner
 
 import (
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 	"talisman/gitrepo"
 	"talisman/utility"
-	"os"
 
 	"github.com/sirupsen/logrus"
 )

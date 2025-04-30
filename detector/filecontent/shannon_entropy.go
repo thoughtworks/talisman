@@ -6,7 +6,6 @@ import (
 )
 
 type Entropy struct {
-
 }
 
 func (en *Entropy) GetShannonEntropy(str string, superSet string) float64 {
