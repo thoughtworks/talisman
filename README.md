@@ -4,7 +4,10 @@
 <h1 align="center">Talisman</h1>
 <p align="center">A tool to detect and prevent secrets from getting checked in</p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![Go Report Card](https://goreportcard.com/badge/thoughtworks/talisman)](https://goreportcard.com/report/thoughtworks/talisman) [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/thoughtworks/talisman/issues) [![Build Status](https://github.com/thoughtworks/talisman/actions/workflows/test-and-coverage.yml/badge.svg?branch=master)](https://github.com/thoughtworks/talisman/actions/workflows/test-and-coverage.yml) [![Coverage Status](https://codecov.io/gh/thoughtworks/talisman/branch/master/graph/badge.svg)](https://codecov.io/gh/thoughtworks/talisman)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Go Report Card](https://goreportcard.com/badge/thoughtworks/talisman)](https://goreportcard.com/report/thoughtworks/talisman)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/thoughtworks/talisman/issues)
+[![Build Status](https://github.com/thoughtworks/talisman/actions/workflows/test-and-coverage.yml/badge.svg?branch=main)](https://github.com/thoughtworks/talisman/actions/workflows/test-and-coverage.yml)
 
 ## Table of Contents
 
@@ -187,14 +190,14 @@ If at all you need to manually upgrade, here are the steps:
 <br>[Recommended] Update Talisman binary and hook scripts to the latest release:
 
 ```bash
-curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/update_talisman.bash > /tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash
+curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/main/global_install_scripts/update_talisman.bash > /tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash
 ```
 
 
 Update only Talisman binary by executing:
 
 ```bash
-curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/master/global_install_scripts/update_talisman.bash > /tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash talisman-binary
+curl --silent  https://raw.githubusercontent.com/thoughtworks/talisman/main/global_install_scripts/update_talisman.bash > /tmp/update_talisman.bash && /bin/bash /tmp/update_talisman.bash talisman-binary
 ```
 
 # Talisman in action
