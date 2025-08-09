@@ -5,6 +5,7 @@ shopt -s extglob
 DEBUG=${DEBUG:-''}
 FORCE_DOWNLOAD=${FORCE_DOWNLOAD:-''}
 declare UPDATE_TYPE=""
+E_UNSUPPORTED_ARCH=5
 if [[ $# -gt 0 && $1 =~ talisman-binary.* ]]; then
   UPDATE_TYPE='talisman-binary'
 fi
@@ -92,7 +93,7 @@ function run() {
       OS="${OS}_arm64"
       ;;
     *)
-      echo_error "Talisman currently only supports x86 and x86_64 architectures."
+      echo_error "Talisman currently only supports x86, x86_64 and arm64 architectures."
       echo_error "If this is a problem for you, please open an issue: https://github.com/${INSTALL_ORG_REPO}/issues/new"
       exit $E_UNSUPPORTED_ARCH
       ;;
