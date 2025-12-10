@@ -97,6 +97,12 @@ command in terminal:
 brew install talisman
 ```
 
+On Windows you can use WinGet by running the following command in a terminal:
+
+```
+winget install --id Thoughtworks.Talisman
+```
+
 ## Installation as a global hook template
 
 We offer scripts that will install Talisman as a **pre-commit git hook template**, as that will cause
