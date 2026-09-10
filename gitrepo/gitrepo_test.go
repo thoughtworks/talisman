@@ -267,3 +267,80 @@ func doInRepoWithCommit(gitOperation git_testing.GitOperation) {
 		gitOperation(git)
 	})
 }
+
+func TestGetDiffForStagedFilesWithRenamedFile(t *testing.T) {
+	doInRepoWithCommit(func(git *git_testing.GitTesting) {
+		root := git.Root()
+
+		// A rename is only reported as one "diff --git a/old b/new" header when
+		// the two versions are similar enough, so start from a file with enough
+		// lines for one appended line to leave the similarity index high.
+		lines := make([]string, 0, 60)
+		for i := 0; i < 60; i++ {
+			lines = append(lines, fmt.Sprintf("line %d of ordinary content", i))
+		}
+		git.CreateFileWithContents("big.txt", strings.Join(lines, "\n"))
+		git.AddAndcommit("big.txt", "add a file worth renaming")
+
+		runGitIn(t, root, "mv", "big.txt", "renamed.txt")
+
+		f, err := os.OpenFile(filepath.Join(root, "renamed.txt"), os.O_APPEND|os.O_WRONLY, 0o644)
+		assert.NoError(t, err)
+		_, err = f.WriteString("AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY\n")
+		assert.NoError(t, err)
+		assert.NoError(t, f.Close())
+
+		runGitIn(t, root, "add", "-A")
+
+		t.Log("staged diff:\n" + runGitIn(t, root, "diff", "--staged", "--src-prefix=a/", "--dst-prefix=b/"))
+
+		additions := RepoLocatedAt(root).GetDiffForStagedFiles()
+		for _, a := range additions {
+			t.Logf("addition path=%q data=%q", string(a.Path), string(a.Data))
+		}
+
+		var renamed *Addition
+		for i := range additions {
+			if string(additions[i].Path) == "renamed.txt" {
+				renamed = &additions[i]
+			}
+		}
+		if assert.NotNil(t, renamed, "the renamed file produced no addition, so its new content is never scanned") {
+			assert.Contains(t, string(renamed.Data), "AWS_SECRET_ACCESS_KEY")
+		}
+	})
+}
+
+func runGitIn(t *testing.T, root string, args ...string) string {
+	t.Helper()
+	cmd := exec.Command("git", args...)
+	cmd.Dir = root
+	out, err := cmd.CombinedOutput()
+	assert.NoError(t, err, string(out))
+	return string(out)
+}
+
+func TestMatchGitDiffLine(t *testing.T) {
+	tests := []struct {
+		name         string
+		line         string
+		expectMatch  bool
+		expectedFile string
+	}{
+		{"modified file", "diff --git a/a.txt b/a.txt", true, "a.txt"},
+		{"path with a space", "diff --git a/folder b/c.txt b/folder b/c.txt", true, "folder b/c.txt"},
+		{"renamed file", "diff --git a/big.txt b/renamed.txt", true, "renamed.txt"},
+		{"renamed file with differing name lengths", "diff --git a/x.txt b/a-much-longer-name.txt", true, "a-much-longer-name.txt"},
+		{"rename whose source contains the separator", "diff --git a/old b/x.txt b/new.txt", true, "new.txt"},
+		{"not a diff header", "+++ b/a.txt", false, ""},
+		{"index line", "index 0000000..1111111 100644", false, ""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			match, filename := MatchGitDiffLine(test.line)
+			assert.Equal(t, test.expectMatch, match)
+			assert.Equal(t, test.expectedFile, filename)
+		})
+	}
+}
