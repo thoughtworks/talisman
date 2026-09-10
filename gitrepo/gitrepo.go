@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -106,19 +105,36 @@ func (repo GitRepo) GetDiffForStagedFiles() []Addition {
 }
 
 func MatchGitDiffLine(gitDiffString string) (bool, string) {
-	if strings.Contains(gitDiffString, "diff --git") {
-		fileNameLength := (len(gitDiffString) - len("diff --git a/ b/")) / 2
-		regexPattern := fmt.Sprintf("^diff --git a/(.{%v}) b/(.{%v})$", fileNameLength, fileNameLength)
-		headerRegex := regexp.MustCompile(regexPattern)
+	const headerPrefix = "diff --git a/"
+	const pathSeparator = " b/"
 
-		if headerRegex.MatchString(gitDiffString) {
-			matches := headerRegex.FindStringSubmatch(gitDiffString)
-			if matches[1] == matches[2] {
-				return true, matches[1]
-			}
-		}
+	if !strings.HasPrefix(gitDiffString, headerPrefix) {
+		return false, ""
 	}
-	return false, ""
+	paths := gitDiffString[len(headerPrefix):]
+
+	// The two paths are separated by " b/", but a path is not quoted and can
+	// contain that sequence itself, so every occurrence is a candidate split.
+	// A plain modification names the same file on both sides, which settles it.
+	lastSeparator := -1
+	for i := 0; i+len(pathSeparator) <= len(paths); i++ {
+		if paths[i:i+len(pathSeparator)] != pathSeparator {
+			continue
+		}
+		if paths[:i] == paths[i+len(pathSeparator):] {
+			return true, paths[:i]
+		}
+		lastSeparator = i
+	}
+
+	if lastSeparator == -1 {
+		return false, ""
+	}
+
+	// The two sides differ, so this is a rename. Report the destination, which
+	// is the file that exists after the commit. Taking the last separator keeps
+	// a " b/" that belongs to the source path on the source side.
+	return true, paths[lastSeparator+len(pathSeparator):]
 }
 
 // StagedAdditions returns the files staged for commit in a GitRepo
