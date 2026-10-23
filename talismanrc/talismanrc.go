@@ -65,9 +65,9 @@ func (tRC *TalismanRC) AddIgnores(entriesToAdd []FileIgnoreConfig) {
 	}
 }
 
-func combineFileIgnores(exsiting, incoming []FileIgnoreConfig) []FileIgnoreConfig {
+func combineFileIgnores(existing, incoming []FileIgnoreConfig) []FileIgnoreConfig {
 	existingMap := make(map[string]FileIgnoreConfig)
-	for _, fIC := range exsiting {
+	for _, fIC := range existing {
 		existingMap[fIC.FileName] = fIC
 	}
 	for _, fIC := range incoming {

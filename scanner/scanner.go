@@ -15,7 +15,7 @@ type blobDetails struct {
 	hash, filePath string
 }
 
-// BlobsInCommits is a map of blob and list of the commits the blobs is present in.
+// BlobsInCommits is a map of blob and list of the commits the blob is present in.
 type BlobsInCommits struct {
 	commits map[blobDetails][]string
 }
