@@ -31,11 +31,11 @@ var (
 const (
 	//PrePush : Const for name of pre-push hook
 	PrePush = "pre-push"
-	//PreCommit : Const for name of of pre-commit hook
+	//PreCommit : Const for name of pre-commit hook
 	PreCommit = "pre-commit"
 	//EXIT_SUCCESS : Const to indicate successful talisman invocation
 	EXIT_SUCCESS = 0
-	//EXIT_FAILURE : Const to indicate failed successful invocation
+	//EXIT_FAILURE : Const to indicate failed invocation
 	EXIT_FAILURE = 1
 )
 
